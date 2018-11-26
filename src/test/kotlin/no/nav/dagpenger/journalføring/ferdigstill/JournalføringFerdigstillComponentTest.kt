@@ -168,7 +168,7 @@ class JournalføringFerdigstillComponentTest {
         var ferdigstillTeller = 0
 
         override fun ferdigstillJournalføring(journalpostId: String) {
-            assertTrue(knownedJournalPosts.contains(journalpostId), "Journalpost not knowned")
+            assertTrue(knownedJournalPosts.contains(journalpostId), "Journal post not known")
             ferdigstillTeller++
         }
     }
