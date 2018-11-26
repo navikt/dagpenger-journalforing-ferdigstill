@@ -73,7 +73,7 @@ dependencies {
     testImplementation(kotlin("test"))
     testImplementation(kotlin("test-junit"))
     testImplementation("junit:junit:4.12")
-    testImplementation("au.com.dius:pact-jvm-consumer-java8_2.12:3.6.0-rc.0")
+    testImplementation("no.nav:kafka-embedded-env:2.0.1")
 }
 
 spotless {
