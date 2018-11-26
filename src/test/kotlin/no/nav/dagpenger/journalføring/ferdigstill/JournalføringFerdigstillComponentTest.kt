@@ -98,7 +98,6 @@ class JournalføringFerdigstillComponentTest {
 
         journalføringFerdigstill.start()
 
-
         henvendelsesType.forEach { journalpostId, henvendelse ->
             val innkommendeBehov: Behov = Behov
                 .newBuilder()
@@ -126,7 +125,6 @@ class JournalføringFerdigstillComponentTest {
             val record = behovProducer.send(ProducerRecord(Topics.INNGÅENDE_JOURNALPOST.name, innkommendeBehov)).get()
             LOGGER.info { "Produced -> ${record.topic()}  to offset ${record.offset()}" }
         }
-
 
         TimeUnit.SECONDS.sleep(3) // awaiting event processing
 
