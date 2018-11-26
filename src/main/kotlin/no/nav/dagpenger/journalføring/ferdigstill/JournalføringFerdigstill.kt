@@ -39,15 +39,10 @@ class JournalføringFerdigstill(val env: Environment, private val oppslagClient:
 
         inngåendeJournalposter
             .peek { key, value -> LOGGER.info("Processing ${value.javaClass} with key $key") }
-            .filter { _, behov -> behov.hasFagsakId() }
-            .filter { _, behov -> filterHenvendelsesType(behov) }
+            .filter { _, behov -> shouldBeProcessed(behov) }
             .foreach { _, value -> ferdigstillJournalføring(value) }
 
         return KafkaStreams(builder.build(), this.getConfig())
-    }
-
-    private fun filterHenvendelsesType(behov: Behov): Boolean {
-        return behov.isSoknad() || behov.isEttersending()
     }
 
     fun ferdigstillJournalføring(behov: Behov) {
@@ -61,4 +56,12 @@ class JournalføringFerdigstill(val env: Environment, private val oppslagClient:
             credential = KafkaCredential(env.username, env.password)
         )
     }
+}
+
+fun shouldBeProcessed(behov: Behov): Boolean {
+    return behov.hasFagsakId() && filterHenvendelsesType(behov)
+}
+
+private fun filterHenvendelsesType(behov: Behov): Boolean {
+    return behov.isSoknad() || behov.isEttersending()
 }
