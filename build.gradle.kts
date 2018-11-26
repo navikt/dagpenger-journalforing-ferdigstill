@@ -8,12 +8,6 @@ plugins {
     id("java-library")
 }
 
-buildscript {
-    repositories {
-        maven("https://repo.adeo.no/repository/maven-central")
-    }
-}
-
 apply {
     plugin("com.diffplug.gradle.spotless")
     plugin("com.adarshr.test-logger")
@@ -21,6 +15,7 @@ apply {
 
 repositories {
     jcenter()
+    mavenCentral()
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
     maven("http://packages.confluent.io/maven")
     maven("https://dl.bintray.com/kotlin/ktor")
