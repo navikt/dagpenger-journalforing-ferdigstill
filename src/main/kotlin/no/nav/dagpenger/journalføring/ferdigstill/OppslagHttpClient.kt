@@ -4,9 +4,9 @@ import com.github.kittinunf.fuel.gson.responseObject
 import com.github.kittinunf.fuel.httpPost
 import com.github.kittinunf.result.Result
 
-class OppslagHttpClient(private val oppslagUrl: String) {
+class OppslagHttpClient(private val oppslagUrl: String) : OppslagClient {
 
-    fun ferdigstillJournalføring(journalpostId: String) {
+    override fun ferdigstillJournalføring(journalpostId: String) {
         val url = "${oppslagUrl}joark/ferdigstill"
         val (_, response, result) = with(url.httpPost().body(journalpostId)) {
             responseObject<String>()

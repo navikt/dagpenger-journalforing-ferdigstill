@@ -2,6 +2,9 @@ package no.nav.dagpenger.journalføring.ferdigstill
 
 import mu.KotlinLogging
 import no.nav.dagpenger.events.avro.Behov
+import no.nav.dagpenger.events.hasFagsakId
+import no.nav.dagpenger.events.isEttersending
+import no.nav.dagpenger.events.isSoknad
 import no.nav.dagpenger.streams.KafkaCredential
 import no.nav.dagpenger.streams.Service
 import no.nav.dagpenger.streams.Topics.INNGÅENDE_JOURNALPOST
@@ -13,8 +16,9 @@ import java.util.Properties
 
 private val LOGGER = KotlinLogging.logger {}
 
-class JournalføringFerdigstill(val env: Environment, private val oppslagHttpClient: OppslagHttpClient) : Service() {
-    override val SERVICE_APP_ID = "journalføring-ferdigstill" // NB: also used as group.id for the consumer group - do not change!
+class JournalføringFerdigstill(val env: Environment, private val oppslagClient: OppslagClient) : Service() {
+    override val SERVICE_APP_ID =
+        "journalføring-ferdigstill" // NB: also used as group.id for the consumer group - do not change!
 
     override val HTTP_PORT: Int = env.httpPort ?: super.HTTP_PORT
 
@@ -34,26 +38,30 @@ class JournalføringFerdigstill(val env: Environment, private val oppslagHttpCli
         val inngåendeJournalposter = builder.consumeTopic(INNGÅENDE_JOURNALPOST, env.schemaRegistryUrl)
 
         inngåendeJournalposter
-                .peek { key, value -> LOGGER.info("Processing ${value.javaClass} with key $key") }
-                .filter { _, behov -> behov.getJournalpost().getGsaksakId() != null }
-                .filter { _, behov -> filterJournalpostTypes(behov.getJournalpost().getJournalpostType()) }
-                .foreach { _, value -> ferdigstillJournalføring(value) }
+            .peek { key, value -> LOGGER.info("Processing ${value.javaClass} with key $key") }
+            .filter { _, behov -> shouldBeProcessed(behov) }
+            .foreach { _, value -> ferdigstillJournalføring(value) }
 
         return KafkaStreams(builder.build(), this.getConfig())
     }
 
-    private fun filterJournalpostTypes(journalpostType: JournalpostType): Boolean {
-        return when (journalpostType) {
-            JournalpostType.NY, JournalpostType.GJENOPPTAK, JournalpostType.ETTERSENDING -> true
-            JournalpostType.UKJENT, JournalpostType.MANUELL -> false
-        }
-    }
-
     fun ferdigstillJournalføring(behov: Behov) {
-        oppslagHttpClient.ferdigstillJournalføring(behov.getJournalpost().getJournalpostId())
+        oppslagClient.ferdigstillJournalføring(behov.getJournalpost().getJournalpostId())
     }
 
     override fun getConfig(): Properties {
-        return streamConfig(appId = SERVICE_APP_ID, bootStapServerUrl = env.bootstrapServersUrl, credential = KafkaCredential(env.username, env.password))
+        return streamConfig(
+            appId = SERVICE_APP_ID,
+            bootStapServerUrl = env.bootstrapServersUrl,
+            credential = KafkaCredential(env.username, env.password)
+        )
     }
+}
+
+fun shouldBeProcessed(behov: Behov): Boolean {
+    return behov.hasFagsakId() && filterHenvendelsesType(behov)
+}
+
+private fun filterHenvendelsesType(behov: Behov): Boolean {
+    return behov.isSoknad() || behov.isEttersending()
 }
