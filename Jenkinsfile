@@ -4,7 +4,9 @@ pipeline {
     APPLICATION_NAME = 'dagpenger-journalforing-ferdigstill'
     ZONE = 'fss'
     NAMESPACE = 'default'
-    VERSION = sh(script: './gradlew -q printVersion', returnStdout: true).trim()
+    VERSION = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+    DOCKER_REPO = 'repo.adeo.no:5443/'
+    DOCKER_IMAGE_VERSION = '${DOCKER_REPO}${APPLICATION_NAME}:${VERSION}'
   }
 
   stages {
@@ -16,7 +18,7 @@ pipeline {
 
     stage('Build') {
       steps {
-        sh "./gradlew check"
+        sh "./gradlew build"
       }
 
       post {
@@ -48,9 +50,11 @@ pipeline {
         )]) {
             sh "docker login -u ${REPO_USERNAME} -p ${REPO_PASSWORD} repo.adeo.no:5443"
         }
-
         script {
-          sh "./gradlew dockerPush${VERSION}"
+          sh "docker build . --pull -t ${DOCKER_IMAGE_VERSION}"
+        }
+        script {
+          sh "docker push ${DOCKER_IMAGE_VERSION}"
         }
       }
     }
