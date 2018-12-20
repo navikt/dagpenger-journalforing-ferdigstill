@@ -2,7 +2,6 @@ package no.nav.dagpenger.journalføring.ferdigstill
 
 import no.nav.dagpenger.events.avro.Behov
 import no.nav.dagpenger.events.avro.Ettersending
-import no.nav.dagpenger.events.avro.HenvendelsesType
 import no.nav.dagpenger.events.avro.Søknad
 import org.junit.Test
 import kotlin.test.assertFalse
@@ -14,7 +13,7 @@ class JournalføringFerdigstillTest {
         return Behov
             .newBuilder()
             .setBehovId("000")
-            .setHenvendelsesType(HenvendelsesType())
+            .setHenvendelsesType(Søknad())
     }
 
     @Test
@@ -22,9 +21,7 @@ class JournalføringFerdigstillTest {
 
         val behovError = basicBehovBuilder()
             .setTrengerManuellBehandling(false)
-            .setHenvendelsesType(HenvendelsesType.newBuilder().apply {
-                søknad = Søknad()
-            }.build())
+            .setHenvendelsesType(Søknad())
             .build()
 
         assertFalse(shouldBeProcessed(behovError))
@@ -47,9 +44,7 @@ class JournalføringFerdigstillTest {
         val behovError = basicBehovBuilder()
             .setFagsakId("123")
             .setTrengerManuellBehandling(false)
-            .setHenvendelsesType(HenvendelsesType.newBuilder().apply {
-                søknad = Søknad()
-            }.build())
+            .setHenvendelsesType(Søknad())
             .build()
 
         assertTrue(shouldBeProcessed(behovError))
@@ -61,9 +56,7 @@ class JournalføringFerdigstillTest {
         val behovError = basicBehovBuilder()
             .setFagsakId("123")
             .setTrengerManuellBehandling(false)
-            .setHenvendelsesType(HenvendelsesType.newBuilder().apply {
-                ettersending = Ettersending()
-            }.build())
+            .setHenvendelsesType(Ettersending())
             .build()
 
         assertTrue(shouldBeProcessed(behovError))

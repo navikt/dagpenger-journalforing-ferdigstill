@@ -9,7 +9,6 @@ import no.nav.dagpenger.events.avro.Annet
 import no.nav.dagpenger.events.avro.Behov
 import no.nav.dagpenger.events.avro.Dokument
 import no.nav.dagpenger.events.avro.Ettersending
-import no.nav.dagpenger.events.avro.HenvendelsesType
 import no.nav.dagpenger.events.avro.Journalpost
 import no.nav.dagpenger.events.avro.Mottaker
 import no.nav.dagpenger.events.avro.Søknad
@@ -105,13 +104,11 @@ class JournalføringFerdigstillComponentTest {
                 .setFagsakId(UUID.randomUUID().toString())
                 .setMottaker(Mottaker(UUID.randomUUID().toString()))
                 .setHenvendelsesType(
-                    HenvendelsesType.newBuilder().apply {
-                        when (henvendelse) {
-                            Søknad() -> søknad = henvendelse as Søknad?
-                            Ettersending() -> ettersending = henvendelse as Ettersending?
-                            Annet() -> annet = henvendelse as Annet?
-                        }
-                    }.build()
+                    when (henvendelse) {
+                        Søknad() -> Søknad.newBuilder().build()
+                        Ettersending() -> Ettersending.newBuilder().build()
+                        else -> Annet.newBuilder().build()
+                    }
                 )
                 .setJournalpost(
                     Journalpost
