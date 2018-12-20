@@ -13,7 +13,6 @@ class JournalføringFerdigstillTest {
         return Behov
             .newBuilder()
             .setBehovId("000")
-            .setHenvendelsesType(Søknad())
     }
 
     @Test
