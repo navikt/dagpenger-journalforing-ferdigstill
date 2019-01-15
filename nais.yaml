@@ -1,6 +1,6 @@
 name: dagpenger-journalforing-ferdigstill
 image: repo.adeo.no:5443/dagpenger-journalforing-ferdigstill
-team: dagpenger
+team: teamdagpenger
 replicas:
   min: 2
   max: 4
