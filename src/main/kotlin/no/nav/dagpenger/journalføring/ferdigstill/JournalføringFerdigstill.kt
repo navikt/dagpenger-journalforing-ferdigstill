@@ -10,8 +10,8 @@ import no.nav.dagpenger.streams.Service
 import no.nav.dagpenger.streams.Topics.INNGÅENDE_JOURNALPOST
 import no.nav.dagpenger.streams.consumeTopic
 import no.nav.dagpenger.streams.streamConfig
-import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StreamsBuilder
+import org.apache.kafka.streams.Topology
 import java.util.Properties
 
 private val LOGGER = KotlinLogging.logger {}
@@ -31,9 +31,7 @@ class JournalføringFerdigstill(val env: Environment, private val oppslagClient:
         }
     }
 
-    override fun setupStreams(): KafkaStreams {
-        LOGGER.info { "Initiating start of $SERVICE_APP_ID" }
-
+    override fun buildTopology(): Topology {
         val builder = StreamsBuilder()
         val inngåendeJournalposter = builder.consumeTopic(INNGÅENDE_JOURNALPOST, env.schemaRegistryUrl)
 
@@ -42,7 +40,7 @@ class JournalføringFerdigstill(val env: Environment, private val oppslagClient:
             .filter { _, behov -> shouldBeProcessed(behov) }
             .foreach { _, value -> ferdigstillJournalføring(value) }
 
-        return KafkaStreams(builder.build(), this.getConfig())
+        return builder.build()
     }
 
     fun ferdigstillJournalføring(behov: Behov) {
