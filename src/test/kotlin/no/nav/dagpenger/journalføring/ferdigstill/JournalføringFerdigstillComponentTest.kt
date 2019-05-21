@@ -91,7 +91,7 @@ class JournalføringFerdigstillComponentTest {
 
         val journalføringFerdigstill = JournalføringFerdigstill(env, oppslagClient)
 
-        //produce behov...
+        // produce behov...
 
         val behovProducer = behovProducer(env)
 
