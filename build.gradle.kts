@@ -40,7 +40,7 @@ val log4j2Version = "2.11.1"
 
 dependencies {
     implementation(kotlin("stdlib"))
-    implementation("com.github.navikt:dagpenger-streams:2019.06.03-21.15.cf80ca7a33d5")
+    implementation("com.github.navikt:dagpenger-streams:2019.06.17-12.21.e9270cb15ca1")
     implementation("com.github.navikt:dagpenger-events:2019.05.20-11.56.33cd4c73a439")
 
     implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
