@@ -18,9 +18,9 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.config.SaslConfigs
-import org.junit.AfterClass
-import org.junit.BeforeClass
-import org.junit.Test
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Test
 import java.util.Properties
 import java.util.Random
 import java.util.UUID
@@ -44,13 +44,13 @@ class JournalføringFerdigstillComponentTest {
             topics = listOf(Topics.JOARK_EVENTS.name, Topics.INNGÅENDE_JOURNALPOST.name)
         )
 
-        @BeforeClass
+        @BeforeAll
         @JvmStatic
         fun setup() {
             embeddedEnvironment.start()
         }
 
-        @AfterClass
+        @AfterAll
         @JvmStatic
         fun teardown() {
             embeddedEnvironment.tearDown()
