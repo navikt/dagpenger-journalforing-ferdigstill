@@ -1,65 +1,30 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
 import mu.KotlinLogging
-import no.nav.dagpenger.events.avro.Behov
-import no.nav.dagpenger.events.hasFagsakId
-import no.nav.dagpenger.events.isEttersending
-import no.nav.dagpenger.events.isSoknad
-import no.nav.dagpenger.streams.KafkaCredential
-import no.nav.dagpenger.streams.Service
-import no.nav.dagpenger.streams.Topics.INNGÅENDE_JOURNALPOST
-import no.nav.dagpenger.streams.consumeTopic
-import no.nav.dagpenger.streams.streamConfig
-import org.apache.kafka.streams.StreamsBuilder
-import org.apache.kafka.streams.Topology
-import java.util.Properties
+import no.nav.dagpenger.events.Packet
+import no.nav.dagpenger.streams.River
+import org.apache.kafka.streams.kstream.Predicate
 
-private val LOGGER = KotlinLogging.logger {}
+private val logger = KotlinLogging.logger {}
 
-class JournalføringFerdigstill(val env: Environment, private val oppslagClient: OppslagClient) : Service() {
-    override val SERVICE_APP_ID =
-        "journalføring-ferdigstill" // NB: also used as group.id for the consumer group - do not change!
+class JournalføringFerdigstill(val configuration: Configuration) : River(configuration.kafka.dagpengerJournalpostTopic) {
 
-    override val HTTP_PORT: Int = env.httpPort ?: super.HTTP_PORT
+    override val SERVICE_APP_ID = "dagpenger-journalføring-ferdigstill"
+    override val HTTP_PORT: Int = configuration.application.httpPort
 
-    companion object {
-        @JvmStatic
-        fun main(args: Array<String>) {
-            val env = Environment()
-            val service = JournalføringFerdigstill(env, OppslagHttpClient(env.dagpengerOppslagUrl))
-            service.start()
-        }
-    }
-
-    override fun buildTopology(): Topology {
-        val builder = StreamsBuilder()
-        val inngåendeJournalposter = builder.consumeTopic(INNGÅENDE_JOURNALPOST, env.schemaRegistryUrl)
-
-        inngåendeJournalposter
-            .peek { key, value -> LOGGER.info("Processing ${value.javaClass} with key $key") }
-            .filter { _, behov -> shouldBeProcessed(behov) }
-            .foreach { _, value -> ferdigstillJournalføring(value) }
-
-        return builder.build()
-    }
-
-    fun ferdigstillJournalføring(behov: Behov) {
-        oppslagClient.ferdigstillJournalføring(behov.getJournalpost().getJournalpostId())
-    }
-
-    override fun getConfig(): Properties {
-        return streamConfig(
-            appId = SERVICE_APP_ID,
-            bootStapServerUrl = env.bootstrapServersUrl,
-            credential = KafkaCredential(env.username, env.password)
+    override fun filterPredicates(): List<Predicate<String, Packet>> {
+        return listOf(
+            Predicate { _, packet -> !packet.hasField("dagpenger-journalføring-ferdigstill") }
         )
     }
+
+    override fun onPacket(packet: Packet): Packet {
+
+        logger.info { "GOT VALUE $packet" }
+
+        packet.putValue("dagpenger-journalføring-ferdigstill", "yes")
+        return packet
+    }
 }
 
-fun shouldBeProcessed(behov: Behov): Boolean {
-    return behov.hasFagsakId() && filterHenvendelsesType(behov)
-}
-
-private fun filterHenvendelsesType(behov: Behov): Boolean {
-    return behov.isSoknad() || behov.isEttersending()
-}
+fun main() = JournalføringFerdigstill(Configuration()).start()

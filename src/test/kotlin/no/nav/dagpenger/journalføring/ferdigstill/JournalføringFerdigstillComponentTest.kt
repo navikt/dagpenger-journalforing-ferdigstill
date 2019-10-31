@@ -1,19 +1,15 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
-import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig
+import io.kotlintest.matchers.numerics.shouldBeGreaterThan
+import io.kotlintest.shouldBe
 import mu.KotlinLogging
 import no.nav.common.JAASCredential
 import no.nav.common.KafkaEnvironment
 import no.nav.common.embeddedutils.getAvailablePort
-import no.nav.dagpenger.events.avro.Annet
-import no.nav.dagpenger.events.avro.Behov
-import no.nav.dagpenger.events.avro.Dokument
-import no.nav.dagpenger.events.avro.Ettersending
-import no.nav.dagpenger.events.avro.Journalpost
-import no.nav.dagpenger.events.avro.Mottaker
-import no.nav.dagpenger.events.avro.Søknad
-import no.nav.dagpenger.streams.Topics
+import no.nav.dagpenger.events.Packet
 import org.apache.kafka.clients.CommonClientConfigs
+import org.apache.kafka.clients.consumer.ConsumerConfig
+import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -21,14 +17,10 @@ import org.apache.kafka.common.config.SaslConfigs
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import java.time.Duration
 import java.util.Properties
-import java.util.Random
-import java.util.UUID
-import java.util.concurrent.TimeUnit
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
-class JournalføringFerdigstillComponentTest {
+class JournalforingFerdigstillComponentTest {
 
     private val LOGGER = KotlinLogging.logger {}
 
@@ -41,130 +33,102 @@ class JournalføringFerdigstillComponentTest {
             autoStart = false,
             withSchemaRegistry = true,
             withSecurity = true,
-            topics = listOf(Topics.JOARK_EVENTS.name, Topics.INNGÅENDE_JOURNALPOST.name)
+            topics = listOf("privat-dagpenger-journalpost-mottatt-v1")
         )
 
+        // given config
+        val configuration = Configuration().copy(
+            kafka = Configuration.Kafka(brokers = embeddedEnvironment.brokersURL),
+            application = Configuration.Application(
+                httpPort = getAvailablePort(),
+                user = username,
+                password = password
+            )
+        )
+
+        val app = JournalføringFerdigstill(configuration)
         @BeforeAll
         @JvmStatic
         fun setup() {
             embeddedEnvironment.start()
+            app.start()
         }
 
         @AfterAll
         @JvmStatic
         fun teardown() {
             embeddedEnvironment.tearDown()
+            app.stop()
         }
     }
 
     @Test
     fun ` embedded kafka cluster is up and running `() {
-        assertEquals(embeddedEnvironment.serverPark.status, KafkaEnvironment.ServerParkStatus.Started)
+        embeddedEnvironment.serverPark.status shouldBe KafkaEnvironment.ServerParkStatus.Started
     }
 
     @Test
-    fun ` Should ferdigstille journalposter that has fagsakid and henvendelsestype 'søknad' or 'ettersending' `() {
+    fun ` Component test of JournalføringFerdigstill`() {
 
-        val env = Environment(
-            dagpengerOppslagUrl = "localhost",
-            username = username,
-            password = password,
-            bootstrapServersUrl = embeddedEnvironment.brokersURL,
-            schemaRegistryUrl = embeddedEnvironment.schemaRegistry!!.url,
-            httpPort = getAvailablePort()
-        )
+        val behovProducer = behovProducer(configuration)
 
-        val henvendelsesType = mapOf(
-            Random().nextLong().toString() to Søknad(),
-            Random().nextLong().toString() to Ettersending(),
-            Random().nextLong().toString() to Annet(),
-            Random().nextLong().toString() to Søknad(),
-            Random().nextLong().toString() to Søknad(),
-            Random().nextLong().toString() to Annet(),
-            Random().nextLong().toString() to Ettersending(),
-            Random().nextLong().toString() to Ettersending(),
-            Random().nextLong().toString() to Annet(),
-            Random().nextLong().toString() to Annet()
-        )
+        val record =
+            behovProducer.send(ProducerRecord(configuration.kafka.dagpengerJournalpostTopic.name, Packet())).get()
+        LOGGER.info { "Produced -> ${record.topic()}  to offset ${record.offset()}" }
 
-        val oppslagClient = DummyOppslagsClient(henvendelsesType.keys)
-
-        val journalføringFerdigstill = JournalføringFerdigstill(env, oppslagClient)
-
-        // produce behov...
-
-        val behovProducer = behovProducer(env)
-
-        journalføringFerdigstill.start()
-
-        henvendelsesType.forEach { journalpostId, henvendelse ->
-            val innkommendeBehov: Behov = Behov
-                .newBuilder()
-                .setBehovId(UUID.randomUUID().toString())
-                .setFagsakId(UUID.randomUUID().toString())
-                .setMottaker(Mottaker(UUID.randomUUID().toString()))
-                .setHenvendelsesType(
-                    when (henvendelse) {
-                        Søknad() -> Søknad.newBuilder().build()
-                        Ettersending() -> Ettersending.newBuilder().build()
-                        else -> Annet.newBuilder().build()
-                    }
-                )
-                .setJournalpost(
-                    Journalpost
-                        .newBuilder()
-                        .setJournalpostId(journalpostId)
-                        .setDokumentListe(listOf(Dokument.newBuilder().setDokumentId("123").build()))
-                        .build()
-                )
-                .setTrengerManuellBehandling(false)
-                .build()
-            val record = behovProducer.send(ProducerRecord(Topics.INNGÅENDE_JOURNALPOST.name, innkommendeBehov)).get()
-            LOGGER.info { "Produced -> ${record.topic()}  to offset ${record.offset()}" }
-        }
-
-        TimeUnit.SECONDS.sleep(3) // awaiting event processing
-
-        assertEquals(
-            henvendelsesType.values.filter { it == Søknad() || it == Ettersending() }.size,
-            oppslagClient.ferdigstillTeller,
-            "Should have have processed Behov and 'ferdigstilt' journalpost"
-        )
-
-        journalføringFerdigstill.stop()
+        val behovConsumer: KafkaConsumer<String, Packet> = behovConsumer(configuration)
+        val journalføringer = behovConsumer.poll(Duration.ofSeconds(5)).toList()
+        journalføringer.size shouldBeGreaterThan 0
     }
 
-    private fun behovProducer(env: Environment): KafkaProducer<String, Behov> {
-        val producer: KafkaProducer<String, Behov> = KafkaProducer(Properties().apply {
-            put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, env.schemaRegistryUrl)
-            put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, env.bootstrapServersUrl)
+    private fun behovProducer(configuration: Configuration): KafkaProducer<String, Packet> {
+        val topic = configuration.kafka.dagpengerJournalpostTopic
+        val producer: KafkaProducer<String, Packet> = KafkaProducer(Properties().apply {
+            put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, configuration.kafka.brokers)
             put(ProducerConfig.CLIENT_ID_CONFIG, "dummy-behov-producer")
             put(
                 ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
-                Topics.INNGÅENDE_JOURNALPOST.keySerde.serializer().javaClass.name
+                topic.keySerde.serializer().javaClass.name
             )
             put(
                 ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-                Topics.INNGÅENDE_JOURNALPOST.valueSerde.serializer().javaClass.name
+                topic.valueSerde.serializer().javaClass.name
             )
             put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_PLAINTEXT")
             put(SaslConfigs.SASL_MECHANISM, "PLAIN")
             put(
                 SaslConfigs.SASL_JAAS_CONFIG,
-                "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${env.username}\" password=\"${env.password}\";"
+                "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${configuration.application.user}\" password=\"${configuration.application.password}\";"
             )
         })
 
         return producer
     }
 
-    class DummyOppslagsClient(val knownedJournalPosts: Set<String>) : OppslagClient {
+    private fun behovConsumer(configuration: Configuration): KafkaConsumer<String, Packet> {
+        val topic = configuration.kafka.dagpengerJournalpostTopic
+        val consumer: KafkaConsumer<String, Packet> = KafkaConsumer(Properties().apply {
 
-        var ferdigstillTeller = 0
+            put(ConsumerConfig.GROUP_ID_CONFIG, "test-dagpenger-ferdigstill-consumer")
+            put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, configuration.kafka.brokers)
+            put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
+            put(
+                ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
+                topic.keySerde.deserializer().javaClass.name
+            )
+            put(
+                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+                topic.valueSerde.deserializer().javaClass.name
+            )
+            put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_PLAINTEXT")
+            put(SaslConfigs.SASL_MECHANISM, "PLAIN")
+            put(
+                SaslConfigs.SASL_JAAS_CONFIG,
+                "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${configuration.application.user}\" password=\"${configuration.application.password}\";"
+            )
+        })
 
-        override fun ferdigstillJournalføring(journalpostId: String) {
-            assertTrue(knownedJournalPosts.contains(journalpostId), "Journal post not known")
-            ferdigstillTeller++
-        }
+        consumer.subscribe(listOf(topic.name))
+        return consumer
     }
 }

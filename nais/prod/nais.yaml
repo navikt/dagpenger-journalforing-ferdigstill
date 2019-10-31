@@ -1,0 +1,11 @@
+apiVersion: "nais.io/v1alpha1"
+kind: "Application"
+metadata:
+  name: dagpenger-journalforing-ferdigstill
+spec:
+  vault:
+    paths:
+      - kvPath: "serviceuser/data/prod/srvdagpenger-journ"
+        mountPath: "/secrets/serviceuser/srvdp-jrnf-ferdigstill"
+
+

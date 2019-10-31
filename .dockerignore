@@ -3,3 +3,4 @@
 
 # Except shadow jar
 !build/libs/*.jar
+!init-scripts/
