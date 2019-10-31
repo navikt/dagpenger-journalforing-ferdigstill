@@ -1,0 +1,80 @@
+package no.nav.dagpenger.journalføring.ferdigstill
+
+import com.natpryce.konfig.Configuration
+import com.natpryce.konfig.ConfigurationMap
+import com.natpryce.konfig.ConfigurationProperties
+import com.natpryce.konfig.EnvironmentVariables
+import com.natpryce.konfig.Key
+import com.natpryce.konfig.intType
+import com.natpryce.konfig.overriding
+import com.natpryce.konfig.stringType
+import no.nav.dagpenger.events.Packet
+import no.nav.dagpenger.streams.PacketDeserializer
+import no.nav.dagpenger.streams.PacketSerializer
+import no.nav.dagpenger.streams.Topic
+import org.apache.kafka.common.serialization.Serdes
+import java.io.File
+
+private val localProperties = ConfigurationMap(
+    mapOf(
+        "kafka.bootstrap.servers" to "localhost:9092",
+        "oidc.sts.issuerurl" to "localhost:8082",
+        "application.profile" to Profile.LOCAL.toString(),
+        "application.httpPort" to "8080",
+        "oppslag.url" to "http://localhost:8081",
+        "srvdagpenger.journalforing.ferdigstill.username" to "user",
+        "srvdagpenger.journalforing.ferdigstill.password" to "password"
+    )
+)
+private val devProperties = ConfigurationMap(
+    mapOf(
+        "kafka.bootstrap.servers" to "b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443",
+        "application.profile" to Profile.DEV.toString(),
+        "application.httpPort" to "8080"
+    )
+)
+private val prodProperties = ConfigurationMap(
+    mapOf(
+        "kafka.bootstrap.servers" to "a01apvl00145.adeo.no:8443,a01apvl00146.adeo.no:8443,a01apvl00147.adeo.no:8443,a01apvl00148.adeo.no:8443,a01apvl00149.adeo.no:8443,a01apvl00150.adeo.no:8443",
+        "application.profile" to Profile.PROD.toString(),
+        "application.httpPort" to "8080"
+    )
+)
+
+private val defaultConfiguration =
+    ConfigurationProperties.fromOptionalFile(File("/var/run/secrets/nais.io/vault/config.properties")) overriding ConfigurationProperties.systemProperties() overriding EnvironmentVariables
+
+fun config(): Configuration {
+    return when (System.getenv("NAIS_CLUSTER_NAME") ?: System.getProperty("NAIS_CLUSTER_NAME")) {
+        "dev-fss" -> defaultConfiguration overriding devProperties
+        "prod-fss" -> defaultConfiguration overriding prodProperties
+        else -> {
+            defaultConfiguration overriding localProperties
+        }
+    }
+}
+
+data class Configuration(
+    val kafka: Kafka = Kafka(),
+    val application: Application = Application()
+) {
+    data class Kafka(
+        val dagpengerJournalpostTopic: Topic<String, Packet> = Topic(
+            "privat-dagpenger-journalpost-mottatt-v1",
+            keySerde = Serdes.String(),
+            valueSerde = Serdes.serdeFrom(PacketSerializer(), PacketDeserializer())
+        ),
+        val brokers: String = config()[Key("kafka.bootstrap.servers", stringType)]
+    )
+
+    data class Application(
+        val profile: Profile = config()[Key("application.profile", stringType)].let { Profile.valueOf(it) },
+        val user: String = config()[Key("srvdagpenger.journalforing.ferdigstill.username", stringType)],
+        val password: String = config()[Key("srvdagpenger.journalforing.ferdigstill.password", stringType)],
+        val httpPort: Int = config()[Key("application.httpPort", intType)]
+    )
+}
+
+enum class Profile {
+    LOCAL, DEV, PROD
+}

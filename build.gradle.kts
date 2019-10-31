@@ -19,14 +19,11 @@ apply {
 }
 
 repositories {
-    jcenter()
     mavenCentral()
-    maven("https://oss.sonatype.org/content/repositories/snapshots/")
-    maven("http://packages.confluent.io/maven")
-    maven("https://dl.bintray.com/kotlin/ktor")
-    maven("https://dl.bintray.com/kotlin/kotlinx")
-    maven("https://dl.bintray.com/kittinunf/maven")
+    jcenter()
+    maven("http://packages.confluent.io/maven/")
     maven("https://jitpack.io")
+    maven("https://oss.sonatype.org/content/repositories/snapshots/")
 }
 
 application {
@@ -42,12 +39,11 @@ java {
 dependencies {
     implementation(kotlin("stdlib"))
     implementation(Dagpenger.Events)
-    implementation(Dagpenger.Streams)
+    implementation("com.github.navikt:dagpenger-streams:2019.10.18-12.06.fbbb66cd150b")
     implementation(Kotlin.Logging.kotlinLogging)
-    implementation(Fuel.fuel)
-    implementation(Fuel.library("gson"))
     implementation(Prometheus.common)
     implementation(Prometheus.hotspot)
+    implementation(Konfig.konfig)
     implementation(Ktor.serverNetty)
     implementation(Log4j2.api)
     implementation(Log4j2.core)

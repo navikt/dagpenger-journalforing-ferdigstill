@@ -1,35 +1,66 @@
 pipeline {
   agent any
   environment {
-    APPLICATION_NAME = 'dagpenger-journalforing-ferdigstill'
-    ZONE = 'fss'
-    NAMESPACE = 'default'
-    VERSION = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-    DOCKER_REPO = 'repo.adeo.no:5443/'
-    DOCKER_IMAGE_VERSION = '${DOCKER_REPO}${APPLICATION_NAME}:${VERSION}'
+    DEPLOYMENT = readYaml(file: './nais/base/kustomization.yaml')
+    APPLICATION_NAME = "${DEPLOYMENT.commonLabels.app}"
+    ZONE = "${DEPLOYMENT.commonAnnotations.zone}"
+    VERSION = sh(label: 'Get git sha1 as version', script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+    DOCKER_BUILDKIT = 1
   }
 
   stages {
-    stage('Install dependencies') {
-      steps {
-        sh "./gradlew assemble"
-      }
-    }
-
     stage('Build') {
+      // Create tested artifacts that can be used for later stages
+      environment {
+        DOCKER_REPO = 'repo.adeo.no:5443'
+        DOCKER_IMAGE_VERSION = '${DOCKER_REPO}/${APPLICATION_NAME}:${VERSION}'
+      }
+
       steps {
-        sh "./gradlew build"
+        sh label: 'Install dependencies', script: """
+          ./gradlew assemble
+        """
+
+        // Should run a set of tests like: unit, functional, component,
+        // coverage, contract, lint, mutation.
+        sh label: 'Test code', script: """
+          ./gradlew test
+        """
+
+        sh label: 'Build artifact', script: """
+          ./gradlew build
+        """
+
+        withDockerRegistry(
+                credentialsId: 'repo.adeo.no',
+                url: "https://${DOCKER_REPO}"
+        ) {
+          sh label: 'Build and push Docker image', script: """
+            docker build . --pull -t ${DOCKER_IMAGE_VERSION}
+            docker push ${DOCKER_IMAGE_VERSION} || true
+          """
+        }
+
+        sh label: 'Set image version on base overlay', script: """
+          sed -i 's/latest/${VERSION}/' ./nais/base/nais.yaml
+        """
+        sh label: 'Prepare dev service contract', script: """
+           kustomize build ./nais/dev -o ./nais/nais-dev-deploy.yaml &&  cat ./nais/nais-dev-deploy.yaml
+        """
+        sh label: 'Prepare prod service contract', script: """
+           kustomize build ./nais/prod -o ./nais/nais-prod-deploy.yaml &&  cat ./nais/nais-prod-deploy.yaml
+        """
       }
 
       post {
         always {
           publishHTML target: [
-            allowMissing: true,
-            alwaysLinkToLastBuild: false,
-            keepAll: true,
-            reportDir: 'build/reports/tests/test',
-            reportFiles: 'index.html',
-            reportName: 'Test coverage'
+                  allowMissing: true,
+                  alwaysLinkToLastBuild: false,
+                  keepAll: true,
+                  reportDir: 'build/reports/tests/test',
+                  reportFiles: 'index.html',
+                  reportName: 'Test coverage'
           ]
 
           junit 'build/test-results/test/*.xml'
@@ -37,45 +68,115 @@ pipeline {
       }
     }
 
-    stage('Publish') {
-      steps {
-        timeout(10) {
-                input 'Keep going?'
+    stage('Acceptance testing') {
+      stages {
+        stage('Deploy to pre-production') {
+          when { branch 'master' }
+          steps {
+
+            sh label: 'Deploy with kubectl', script: """
+              kubectl config use-context dev-${env.ZONE}
+              kubectl apply -f ./nais/nais-dev-deploy.yaml --wait
+              kubectl rollout status -w deployment/${APPLICATION_NAME}
+            """
+
+            archiveArtifacts artifacts: 'nais/nais-dev-deploy.yaml', fingerprint: true
+          }
         }
 
-        withCredentials([usernamePassword(
-          credentialsId: 'repo.adeo.no',
-          usernameVariable: 'REPO_USERNAME',
-          passwordVariable: 'REPO_PASSWORD'
-        )]) {
-            sh "docker login -u ${REPO_USERNAME} -p ${REPO_PASSWORD} repo.adeo.no:5443"
-        }
-        script {
-          sh "docker build . --pull -t ${DOCKER_IMAGE_VERSION}"
-        }
-        script {
-          sh "docker push ${DOCKER_IMAGE_VERSION}"
+        stage('Run tests') {
+          // Since these tests usually are quite expensive, running them as
+          // separate stages allows distributing them on seperate agents
+          failFast true
+
+          parallel {
+            stage('User Acceptance Tests') {
+              agent any
+
+              when {
+                beforeAgent true
+                expression {
+                  sh(
+                          label: 'Does the repository define any UAT tests?',
+                          script: 'test -f ./scripts/test/uat',
+                          returnStatus: true
+                  ) == 0
+                }
+              }
+
+              steps {
+                sh label: 'User Acceptance Tests', script: """
+                  ./scripts/test/uat || true
+                """
+              }
+            }
+
+            stage('Integration Tests') {
+              agent any
+
+              when {
+                beforeAgent true
+                expression {
+                  sh(
+                          label: 'Does the repository define any integration tests?',
+                          script: 'test -f ./scripts/test/integration',
+                          returnStatus: true
+                  ) == 0
+                }
+              }
+
+              steps {
+                sh label: 'Integration Tests', script: """
+                  ./scripts/test/integration || true
+                """
+              }
+            }
+
+            stage('Benchmark Tests') {
+              agent any
+
+              when {
+                beforeAgent true
+                expression {
+                  sh(
+                          label: 'Does the repository define any benchmark tests?',
+                          script: 'test -f ./scripts/test/benchmark',
+                          returnStatus: true
+                  ) == 0
+                }
+              }
+
+              steps {
+                sh label: 'Run benchmark', script: """
+                  ./scripts/test/benchmark || true
+                """
+              }
+            }
+          }
         }
       }
     }
 
-    stage("Publish service contract") {
+    stage('Deploy') {
+      when { branch 'master' }
+
       steps {
-        withCredentials([usernamePassword(
-          credentialsId: 'repo.adeo.no',
-          usernameVariable: 'REPO_USERNAME',
-          passwordVariable: 'REPO_PASSWORD'
-        )]) {
-          sh "curl -vvv --user ${REPO_USERNAME}:${REPO_PASSWORD} --upload-file nais.yaml https://repo.adeo.no/repository/raw/nais/${APPLICATION_NAME}/${VERSION}/nais.yaml"
-        }
+        sh label: 'Deploy with kubectl', script: """
+          kubectl config use-context prod-${env.ZONE}
+          kubectl apply  -f ./nais/nais-prod-deploy.yaml --wait
+          kubectl rollout status -w deployment/${APPLICATION_NAME}
+        """
+
+        archiveArtifacts artifacts: 'nais/nais-prod-deploy.yaml', fingerprint: true
+
       }
     }
 
-    stage('Deploy to non-production') {
+    stage('Release') {
+      when { branch 'master' }
+
       steps {
-        script {
-          response = naisDeploy.createNaisAutodeployment(env.APPLICATION_NAME, env.VERSION,"q1",env.ZONE ,env.NAMESPACE, "")
-        }
+        sh "echo true"
       }
     }
   }
