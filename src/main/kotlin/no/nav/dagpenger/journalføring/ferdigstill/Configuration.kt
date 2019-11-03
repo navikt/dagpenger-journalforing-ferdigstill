@@ -9,6 +9,7 @@ import com.natpryce.konfig.intType
 import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
 import no.nav.dagpenger.events.Packet
+import no.nav.dagpenger.streams.KafkaCredential
 import no.nav.dagpenger.streams.PacketDeserializer
 import no.nav.dagpenger.streams.PacketSerializer
 import no.nav.dagpenger.streams.Topic
@@ -64,13 +65,15 @@ data class Configuration(
             keySerde = Serdes.String(),
             valueSerde = Serdes.serdeFrom(PacketSerializer(), PacketDeserializer())
         ),
-        val brokers: String = config()[Key("kafka.bootstrap.servers", stringType)]
+        val brokers: String = config()[Key("kafka.bootstrap.servers", stringType)],
+        val credential: KafkaCredential = KafkaCredential(
+            username = config()[Key("srvdagpenger.journalforing.ferdigstill.username", stringType)],
+            password = config()[Key("srvdagpenger.journalforing.ferdigstill.password", stringType)]
+        )
     )
 
     data class Application(
         val profile: Profile = config()[Key("application.profile", stringType)].let { Profile.valueOf(it) },
-        val user: String = config()[Key("srvdagpenger.journalforing.ferdigstill.username", stringType)],
-        val password: String = config()[Key("srvdagpenger.journalforing.ferdigstill.password", stringType)],
         val httpPort: Int = config()[Key("application.httpPort", intType)]
     )
 }

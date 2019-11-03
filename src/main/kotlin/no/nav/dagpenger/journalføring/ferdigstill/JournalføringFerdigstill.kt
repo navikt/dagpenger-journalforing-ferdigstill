@@ -3,7 +3,9 @@ package no.nav.dagpenger.journalføring.ferdigstill
 import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.streams.River
+import no.nav.dagpenger.streams.streamConfig
 import org.apache.kafka.streams.kstream.Predicate
+import java.util.Properties
 
 private val logger = KotlinLogging.logger {}
 
@@ -24,6 +26,14 @@ class JournalføringFerdigstill(val configuration: Configuration) : River(config
 
         packet.putValue("dagpenger-journalføring-ferdigstill", "yes")
         return packet
+    }
+
+    override fun getConfig(): Properties {
+        return streamConfig(
+            SERVICE_APP_ID,
+            configuration.kafka.brokers,
+            configuration.kafka.credential
+        )
     }
 }
 

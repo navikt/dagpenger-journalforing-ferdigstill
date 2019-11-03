@@ -7,6 +7,7 @@ import no.nav.common.JAASCredential
 import no.nav.common.KafkaEnvironment
 import no.nav.common.embeddedutils.getAvailablePort
 import no.nav.dagpenger.events.Packet
+import no.nav.dagpenger.streams.KafkaCredential
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -38,11 +39,11 @@ class JournalforingFerdigstillComponentTest {
 
         // given config
         val configuration = Configuration().copy(
-            kafka = Configuration.Kafka(brokers = embeddedEnvironment.brokersURL),
+            kafka = Configuration.Kafka(
+                brokers = embeddedEnvironment.brokersURL,
+                credential = KafkaCredential(username, password)),
             application = Configuration.Application(
-                httpPort = getAvailablePort(),
-                user = username,
-                password = password
+                httpPort = getAvailablePort()
             )
         )
 
@@ -98,7 +99,7 @@ class JournalforingFerdigstillComponentTest {
             put(SaslConfigs.SASL_MECHANISM, "PLAIN")
             put(
                 SaslConfigs.SASL_JAAS_CONFIG,
-                "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${configuration.application.user}\" password=\"${configuration.application.password}\";"
+                "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${configuration.kafka.credential.username}\" password=\"${configuration.kafka.credential.password}\";"
             )
         })
 
@@ -124,7 +125,7 @@ class JournalforingFerdigstillComponentTest {
             put(SaslConfigs.SASL_MECHANISM, "PLAIN")
             put(
                 SaslConfigs.SASL_JAAS_CONFIG,
-                "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${configuration.application.user}\" password=\"${configuration.application.password}\";"
+                "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${configuration.kafka.credential.username}\" password=\"${configuration.kafka.credential.password}\";"
             )
         })
 
