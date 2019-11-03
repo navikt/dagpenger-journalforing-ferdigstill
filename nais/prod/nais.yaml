@@ -6,6 +6,6 @@ spec:
   vault:
     paths:
       - kvPath: "serviceuser/data/prod/srvdagpenger-journ"
-        mountPath: "/secrets/serviceuser/srvdp-jrnf-ferdigstill"
+        mountPath: "/secrets/serviceuser/srvdp-jrnf-ferdig"
 
 
