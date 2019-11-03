@@ -28,7 +28,7 @@ repositories {
 
 application {
     applicationName = "dagpenger-journalforing-ferdigstill"
-    mainClassName = "no.nav.dagpenger.journalføring.ferdigstill.JournalføringFerdigstill"
+    mainClassName = "no.nav.dagpenger.journalføring.ferdigstill.JournalføringFerdigstillKt"
 }
 
 java {

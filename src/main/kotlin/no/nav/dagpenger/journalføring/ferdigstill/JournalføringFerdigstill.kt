@@ -27,4 +27,4 @@ class JournalføringFerdigstill(val configuration: Configuration) : River(config
     }
 }
 
-fun main(args: Array<String>) = JournalføringFerdigstill(Configuration()).start()
+fun main() = JournalføringFerdigstill(Configuration()).start()
