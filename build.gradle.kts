@@ -40,6 +40,7 @@ dependencies {
     implementation(kotlin("stdlib"))
     implementation(Dagpenger.Events)
     implementation("com.github.navikt:dagpenger-streams:2019.10.18-12.06.fbbb66cd150b")
+    implementation(Fuel.fuel)
     implementation(Kotlin.Logging.kotlinLogging)
     implementation(Prometheus.common)
     implementation(Prometheus.hotspot)
@@ -59,7 +60,7 @@ dependencies {
     testImplementation(kotlin("test"))
     testImplementation(kotlin("test-junit"))
     testImplementation(KafkaEmbedded.env)
-    testImplementation(Kafka.streamTestUtils)
+    testImplementation(Wiremock.standalone)
 
     testRuntimeOnly(Junit5.engine)
 }

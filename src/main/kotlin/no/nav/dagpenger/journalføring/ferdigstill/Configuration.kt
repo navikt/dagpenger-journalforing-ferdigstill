@@ -22,9 +22,11 @@ private val localProperties = ConfigurationMap(
         "oidc.sts.issuerurl" to "localhost:8082",
         "application.profile" to Profile.LOCAL.toString(),
         "application.httpPort" to "8080",
-        "oppslag.url" to "http://localhost:8081",
         "srvdagpenger.journalforing.ferdigstill.username" to "user",
-        "srvdagpenger.journalforing.ferdigstill.password" to "password"
+        "srvdagpenger.journalforing.ferdigstill.password" to "password",
+        "journalPostApi.url" to "http://localhost"
+
+
     )
 )
 private val devProperties = ConfigurationMap(
@@ -57,7 +59,8 @@ fun config(): Configuration {
 
 data class Configuration(
     val kafka: Kafka = Kafka(),
-    val application: Application = Application()
+    val application: Application = Application(),
+    val journalPostApiUrl: String = config()[Key("journalPostApi.url", stringType)]
 ) {
     data class Kafka(
         val dagpengerJournalpostTopic: Topic<String, Packet> = Topic(

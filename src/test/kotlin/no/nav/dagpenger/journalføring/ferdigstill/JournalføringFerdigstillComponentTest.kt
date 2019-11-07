@@ -1,8 +1,14 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
-import io.kotlintest.matchers.numerics.shouldBeGreaterThan
+import com.github.kittinunf.fuel.httpGet
+import com.github.tomakehurst.wiremock.WireMockServer
+import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.client.WireMock.post
+import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
+import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
+import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 import io.kotlintest.shouldBe
-import mu.KotlinLogging
 import no.nav.common.JAASCredential
 import no.nav.common.KafkaEnvironment
 import no.nav.common.embeddedutils.getAvailablePort
@@ -10,7 +16,6 @@ import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.streams.KafkaCredential
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
-import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -18,12 +23,11 @@ import org.apache.kafka.common.config.SaslConfigs
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import java.time.Duration
 import java.util.Properties
+
 
 class JournalforingFerdigstillComponentTest {
 
-    private val LOGGER = KotlinLogging.logger {}
 
     companion object {
         private const val username = "srvkafkaclient"
@@ -37,6 +41,12 @@ class JournalforingFerdigstillComponentTest {
             topics = listOf("privat-dagpenger-journalpost-mottatt-v1")
         )
 
+        val journalPostApiMock by lazy {
+            WireMockServer(wireMockConfig().dynamicPort()).also {
+                it.start()
+            }
+        }
+
         // given config
         val configuration = Configuration().copy(
             kafka = Configuration.Kafka(
@@ -44,10 +54,11 @@ class JournalforingFerdigstillComponentTest {
                 credential = KafkaCredential(username, password)),
             application = Configuration.Application(
                 httpPort = getAvailablePort()
-            )
+            ),
+            journalPostApiUrl = journalPostApiMock.baseUrl()
         )
 
-        val app = JournalføringFerdigstill(configuration)
+        private val app = Application(configuration)
         @BeforeAll
         @JvmStatic
         fun setup() {
@@ -59,6 +70,7 @@ class JournalforingFerdigstillComponentTest {
         @JvmStatic
         fun teardown() {
             embeddedEnvironment.tearDown()
+            journalPostApiMock.stop()
             app.stop()
         }
     }
@@ -69,17 +81,33 @@ class JournalforingFerdigstillComponentTest {
     }
 
     @Test
+    fun `Mock journal post API  up and running `() {
+        "${journalPostApiMock.baseUrl()}/__admin".httpGet().response().second.statusCode shouldBe 200
+    }
+
+
+    @Test
     fun ` Component test of JournalføringFerdigstill`() {
 
-        val behovProducer = behovProducer(configuration)
+        journalPostApiMock.addStubMapping(
+            post(urlEqualTo("/rest/journalpostapi/v1/journalpost/1/ferdigstill"))
+                .willReturn(aResponse()
+                    .withStatus(200))
+                .build()
+        )
 
-        val record =
-            behovProducer.send(ProducerRecord(configuration.kafka.dagpengerJournalpostTopic.name, Packet())).get()
-        LOGGER.info { "Produced -> ${record.topic()}  to offset ${record.offset()}" }
 
-        val behovConsumer: KafkaConsumer<String, Packet> = behovConsumer(configuration)
-        val journalføringer = behovConsumer.poll(Duration.ofSeconds(5)).toList()
-        journalføringer.size shouldBeGreaterThan 0
+        behovProducer(configuration).run {
+            this.send(ProducerRecord(configuration.kafka.dagpengerJournalpostTopic.name, Packet().apply {
+                this.putValue(PacketKeys.ARENA_SAK_ID, "1")
+                this.putValue(PacketKeys.JOURNALPOST_ID, "1")
+            })).get()
+        }
+
+        retry(5) {
+            journalPostApiMock.verify(postRequestedFor(urlMatching("/rest/journalpostapi/v1/journalpost/1/ferdigstill")))
+        }
+
     }
 
     private fun behovProducer(configuration: Configuration): KafkaProducer<String, Packet> {
@@ -106,30 +134,17 @@ class JournalforingFerdigstillComponentTest {
         return producer
     }
 
-    private fun behovConsumer(configuration: Configuration): KafkaConsumer<String, Packet> {
-        val topic = configuration.kafka.dagpengerJournalpostTopic
-        val consumer: KafkaConsumer<String, Packet> = KafkaConsumer(Properties().apply {
+}
 
-            put(ConsumerConfig.GROUP_ID_CONFIG, "test-dagpenger-ferdigstill-consumer")
-            put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, configuration.kafka.brokers)
-            put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
-            put(
-                ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
-                topic.keySerde.deserializer().javaClass.name
-            )
-            put(
-                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
-                topic.valueSerde.deserializer().javaClass.name
-            )
-            put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_PLAINTEXT")
-            put(SaslConfigs.SASL_MECHANISM, "PLAIN")
-            put(
-                SaslConfigs.SASL_JAAS_CONFIG,
-                "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${configuration.kafka.credential.username}\" password=\"${configuration.kafka.credential.password}\";"
-            )
-        })
-
-        consumer.subscribe(listOf(topic.name))
-        return consumer
+fun <T> retry(numOfRetries: Int, sleep: Int = 1000, block: () -> T): T {
+    var throwable: Throwable? = null
+    (1..numOfRetries).forEach { attempt ->
+        try {
+            return block()
+        } catch (e: Throwable) {
+            throwable = e
+        }
+        Thread.sleep(sleep.toLong())
     }
+    throw throwable!!
 }
