@@ -25,9 +25,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import java.util.Properties
 
-
 class JournalforingFerdigstillComponentTest {
-
 
     companion object {
         private const val username = "srvkafkaclient"
@@ -85,7 +83,6 @@ class JournalforingFerdigstillComponentTest {
         "${journalPostApiMock.baseUrl()}/__admin".httpGet().response().second.statusCode shouldBe 200
     }
 
-
     @Test
     fun ` Component test of JournalføringFerdigstill`() {
 
@@ -95,7 +92,6 @@ class JournalforingFerdigstillComponentTest {
                     .withStatus(200))
                 .build()
         )
-
 
         behovProducer(configuration).run {
             this.send(ProducerRecord(configuration.kafka.dagpengerJournalpostTopic.name, Packet().apply {
@@ -107,7 +103,6 @@ class JournalforingFerdigstillComponentTest {
         retry(5) {
             journalPostApiMock.verify(postRequestedFor(urlMatching("/rest/journalpostapi/v1/journalpost/1/ferdigstill")))
         }
-
     }
 
     private fun behovProducer(configuration: Configuration): KafkaProducer<String, Packet> {
@@ -133,7 +128,6 @@ class JournalforingFerdigstillComponentTest {
 
         return producer
     }
-
 }
 
 fun <T> retry(numOfRetries: Int, sleep: Int = 1000, block: () -> T): T {

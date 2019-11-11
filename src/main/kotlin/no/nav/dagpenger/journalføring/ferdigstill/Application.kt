@@ -9,7 +9,6 @@ import java.util.Properties
 
 private val logger = KotlinLogging.logger {}
 
-
 internal class Application(val configuration: Configuration) : Pond(configuration.kafka.dagpengerJournalpostTopic) {
 
     override val SERVICE_APP_ID = "dagpenger-journalføring-ferdigstill"
@@ -21,7 +20,6 @@ internal class Application(val configuration: Configuration) : Pond(configuratio
 
     override fun onPacket(packet: Packet) {
         logger.info { "Processing: $packet" }.also { journalFøringFerdigstill.handlePacket(packet) }
-
     }
 
     override fun getConfig(): Properties {

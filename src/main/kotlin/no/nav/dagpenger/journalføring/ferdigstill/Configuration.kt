@@ -26,7 +26,6 @@ private val localProperties = ConfigurationMap(
         "srvdagpenger.journalforing.ferdigstill.password" to "password",
         "journalPostApi.url" to "http://localhost"
 
-
     )
 )
 private val devProperties = ConfigurationMap(

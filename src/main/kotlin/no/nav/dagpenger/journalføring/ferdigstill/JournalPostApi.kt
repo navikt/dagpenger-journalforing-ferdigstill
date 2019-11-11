@@ -10,7 +10,6 @@ internal interface JournalPostApi {
     fun ferdigStill(journalPostId: String)
 }
 
-
 internal class JournalPostRestApi(private val url: String) : JournalPostApi {
 
     override fun ferdigStill(journalPostId: String) {
@@ -24,5 +23,4 @@ internal class JournalPostRestApi(private val url: String) : JournalPostApi {
                 )
             }
     }
-
 }

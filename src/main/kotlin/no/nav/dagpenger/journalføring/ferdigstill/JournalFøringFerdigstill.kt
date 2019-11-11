@@ -3,7 +3,6 @@ package no.nav.dagpenger.journalføring.ferdigstill
 import no.nav.dagpenger.events.Packet
 import org.apache.kafka.streams.kstream.Predicate
 
-
 internal object PacketKeys {
     const val JOURNALPOST_ID: String = "journalpostId"
     const val AKTØR_ID: String = "aktørId"
