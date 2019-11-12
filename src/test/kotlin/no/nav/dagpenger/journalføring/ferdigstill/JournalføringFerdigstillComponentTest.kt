@@ -5,6 +5,8 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
+import com.github.tomakehurst.wiremock.client.WireMock.put
+import com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
@@ -23,6 +25,7 @@ import org.apache.kafka.common.config.SaslConfigs
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
 import java.util.Properties
 
 class JournalforingFerdigstillComponentTest {
@@ -93,14 +96,23 @@ class JournalforingFerdigstillComponentTest {
                 .build()
         )
 
+        journalPostApiMock.addStubMapping(
+            put(urlEqualTo("/rest/journalpostapi/v1/journalpost/1"))
+                .willReturn(aResponse()
+                    .withStatus(200))
+                .build()
+        )
+
         behovProducer(configuration).run {
             this.send(ProducerRecord(configuration.kafka.dagpengerJournalpostTopic.name, Packet().apply {
                 this.putValue(PacketKeys.ARENA_SAK_ID, "1")
                 this.putValue(PacketKeys.JOURNALPOST_ID, "1")
+                this.putValue(PacketKeys.FNR, "fnr")
             })).get()
         }
 
-        retry(5) {
+        retry {
+            journalPostApiMock.verify(putRequestedFor(urlMatching("/rest/journalpostapi/v1/journalpost/1")))
             journalPostApiMock.verify(postRequestedFor(urlMatching("/rest/journalpostapi/v1/journalpost/1/ferdigstill")))
         }
     }
@@ -130,7 +142,7 @@ class JournalforingFerdigstillComponentTest {
     }
 }
 
-fun <T> retry(numOfRetries: Int, sleep: Int = 1000, block: () -> T): T {
+fun <T> retry(numOfRetries: Int = 5, sleep: Int = 1000, block: () -> T): T {
     var throwable: Throwable? = null
     (1..numOfRetries).forEach { attempt ->
         try {
@@ -140,5 +152,5 @@ fun <T> retry(numOfRetries: Int, sleep: Int = 1000, block: () -> T): T {
         }
         Thread.sleep(sleep.toLong())
     }
-    throw throwable!!
+    fail("hubba", throwable)
 }
