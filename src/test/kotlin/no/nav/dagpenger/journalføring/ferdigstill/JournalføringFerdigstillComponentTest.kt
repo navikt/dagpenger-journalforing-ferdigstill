@@ -163,8 +163,6 @@ class JournalforingFerdigstillComponentTest {
     }
 }
 
-private fun getResource(path: String): String =
-    JournalforingFerdigstillComponentTest::class.java.getResource(path).readText()
 
 private fun <T> retry(numOfRetries: Int = 5, sleep: Int = 1000, block: () -> T): T {
     var throwable: Throwable? = null
@@ -176,5 +174,5 @@ private fun <T> retry(numOfRetries: Int = 5, sleep: Int = 1000, block: () -> T):
         }
         Thread.sleep(sleep.toLong())
     }
-    fail("hubba", throwable)
+    fail("Failed after retry", throwable)
 }
