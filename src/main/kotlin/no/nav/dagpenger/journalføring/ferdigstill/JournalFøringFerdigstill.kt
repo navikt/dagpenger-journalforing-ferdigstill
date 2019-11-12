@@ -6,7 +6,7 @@ import org.apache.kafka.streams.kstream.Predicate
 
 internal object PacketKeys {
     const val JOURNALPOST_ID: String = "journalpostId"
-    const val FNR: String = "aktørId"
+    const val FNR: String = "naturligIdent"
     const val ARENA_SAK_RESULTAT: String = "arenaSakResultat"
     const val ARENA_SAK_ID: String = "arenaSakId"
 }

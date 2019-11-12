@@ -10,6 +10,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
+import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern
 import io.kotlintest.shouldBe
 import no.nav.common.JAASCredential
 import no.nav.common.KafkaEnvironment
@@ -103,6 +104,25 @@ class JournalforingFerdigstillComponentTest {
                 .build()
         )
 
+        val expectedJournalPostJson = """
+        {
+          "bruker" : {
+            "id" : "fnr",
+            "idType" : "FNR"
+          },
+          "tema" : "DAG",
+          "behandlingstema" : "ab0001",
+          "journalfoerendeEnhet" : "9999",
+          "sak" : {
+            "sakstype" : "FAGSAK",
+            "fagsaksystem" : "AO01",
+            "fagsakId" : "1"
+           }
+        } 
+        """.trimIndent()
+
+        val expectedFerdigstillJson = """{ "journalfoerendeEnhet" : "9999"}"""
+
         behovProducer(configuration).run {
             this.send(ProducerRecord(configuration.kafka.dagpengerJournalpostTopic.name, Packet().apply {
                 this.putValue(PacketKeys.ARENA_SAK_ID, "1")
@@ -112,8 +132,9 @@ class JournalforingFerdigstillComponentTest {
         }
 
         retry {
-            journalPostApiMock.verify(putRequestedFor(urlMatching("/rest/journalpostapi/v1/journalpost/1")))
-            journalPostApiMock.verify(postRequestedFor(urlMatching("/rest/journalpostapi/v1/journalpost/1/ferdigstill")))
+            journalPostApiMock.verify(putRequestedFor(urlMatching("/rest/journalpostapi/v1/journalpost/1")).withRequestBody(EqualToJsonPattern(expectedJournalPostJson, true, false)))
+
+            journalPostApiMock.verify(postRequestedFor(urlMatching("/rest/journalpostapi/v1/journalpost/1/ferdigstill")).withRequestBody(EqualToJsonPattern(expectedFerdigstillJson, true, false)))
         }
     }
 
@@ -142,9 +163,12 @@ class JournalforingFerdigstillComponentTest {
     }
 }
 
-fun <T> retry(numOfRetries: Int = 5, sleep: Int = 1000, block: () -> T): T {
+private fun getResource(path: String): String =
+    JournalforingFerdigstillComponentTest::class.java.getResource(path).readText()
+
+private fun <T> retry(numOfRetries: Int = 5, sleep: Int = 1000, block: () -> T): T {
     var throwable: Throwable? = null
-    (1..numOfRetries).forEach { attempt ->
+    (1..numOfRetries).forEach { _ ->
         try {
             return block()
         } catch (e: Throwable) {

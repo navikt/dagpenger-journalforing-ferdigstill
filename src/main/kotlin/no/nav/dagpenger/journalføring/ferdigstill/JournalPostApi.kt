@@ -20,11 +20,11 @@ internal class JournalPostRestApi(private val url: String) : JournalPostApi {
             .jsonBody("""{
   "bruker": {
     "id": "$fnr",
-    "idType": "FNR",
-    "tema": "DAG",
-    "behandlingstema": "ab0001",
-    "journalfoerendeEnhet": "9999"
+    "idType": "FNR"
   },
+  "tema": "DAG",
+  "behandlingstema": "ab0001",
+  "journalfoerendeEnhet": "9999",
   "sak": {
     "sakstype": "FAGSAK",
     "fagsaksystem": "AO01",

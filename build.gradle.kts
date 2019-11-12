@@ -1,3 +1,4 @@
+import Mockk.mockk
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
@@ -59,6 +60,7 @@ dependencies {
     testImplementation(Junit5.kotlinRunner)
     testImplementation(kotlin("test"))
     testImplementation(kotlin("test-junit"))
+    testImplementation(mockk)
     testImplementation(KafkaEmbedded.env)
     testImplementation(Wiremock.standalone)
 
