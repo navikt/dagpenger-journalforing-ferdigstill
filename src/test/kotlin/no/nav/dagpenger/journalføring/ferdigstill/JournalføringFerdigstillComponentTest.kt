@@ -163,7 +163,6 @@ class JournalforingFerdigstillComponentTest {
     }
 }
 
-
 private fun <T> retry(numOfRetries: Int = 5, sleep: Int = 1000, block: () -> T): T {
     var throwable: Throwable? = null
     (1..numOfRetries).forEach { _ ->
