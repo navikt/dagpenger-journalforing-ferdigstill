@@ -9,6 +9,10 @@ import java.util.Properties
 
 private val logger = KotlinLogging.logger {}
 
+internal object PacketKeys {
+    const val ARENA_SAK_OPPRETTET: String = "arenaSakOpprettet"
+}
+
 class JournalføringFerdigstill(val configuration: Configuration) : River(configuration.kafka.dagpengerJournalpostTopic) {
 
     override val SERVICE_APP_ID = "dagpenger-journalføring-ferdigstill"
@@ -16,7 +20,8 @@ class JournalføringFerdigstill(val configuration: Configuration) : River(config
 
     override fun filterPredicates(): List<Predicate<String, Packet>> {
         return listOf(
-            Predicate { _, packet -> !packet.hasField("dagpenger-journalføring-ferdigstill") }
+            Predicate { _, packet -> !packet.hasField("dagpenger-journalføring-ferdigstill") },
+            Predicate { _, packet -> packet.hasField(PacketKeys.ARENA_SAK_OPPRETTET) }
         )
     }
 

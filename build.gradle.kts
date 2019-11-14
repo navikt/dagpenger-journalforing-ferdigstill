@@ -59,6 +59,7 @@ dependencies {
     testImplementation(kotlin("test"))
     testImplementation(kotlin("test-junit"))
     testImplementation(KafkaEmbedded.env)
+    testImplementation(Kafka.streamTestUtils)
 
     testRuntimeOnly(Junit5.engine)
 }
