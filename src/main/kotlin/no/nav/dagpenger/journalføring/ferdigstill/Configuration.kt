@@ -14,7 +14,6 @@ import no.nav.dagpenger.streams.PacketDeserializer
 import no.nav.dagpenger.streams.PacketSerializer
 import no.nav.dagpenger.streams.Topic
 import org.apache.kafka.common.serialization.Serdes
-import java.io.File
 
 private val localProperties = ConfigurationMap(
     mapOf(
