@@ -136,7 +136,7 @@ class JournalforingFerdigstillComponentTest {
           "sak" : {
             "sakstype" : "FAGSAK",
             "fagsaksystem" : "AO01",
-            "fagsakId" : "1"
+            "fagsakId" : "arenaId"
            }
         } 
         """.trimIndent()
@@ -145,19 +145,20 @@ class JournalforingFerdigstillComponentTest {
 
         behovProducer(configuration).run {
             this.send(ProducerRecord(configuration.kafka.dagpengerJournalpostTopic.name, Packet().apply {
-                this.putValue(PacketKeys.ARENA_SAK_ID, "1")
-                this.putValue(PacketKeys.JOURNALPOST_ID, "1")
+                this.putValue(PacketKeys.ARENA_SAK_ID, "arenaId")
+                this.putValue(PacketKeys.JOURNALPOST_ID, "journalId")
+                this.putValue(PacketKeys.ARENA_SAK_OPPRETTET, true)
                 this.putValue(PacketKeys.FNR, "fnr")
             })).get()
         }
 
         retry {
             journalPostApiMock.verify(
-                putRequestedFor(urlMatching("/rest/journalpostapi/v1/journalpost/1"))
+                putRequestedFor(urlMatching("/rest/journalpostapi/v1/journalpost/journalId"))
                     .withRequestBody(EqualToJsonPattern(expectedJournalPostJson, true, false))
                     .withHeader("Content-Type", equalTo("application/json")).withHeader("Authorization", equalTo("Bearer token")))
 
-            journalPostApiMock.verify(postRequestedFor(urlMatching("/rest/journalpostapi/v1/journalpost/1/ferdigstill"))
+            journalPostApiMock.verify(postRequestedFor(urlMatching("/rest/journalpostapi/v1/journalpost/journalId/ferdigstill"))
                 .withRequestBody(EqualToJsonPattern(expectedFerdigstillJson, true, false))
                 .withHeader("Content-Type", equalTo("application/json")).withHeader("Authorization", equalTo("Bearer token")))
         }

@@ -11,12 +11,12 @@ private val logger = KotlinLogging.logger {}
 
 internal interface JournalPostApi {
     fun ferdigstill(journalPostId: String)
-    fun oppdater(fnr: String, journalPostId: String)
+    fun oppdater(fnr: String, journalPostId: String, fagsakId: String)
 }
 
 internal class JournalPostRestApi(private val url: String, private val oidcClient: OidcClient) : JournalPostApi {
 
-    override fun oppdater(fnr: String, journalPostId: String) {
+    override fun oppdater(fnr: String, journalPostId: String, fagsakId: String) {
         url.plus("/rest/journalpostapi/v1/journalpost/$journalPostId")
             .httpPut()
             .authentication()
@@ -32,7 +32,7 @@ internal class JournalPostRestApi(private val url: String, private val oidcClien
   "sak": {
     "sakstype": "FAGSAK",
     "fagsaksystem": "AO01",
-    "fagsakId": "$journalPostId"
+    "fagsakId": "$fagsakId"
   }
 }
 """.trimIndent())
