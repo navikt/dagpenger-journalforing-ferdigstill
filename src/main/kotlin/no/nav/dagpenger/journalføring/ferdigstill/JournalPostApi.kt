@@ -1,9 +1,11 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
+import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.httpPatch
 import com.github.kittinunf.fuel.httpPut
 import mu.KotlinLogging
+import no.nav.dagpenger.oidc.OidcClient
 
 private val logger = KotlinLogging.logger {}
 
@@ -12,11 +14,13 @@ internal interface JournalPostApi {
     fun oppdater(fnr: String, journalPostId: String)
 }
 
-internal class JournalPostRestApi(private val url: String) : JournalPostApi {
+internal class JournalPostRestApi(private val url: String, private val oidcClient: OidcClient) : JournalPostApi {
 
     override fun oppdater(fnr: String, journalPostId: String) {
         url.plus("/rest/journalpostapi/v1/journalpost/$journalPostId")
             .httpPut()
+            .authentication()
+            .bearer(oidcClient.oidcToken().access_token)
             .jsonBody("""{
   "bruker": {
     "id": "$fnr",
@@ -46,6 +50,8 @@ internal class JournalPostRestApi(private val url: String) : JournalPostApi {
     override fun ferdigstill(journalPostId: String) {
         url.plus("/rest/journalpostapi/v1/journalpost/$journalPostId/ferdigstill")
             .httpPatch()
+            .authentication()
+            .bearer(oidcClient.oidcToken().access_token)
             .jsonBody("""{"journalfoerendeEnhet": "9999"}""")
             .response { _, _, result ->
                 result.fold(

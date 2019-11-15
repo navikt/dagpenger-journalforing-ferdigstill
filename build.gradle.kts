@@ -41,6 +41,7 @@ dependencies {
     implementation(kotlin("stdlib"))
     implementation(Dagpenger.Events)
     implementation("com.github.navikt:dagpenger-streams:2019.10.18-12.06.fbbb66cd150b")
+    implementation("com.github.navikt:dp-biblioteker:2019.11.14-12.52.2f5a90180072")
     implementation(Fuel.fuel)
     implementation(Kotlin.Logging.kotlinLogging)
     implementation(Prometheus.common)

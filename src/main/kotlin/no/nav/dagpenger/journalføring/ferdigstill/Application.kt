@@ -2,6 +2,7 @@ package no.nav.dagpenger.journalføring.ferdigstill
 
 import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
+import no.nav.dagpenger.oidc.StsOidcClient
 import no.nav.dagpenger.streams.Pond
 import no.nav.dagpenger.streams.streamConfig
 import org.apache.kafka.streams.kstream.Predicate
@@ -14,7 +15,8 @@ internal class Application(val configuration: Configuration) : Pond(configuratio
     override val SERVICE_APP_ID = "dagpenger-journalføring-ferdigstill"
     override val HTTP_PORT: Int = configuration.application.httpPort
 
-    private val journalFøringFerdigstill = JournalFøringFerdigstill(JournalPostRestApi(configuration.journalPostApiUrl))
+    private val stsOidcClient = StsOidcClient(configuration.sts.baseUrl, configuration.sts.username, configuration.sts.password)
+    private val journalFøringFerdigstill = JournalFøringFerdigstill(JournalPostRestApi(configuration.journalPostApiUrl, stsOidcClient))
 
     override fun filterPredicates(): List<Predicate<String, Packet>> = filterPredicates
 

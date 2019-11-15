@@ -3,6 +3,9 @@ package no.nav.dagpenger.journalføring.ferdigstill
 import com.github.kittinunf.fuel.httpGet
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.client.WireMock.equalTo
+import com.github.tomakehurst.wiremock.client.WireMock.get
+import com.github.tomakehurst.wiremock.client.WireMock.okJson
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.put
@@ -57,7 +60,11 @@ class JournalforingFerdigstillComponentTest {
             application = Configuration.Application(
                 httpPort = getAvailablePort()
             ),
+            sts = Configuration.Sts(
+                baseUrl = journalPostApiMock.baseUrl()
+            ),
             journalPostApiUrl = journalPostApiMock.baseUrl()
+
         )
 
         private val app = Application(configuration)
@@ -89,6 +96,19 @@ class JournalforingFerdigstillComponentTest {
 
     @Test
     fun ` Component test of JournalføringFerdigstill`() {
+
+        journalPostApiMock.addStubMapping(
+            get(urlEqualTo("/rest/v1/sts/token/?grant_type=client_credentials&scope=openid"))
+                .willReturn(okJson("""
+                   {
+                     "access_token": "token",
+                     "token_type": "Bearer",
+                     "expires_in": 3600
+                    } 
+                """.trimIndent()
+                ))
+                .build()
+        )
 
         journalPostApiMock.addStubMapping(
             post(urlEqualTo("/rest/journalpostapi/v1/journalpost/1/ferdigstill"))
@@ -132,9 +152,14 @@ class JournalforingFerdigstillComponentTest {
         }
 
         retry {
-            journalPostApiMock.verify(putRequestedFor(urlMatching("/rest/journalpostapi/v1/journalpost/1")).withRequestBody(EqualToJsonPattern(expectedJournalPostJson, true, false)))
+            journalPostApiMock.verify(
+                putRequestedFor(urlMatching("/rest/journalpostapi/v1/journalpost/1"))
+                    .withRequestBody(EqualToJsonPattern(expectedJournalPostJson, true, false))
+                    .withHeader("Content-Type", equalTo("application/json")).withHeader("Authorization", equalTo("Bearer token")))
 
-            journalPostApiMock.verify(postRequestedFor(urlMatching("/rest/journalpostapi/v1/journalpost/1/ferdigstill")).withRequestBody(EqualToJsonPattern(expectedFerdigstillJson, true, false)))
+            journalPostApiMock.verify(postRequestedFor(urlMatching("/rest/journalpostapi/v1/journalpost/1/ferdigstill"))
+                .withRequestBody(EqualToJsonPattern(expectedFerdigstillJson, true, false))
+                .withHeader("Content-Type", equalTo("application/json")).withHeader("Authorization", equalTo("Bearer token")))
         }
     }
 

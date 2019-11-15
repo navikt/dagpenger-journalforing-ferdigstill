@@ -19,12 +19,12 @@ import java.io.File
 private val localProperties = ConfigurationMap(
     mapOf(
         "kafka.bootstrap.servers" to "localhost:9092",
-        "oidc.sts.issuerurl" to "localhost:8082",
         "application.profile" to Profile.LOCAL.toString(),
         "application.httpPort" to "8080",
         "srvdagpenger.journalforing.ferdigstill.username" to "user",
         "srvdagpenger.journalforing.ferdigstill.password" to "password",
-        "journalPostApi.url" to "http://localhost"
+        "journalPostApi.url" to "http://localhost",
+        "sts.url" to "http://localhost"
 
     )
 )
@@ -32,6 +32,8 @@ private val devProperties = ConfigurationMap(
     mapOf(
         "kafka.bootstrap.servers" to "b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443",
         "application.profile" to Profile.DEV.toString(),
+        "journalPostApi.url" to "http://localhost",
+        "sts.url" to "http://localhost",
         "application.httpPort" to "8080"
     )
 )
@@ -39,6 +41,8 @@ private val prodProperties = ConfigurationMap(
     mapOf(
         "kafka.bootstrap.servers" to "a01apvl00145.adeo.no:8443,a01apvl00146.adeo.no:8443,a01apvl00147.adeo.no:8443,a01apvl00148.adeo.no:8443,a01apvl00149.adeo.no:8443,a01apvl00150.adeo.no:8443",
         "application.profile" to Profile.PROD.toString(),
+        "journalPostApi.url" to "http://localhost",
+        "sts.url" to "http://localhost",
         "application.httpPort" to "8080"
     )
 )
@@ -59,7 +63,8 @@ fun config(): Configuration {
 data class Configuration(
     val kafka: Kafka = Kafka(),
     val application: Application = Application(),
-    val journalPostApiUrl: String = config()[Key("journalPostApi.url", stringType)]
+    val journalPostApiUrl: String = config()[Key("journalPostApi.url", stringType)],
+    val sts: Sts = Sts()
 ) {
     data class Kafka(
         val dagpengerJournalpostTopic: Topic<String, Packet> = Topic(
@@ -72,6 +77,12 @@ data class Configuration(
             username = config()[Key("srvdagpenger.journalforing.ferdigstill.username", stringType)],
             password = config()[Key("srvdagpenger.journalforing.ferdigstill.password", stringType)]
         )
+    )
+
+    data class Sts(
+        val baseUrl: String = config()[Key("sts.url", stringType)],
+        val username: String = config()[Key("srvdagpenger.journalforing.ferdigstill.username", stringType)],
+        val password: String = config()[Key("srvdagpenger.journalforing.ferdigstill.password", stringType)]
     )
 
     data class Application(
