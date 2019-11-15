@@ -188,7 +188,7 @@ class JournalforingFerdigstillComponentTest {
     }
 }
 
-private fun <T> retry(numOfRetries: Int = 5, sleep: Int = 1000, block: () -> T): T {
+private fun <T> retry(numOfRetries: Int = 5, sleep: Long = 1000, block: () -> T): T {
     var throwable: Throwable? = null
     (1..numOfRetries).forEach { _ ->
         try {
@@ -196,7 +196,7 @@ private fun <T> retry(numOfRetries: Int = 5, sleep: Int = 1000, block: () -> T):
         } catch (e: Throwable) {
             throwable = e
         }
-        Thread.sleep(sleep.toLong())
+        Thread.sleep(sleep)
     }
     fail("Failed after retry", throwable)
 }

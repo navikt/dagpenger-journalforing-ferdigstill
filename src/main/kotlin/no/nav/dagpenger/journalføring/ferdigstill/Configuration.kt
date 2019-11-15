@@ -34,7 +34,9 @@ private val devProperties = ConfigurationMap(
         "application.profile" to Profile.DEV.toString(),
         "journalPostApi.url" to "http://localhost",
         "sts.url" to "http://localhost",
-        "application.httpPort" to "8080"
+        "application.httpPort" to "8080",
+        "sts.url" to "https://security-token-service.nais.preprod.local"
+
     )
 )
 private val prodProperties = ConfigurationMap(
@@ -43,12 +45,12 @@ private val prodProperties = ConfigurationMap(
         "application.profile" to Profile.PROD.toString(),
         "journalPostApi.url" to "http://localhost",
         "sts.url" to "http://localhost",
-        "application.httpPort" to "8080"
+        "application.httpPort" to "8080",
+        "sts.url" to "https://security-token-service.nais.adeo.no"
     )
 )
 
-private val defaultConfiguration =
-    ConfigurationProperties.fromOptionalFile(File("/var/run/secrets/nais.io/vault/config.properties")) overriding ConfigurationProperties.systemProperties() overriding EnvironmentVariables
+private val defaultConfiguration = ConfigurationProperties.systemProperties() overriding EnvironmentVariables
 
 fun config(): Configuration {
     return when (System.getenv("NAIS_CLUSTER_NAME") ?: System.getProperty("NAIS_CLUSTER_NAME")) {
