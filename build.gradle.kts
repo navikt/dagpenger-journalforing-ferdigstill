@@ -37,9 +37,9 @@ java {
 }
 
 dependencies {
-    implementation(kotlin("stdlib"))
+    implementation(kotlin("stdlib-jdk8"))
     implementation(Dagpenger.Events)
-    implementation("com.github.navikt:dagpenger-streams:2019.10.18-12.06.fbbb66cd150b")
+    implementation(Dagpenger.Streams)
     implementation(Kotlin.Logging.kotlinLogging)
     implementation(Prometheus.common)
     implementation(Prometheus.hotspot)
