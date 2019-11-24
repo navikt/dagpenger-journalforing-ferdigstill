@@ -11,11 +11,10 @@ internal object PacketKeys {
     const val ARENA_SAK_ID: String = "arenaSakId"
 }
 
-internal val filterPredicates = listOf<Predicate<String, Packet>>(
-    Predicate { _, packet ->
-        packet.hasField(PacketKeys.ARENA_SAK_ID) && packet.hasField(PacketKeys.ARENA_SAK_OPPRETTET) &&
-            packet.hasField(FNR) && packet.hasField(PacketKeys.JOURNALPOST_ID)
-    })
+internal val isJournalFørt = Predicate<String, Packet> { _, packet ->
+    packet.hasField(PacketKeys.ARENA_SAK_ID) && packet.hasField(PacketKeys.ARENA_SAK_OPPRETTET) &&
+        packet.hasField(FNR) && packet.hasField(PacketKeys.JOURNALPOST_ID)
+}
 
 internal class JournalFøringFerdigstill(private val journalPostApi: JournalPostApi) {
     fun handlePacket(packet: Packet) {

@@ -15,10 +15,12 @@ import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern
 import io.kotlintest.shouldBe
+import no.finn.unleash.FakeUnleash
 import no.nav.common.JAASCredential
 import no.nav.common.KafkaEnvironment
 import no.nav.common.embeddedutils.getAvailablePort
 import no.nav.dagpenger.events.Packet
+import no.nav.dagpenger.oidc.StsOidcClient
 import no.nav.dagpenger.streams.KafkaCredential
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -32,7 +34,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import java.util.Properties
 
-class JournalforingFerdigstillComponentTest {
+internal class JournalforingFerdigstillComponentTest {
 
     companion object {
         private const val username = "srvkafkaclient"
@@ -64,10 +66,15 @@ class JournalforingFerdigstillComponentTest {
                 baseUrl = journalPostApiMock.baseUrl()
             ),
             journalPostApiUrl = journalPostApiMock.baseUrl()
-
         )
 
-        private val app = Application(configuration)
+        val stsOidcClient = StsOidcClient(configuration.sts.baseUrl, configuration.sts.username, configuration.sts.password)
+        val journalFøringFerdigstill = JournalFøringFerdigstill(JournalPostRestApi(configuration.journalPostApiUrl, stsOidcClient))
+        val unleash = FakeUnleash().apply {
+            this.enableAll()
+        }
+
+        private val app = Application(configuration, journalFøringFerdigstill, unleash)
         @BeforeAll
         @JvmStatic
         fun setup() {

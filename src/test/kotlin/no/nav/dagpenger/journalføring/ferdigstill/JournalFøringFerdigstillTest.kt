@@ -16,25 +16,21 @@ internal class JournalFøringFerdigstillTest {
 
     @Test
     fun `Filter is true when packet contains the required values`() {
-        filterPredicates.forEach {
-            it.test("", Packet().apply {
-                this.putValue(FNR, "fnr")
-                this.putValue(JOURNALPOST_ID, "journalPostId")
-                this.putValue(ARENA_SAK_ID, "arenaSakid")
-                this.putValue(ARENA_SAK_OPPRETTET, true)
-            }) shouldBe true
-        }
+        isJournalFørt.test("", Packet().apply {
+            this.putValue(FNR, "fnr")
+            this.putValue(JOURNALPOST_ID, "journalPostId")
+            this.putValue(ARENA_SAK_ID, "arenaSakid")
+            this.putValue(ARENA_SAK_OPPRETTET, true)
+        }) shouldBe true
     }
 
     @Test
     fun `Filter is false when packet does not contain the required values`() {
-        filterPredicates.forEach {
-            it.test("", Packet().apply {
-                this.putValue(FNR, "fnr")
-                this.putValue(JOURNALPOST_ID, "journalPostId")
-                this.putValue(ARENA_SAK_ID, "arenaSakid")
-            }) shouldBe false
-        }
+        isJournalFørt.test("", Packet().apply {
+            this.putValue(FNR, "fnr")
+            this.putValue(JOURNALPOST_ID, "journalPostId")
+            this.putValue(ARENA_SAK_ID, "arenaSakid")
+        }) shouldBe false
     }
 
     @Test

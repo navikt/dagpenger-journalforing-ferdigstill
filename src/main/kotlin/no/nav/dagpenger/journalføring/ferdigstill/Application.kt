@@ -1,27 +1,37 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
 import mu.KotlinLogging
+import no.finn.unleash.DefaultUnleash
+import no.finn.unleash.Unleash
 import no.nav.dagpenger.events.Packet
+import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.ARENA_SAK_ID
 import no.nav.dagpenger.oidc.StsOidcClient
 import no.nav.dagpenger.streams.Pond
 import no.nav.dagpenger.streams.streamConfig
-import org.apache.kafka.streams.kstream.Predicate
 import java.util.Properties
 
 private val logger = KotlinLogging.logger {}
+internal const val JOURNALFØRING_FEATURE_TOGGLE_NAME = "dp-journalføring.ferdigstill.isEnabled"
 
-internal class Application(val configuration: Configuration) : Pond(configuration.kafka.dagpengerJournalpostTopic) {
+internal class Application(
+    private val configuration: Configuration,
+    private val journalFøringFerdigstill: JournalFøringFerdigstill,
+    private val unleash: Unleash
+) : Pond(configuration.kafka.dagpengerJournalpostTopic) {
 
-    override val SERVICE_APP_ID = "dagpenger-journalføring-ferdigstill"
+    override val SERVICE_APP_ID = configuration.application.name
     override val HTTP_PORT: Int = configuration.application.httpPort
 
-    private val stsOidcClient = StsOidcClient(configuration.sts.baseUrl, configuration.sts.username, configuration.sts.password)
-    private val journalFøringFerdigstill = JournalFøringFerdigstill(JournalPostRestApi(configuration.journalPostApiUrl, stsOidcClient))
+    private fun isEnabled(): Boolean = unleash.isEnabled(JOURNALFØRING_FEATURE_TOGGLE_NAME, false)
 
-    override fun filterPredicates(): List<Predicate<String, Packet>> = filterPredicates
+    override fun filterPredicates() = listOf(isJournalFørt)
 
     override fun onPacket(packet: Packet) {
-        logger.info { "Processing: $packet" }.also { journalFøringFerdigstill.handlePacket(packet) }
+        if (isEnabled()) {
+            logger.info { "Processing: $packet" }.also { journalFøringFerdigstill.handlePacket(packet) }
+        } else {
+            logger.info { "Skipping(due to feature toggle) : ${packet.getStringValue(ARENA_SAK_ID)}" }
+        }
     }
 
     override fun getConfig(): Properties {
@@ -33,4 +43,11 @@ internal class Application(val configuration: Configuration) : Pond(configuratio
     }
 }
 
-fun main() = Application(Configuration()).start()
+fun main() {
+    val configuration = Configuration()
+    val stsOidcClient = StsOidcClient(configuration.sts.baseUrl, configuration.sts.username, configuration.sts.password)
+    val journalFøringFerdigstill = JournalFøringFerdigstill(JournalPostRestApi(configuration.journalPostApiUrl, stsOidcClient))
+    val unleash = DefaultUnleash(configuration.unleashConfig)
+
+    Application(configuration, journalFøringFerdigstill, unleash).start()
+}
