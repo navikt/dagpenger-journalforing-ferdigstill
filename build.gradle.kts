@@ -1,3 +1,4 @@
+import Mockk.mockk
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
@@ -39,6 +40,9 @@ java {
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation(Dagpenger.Events)
+    implementation("com.github.navikt:dp-biblioteker:2019.11.14-12.52.2f5a90180072")
+    implementation("no.finn.unleash:unleash-client-java:3.2.9")
+    implementation(Fuel.fuel)
     implementation(Dagpenger.Streams)
     implementation(Kotlin.Logging.kotlinLogging)
     implementation(Prometheus.common)
@@ -58,8 +62,9 @@ dependencies {
     testImplementation(Junit5.kotlinRunner)
     testImplementation(kotlin("test"))
     testImplementation(kotlin("test-junit"))
+    testImplementation(mockk)
     testImplementation(KafkaEmbedded.env)
-    testImplementation(Kafka.streamTestUtils)
+    testImplementation(Wiremock.standalone)
 
     testRuntimeOnly(Junit5.engine)
 }

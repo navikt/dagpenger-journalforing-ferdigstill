@@ -1,16 +1,29 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
-import io.kotlintest.matchers.numerics.shouldBeGreaterThan
+import com.github.kittinunf.fuel.httpGet
+import com.github.tomakehurst.wiremock.WireMockServer
+import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.client.WireMock.equalTo
+import com.github.tomakehurst.wiremock.client.WireMock.get
+import com.github.tomakehurst.wiremock.client.WireMock.okJson
+import com.github.tomakehurst.wiremock.client.WireMock.post
+import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
+import com.github.tomakehurst.wiremock.client.WireMock.put
+import com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor
+import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
+import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
+import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern
 import io.kotlintest.shouldBe
-import mu.KotlinLogging
+import no.finn.unleash.FakeUnleash
 import no.nav.common.JAASCredential
 import no.nav.common.KafkaEnvironment
 import no.nav.common.embeddedutils.getAvailablePort
 import no.nav.dagpenger.events.Packet
+import no.nav.dagpenger.oidc.StsOidcClient
 import no.nav.dagpenger.streams.KafkaCredential
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
-import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -18,12 +31,10 @@ import org.apache.kafka.common.config.SaslConfigs
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import java.time.Duration
+import org.junit.jupiter.api.fail
 import java.util.Properties
 
-class JournalforingFerdigstillComponentTest {
-
-    private val LOGGER = KotlinLogging.logger {}
+internal class JournalforingFerdigstillComponentTest {
 
     companion object {
         private const val username = "srvkafkaclient"
@@ -37,6 +48,12 @@ class JournalforingFerdigstillComponentTest {
             topicInfos = listOf(KafkaEnvironment.TopicInfo("privat-dagpenger-journalpost-mottatt-v1"))
         )
 
+        val journalPostApiMock by lazy {
+            WireMockServer(wireMockConfig().dynamicPort()).also {
+                it.start()
+            }
+        }
+
         // given config
         val configuration = Configuration().copy(
             kafka = Configuration.Kafka(
@@ -44,10 +61,20 @@ class JournalforingFerdigstillComponentTest {
                 credential = KafkaCredential(username, password)),
             application = Configuration.Application(
                 httpPort = getAvailablePort()
-            )
+            ),
+            sts = Configuration.Sts(
+                baseUrl = journalPostApiMock.baseUrl()
+            ),
+            journalPostApiUrl = journalPostApiMock.baseUrl()
         )
 
-        val app = JournalføringFerdigstill(configuration)
+        val stsOidcClient = StsOidcClient(configuration.sts.baseUrl, configuration.sts.username, configuration.sts.password)
+        val journalFøringFerdigstill = JournalFøringFerdigstill(JournalPostRestApi(configuration.journalPostApiUrl, stsOidcClient))
+        val unleash = FakeUnleash().apply {
+            this.enableAll()
+        }
+
+        private val app = Application(configuration, journalFøringFerdigstill, unleash)
         @BeforeAll
         @JvmStatic
         fun setup() {
@@ -59,6 +86,7 @@ class JournalforingFerdigstillComponentTest {
         @JvmStatic
         fun teardown() {
             embeddedEnvironment.tearDown()
+            journalPostApiMock.stop()
             app.stop()
         }
     }
@@ -69,17 +97,78 @@ class JournalforingFerdigstillComponentTest {
     }
 
     @Test
+    fun `Mock journal post API  up and running `() {
+        "${journalPostApiMock.baseUrl()}/__admin".httpGet().response().second.statusCode shouldBe 200
+    }
+
+    @Test
     fun ` Component test of JournalføringFerdigstill`() {
 
-        val behovProducer = behovProducer(configuration)
+        journalPostApiMock.addStubMapping(
+            get(urlEqualTo("/rest/v1/sts/token/?grant_type=client_credentials&scope=openid"))
+                .willReturn(okJson("""
+                   {
+                     "access_token": "token",
+                     "token_type": "Bearer",
+                     "expires_in": 3600
+                    } 
+                """.trimIndent()
+                ))
+                .build()
+        )
 
-        val record =
-            behovProducer.send(ProducerRecord(configuration.kafka.dagpengerJournalpostTopic.name, Packet())).get()
-        LOGGER.info { "Produced -> ${record.topic()}  to offset ${record.offset()}" }
+        journalPostApiMock.addStubMapping(
+            post(urlEqualTo("/rest/journalpostapi/v1/journalpost/1/ferdigstill"))
+                .willReturn(aResponse()
+                    .withStatus(200))
+                .build()
+        )
 
-        val behovConsumer: KafkaConsumer<String, Packet> = behovConsumer(configuration)
-        val journalføringer = behovConsumer.poll(Duration.ofSeconds(5)).toList()
-        journalføringer.size shouldBeGreaterThan 0
+        journalPostApiMock.addStubMapping(
+            put(urlEqualTo("/rest/journalpostapi/v1/journalpost/1"))
+                .willReturn(aResponse()
+                    .withStatus(200))
+                .build()
+        )
+
+        val expectedJournalPostJson = """
+        {
+          "bruker" : {
+            "id" : "fnr",
+            "idType" : "FNR"
+          },
+          "tema" : "DAG",
+          "behandlingstema" : "ab0001",
+          "journalfoerendeEnhet" : "9999",
+          "sak" : {
+            "sakstype" : "FAGSAK",
+            "fagsaksystem" : "AO01",
+            "fagsakId" : "arenaId"
+           }
+        } 
+        """.trimIndent()
+
+        val expectedFerdigstillJson = """{ "journalfoerendeEnhet" : "9999"}"""
+
+        behovProducer(configuration).run {
+            this.send(ProducerRecord(configuration.kafka.dagpengerJournalpostTopic.name, Packet().apply {
+                this.putValue(PacketKeys.ARENA_SAK_ID, "arenaId")
+                this.putValue(PacketKeys.JOURNALPOST_ID, "journalId")
+                this.putValue(PacketKeys.ARENA_SAK_OPPRETTET, true)
+                this.putValue(PacketKeys.FNR, "fnr")
+            })).get()
+        }
+
+        retry {
+            journalPostApiMock.verify(
+                putRequestedFor(urlMatching("/rest/journalpostapi/v1/journalpost/journalId"))
+                    .withRequestBody(EqualToJsonPattern(expectedJournalPostJson, true, false))
+                    .withHeader("Content-Type", equalTo("application/json")).withHeader("Authorization", equalTo("Bearer token")))
+
+            journalPostApiMock.verify(postRequestedFor(urlMatching("/rest/journalpostapi/v1/journalpost/journalId/ferdigstill"))
+                .withRequestBody(EqualToJsonPattern(expectedFerdigstillJson, true, false))
+                .withHeader("Content-Type", equalTo("application/json")).withHeader("Authorization", equalTo("Bearer token")))
+        }
     }
 
     private fun behovProducer(configuration: Configuration): KafkaProducer<String, Packet> {
@@ -105,31 +194,17 @@ class JournalforingFerdigstillComponentTest {
 
         return producer
     }
+}
 
-    private fun behovConsumer(configuration: Configuration): KafkaConsumer<String, Packet> {
-        val topic = configuration.kafka.dagpengerJournalpostTopic
-        val consumer: KafkaConsumer<String, Packet> = KafkaConsumer(Properties().apply {
-
-            put(ConsumerConfig.GROUP_ID_CONFIG, "test-dagpenger-ferdigstill-consumer")
-            put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, configuration.kafka.brokers)
-            put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
-            put(
-                ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
-                topic.keySerde.deserializer().javaClass.name
-            )
-            put(
-                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
-                topic.valueSerde.deserializer().javaClass.name
-            )
-            put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_PLAINTEXT")
-            put(SaslConfigs.SASL_MECHANISM, "PLAIN")
-            put(
-                SaslConfigs.SASL_JAAS_CONFIG,
-                "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${configuration.kafka.credential.username}\" password=\"${configuration.kafka.credential.password}\";"
-            )
-        })
-
-        consumer.subscribe(listOf(topic.name))
-        return consumer
+private fun <T> retry(numOfRetries: Int = 5, sleep: Long = 1000, block: () -> T): T {
+    var throwable: Throwable? = null
+    (1..numOfRetries).forEach { _ ->
+        try {
+            return block()
+        } catch (e: Throwable) {
+            throwable = e
+        }
+        Thread.sleep(sleep)
     }
+    fail("Failed after retry", throwable)
 }
