@@ -32,6 +32,8 @@ private val localProperties = ConfigurationMap(
 )
 private val devProperties = ConfigurationMap(
     mapOf(
+        "application.httpPort" to "8080",
+        "application.name" to "dagpenger-journalføring-ferdigstill",
         "application.profile" to Profile.DEV.toString(),
         "journalPostApi.url" to "http://dokarkiv.t8.svc.nais.local",
         "kafka.bootstrap.servers" to "b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443",
@@ -41,6 +43,8 @@ private val devProperties = ConfigurationMap(
 )
 private val prodProperties = ConfigurationMap(
     mapOf(
+        "application.httpPort" to "8080",
+        "application.name" to "dagpenger-journalføring-ferdigstill",
         "application.profile" to Profile.PROD.toString(),
         "journalPostApi.url" to "http://dokarkiv.default.svc.nais.local",
         "kafka.bootstrap.servers" to "a01apvl00145.adeo.no:8443,a01apvl00146.adeo.no:8443,a01apvl00147.adeo.no:8443,a01apvl00148.adeo.no:8443,a01apvl00149.adeo.no:8443,a01apvl00150.adeo.no:8443",
