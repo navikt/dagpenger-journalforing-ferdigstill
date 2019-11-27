@@ -131,22 +131,20 @@ internal class JournalforingFerdigstillComponentTest {
                 .build()
         )
 
-        val expectedJournalPostJson = """
-        {
-          "bruker" : {
-            "id" : "fnr",
-            "idType" : "FNR"
-          },
-          "tema" : "DAG",
-          "behandlingstema" : "ab0001",
-          "journalfoerendeEnhet" : "9999",
-          "sak" : {
-            "sakstype" : "FAGSAK",
-            "fagsaksystem" : "AO01",
-            "fagsakId" : "arenaId"
-           }
-        } 
-        """.trimIndent()
+        val expectedJournalPostJson = """{
+  "bruker": {
+    "id": "fnr",
+    "idType": "FNR"
+  },
+  "tema": "DAG",
+  "behandlingstema": "ab0001",
+  "journalfoerendeEnhet": "9999",
+  "sak": {
+    "sakstype": "FAGSAK",
+    "fagsaksystem": "AO01",
+    "fagsakId": "arenaId"
+  }
+}""".trimIndent()
 
         val expectedFerdigstillJson = """{ "journalfoerendeEnhet" : "9999"}"""
 

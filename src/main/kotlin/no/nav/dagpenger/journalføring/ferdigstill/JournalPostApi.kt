@@ -11,31 +11,17 @@ private val logger = KotlinLogging.logger {}
 
 internal interface JournalPostApi {
     fun ferdigstill(journalPostId: String)
-    fun oppdater(fnr: String, journalPostId: String, fagsakId: String)
+    fun oppdater(journalPostId: String, jsonBody: String)
 }
 
 internal class JournalPostRestApi(private val url: String, private val oidcClient: OidcClient) : JournalPostApi {
 
-    override fun oppdater(fnr: String, journalPostId: String, fagsakId: String) {
+    override fun oppdater(journalPostId: String, jsonBody: String) {
         url.plus("/rest/journalpostapi/v1/journalpost/$journalPostId")
             .httpPut()
             .authentication()
             .bearer(oidcClient.oidcToken().access_token)
-            .jsonBody("""{
-  "bruker": {
-    "id": "$fnr",
-    "idType": "FNR"
-  },
-  "tema": "DAG",
-  "behandlingstema": "ab0001",
-  "journalfoerendeEnhet": "9999",
-  "sak": {
-    "sakstype": "FAGSAK",
-    "fagsaksystem": "AO01",
-    "fagsakId": "$fagsakId"
-  }
-}
-""".trimIndent())
+            .jsonBody(jsonBody)
             .response { _, _, result ->
                 result.fold(
                     { logger.info("Oppdatert journal post: $journalPostId") },

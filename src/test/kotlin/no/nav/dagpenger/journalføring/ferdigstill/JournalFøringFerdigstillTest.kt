@@ -40,6 +40,20 @@ internal class JournalFøringFerdigstillTest {
         val journalPostId = "journalpostid"
         val fnr = "fødselnummer"
         val arenaSakId = "arenaSakId"
+        val json = """{
+  "bruker": {
+    "id": "$fnr",
+    "idType": "FNR"
+  },
+  "tema": "DAG",
+  "behandlingstema": "ab0001",
+  "journalfoerendeEnhet": "9999",
+  "sak": {
+    "sakstype": "FAGSAK",
+    "fagsaksystem": "AO01",
+    "fagsakId": "$arenaSakId"
+  }
+}""".trimIndent()
 
         journalFøringFerdigstill.handlePacket(Packet().apply {
             this.putValue(FNR, fnr)
@@ -49,7 +63,7 @@ internal class JournalFøringFerdigstillTest {
 
         verifyAll {
             journalPostApi.ferdigstill(journalPostId)
-            journalPostApi.oppdater(fnr, journalPostId, arenaSakId)
+            journalPostApi.oppdater(journalPostId, json)
         }
     }
 }
