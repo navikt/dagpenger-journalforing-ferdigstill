@@ -18,14 +18,20 @@ internal val isJournalFørt = Predicate<String, Packet> { _, packet ->
 
 internal class JournalFøringFerdigstill(private val journalPostApi: JournalPostApi) {
     fun handlePacket(packet: Packet) {
-        journalPostApi.oppdater(
-            packet.getStringValue(PacketKeys.JOURNALPOST_ID),
-            json(packet.getStringValue(FNR), packet.getStringValue(PacketKeys.ARENA_SAK_ID))
-        )
+        journalPostApi.oppdater(packet.getStringValue(PacketKeys.JOURNALPOST_ID), velgJson(packet))
         journalPostApi.ferdigstill(packet.getStringValue(PacketKeys.JOURNALPOST_ID))
     }
 
-    fun json(fnr: String, fagsakId: String): String {
+    fun velgJson(packet: Packet): String {
+        val arenaSakFinnes = packet.getStringValue(PacketKeys.ARENA_SAK_ID).isNotEmpty()
+        return if (arenaSakFinnes) {
+            arenaJson(packet.getStringValue(FNR), packet.getStringValue(PacketKeys.ARENA_SAK_ID))
+        } else {
+            generellSakJson(packet.getStringValue(FNR))
+        }
+    }
+
+    fun arenaJson(fnr: String, fagsakId: String): String {
         return """{
   "bruker": {
     "id": "$fnr",
@@ -42,7 +48,7 @@ internal class JournalFøringFerdigstill(private val journalPostApi: JournalPost
 }""".trimIndent()
     }
 
-    fun json2(fnr: String): String {
+    fun generellSakJson(fnr: String): String {
         return """{
   "bruker": {
     "id": "$fnr",
