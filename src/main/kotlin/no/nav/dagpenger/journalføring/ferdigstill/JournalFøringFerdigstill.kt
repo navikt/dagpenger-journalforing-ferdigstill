@@ -23,7 +23,7 @@ internal class JournalFøringFerdigstill(private val journalPostApi: JournalPost
     }
 
     fun velgJson(packet: Packet): String {
-        val arenaSakFinnes = packet.getStringValue(PacketKeys.ARENA_SAK_ID).isNotEmpty()
+        val arenaSakFinnes = packet.hasField(PacketKeys.ARENA_SAK_ID)
         return if (arenaSakFinnes) {
             arenaJson(packet.getStringValue(FNR), packet.getStringValue(PacketKeys.ARENA_SAK_ID))
         } else {
