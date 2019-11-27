@@ -11,7 +11,7 @@ import no.nav.dagpenger.streams.streamConfig
 import java.util.Properties
 
 private val logger = KotlinLogging.logger {}
-internal const val JOURNALFØRING_FEATURE_TOGGLE_NAME = "dp-journalføring.ferdigstill.isEnabled"
+internal const val JOURNALFØRING_FEATURE_TOGGLE_NAME = "dp-journalforing.ferdigstill.isEnabled"
 
 internal class Application(
     private val configuration: Configuration,
