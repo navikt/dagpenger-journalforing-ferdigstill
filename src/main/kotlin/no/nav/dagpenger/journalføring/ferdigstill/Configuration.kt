@@ -38,7 +38,7 @@ private val devProperties = ConfigurationMap(
         "journalPostApi.url" to "http://dokarkiv.t8.svc.nais.local",
         "kafka.bootstrap.servers" to "b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443",
         "sts.url" to "http://security-token-service.default.svc.nais.local",
-        "unleash.url" to "https://unleash.nais.preprod.local"
+        "unleash.url" to "https://unleash.nais.preprod.local/api/"
     )
 )
 private val prodProperties = ConfigurationMap(
@@ -49,7 +49,7 @@ private val prodProperties = ConfigurationMap(
         "journalPostApi.url" to "http://dokarkiv.default.svc.nais.local",
         "kafka.bootstrap.servers" to "a01apvl00145.adeo.no:8443,a01apvl00146.adeo.no:8443,a01apvl00147.adeo.no:8443,a01apvl00148.adeo.no:8443,a01apvl00149.adeo.no:8443,a01apvl00150.adeo.no:8443",
         "sts.url" to "http://security-token-service.default.svc.nais.local",
-        "unleash.url" to "https://unleash.nais.adeo.no"
+        "unleash.url" to "https://unleash.nais.adeo.no/api/"
     )
 )
 
