@@ -16,50 +16,60 @@ internal val isJournalFørt = Predicate<String, Packet> { _, packet ->
         packet.hasField(FNR) && packet.hasField(PacketKeys.JOURNALPOST_ID)
 }
 
+internal interface Sak {
+    fun toJsonString(): String
+}
+
+internal data class GenerellSak(private val packet: Packet) : Sak {
+    override fun toJsonString(): String = packet.getStringValue(FNR).let { fnr ->
+        return """
+        {
+           "bruker": {
+            "id": "$fnr",
+              "idType": "FNR"
+            },
+            "behandlingstema": "ab0001",
+            "tema": "DAG",
+            "journalfoerendeEnhet": "9999",
+            "sak": {
+               "sakstype": "GENERELL_SAK"
+             }
+        }"""
+    }
+}
+
+internal data class ArenaSak(private val packet: Packet) : Sak {
+    override fun toJsonString(): String {
+        val fnr = packet.getStringValue(FNR)
+        val arenaSakId = packet.getStringValue(PacketKeys.ARENA_SAK_ID)
+        return """
+        {
+           "bruker": {
+            "id": "$fnr",
+              "idType": "FNR"
+            },
+            "behandlingstema": "ab0001",
+            "tema": "DAG",
+            "journalfoerendeEnhet": "9999",
+            "sak": {
+               "sakstype": "FAGSAK",
+               "fagsaksystem": "AO01",
+               "fagsakId": "$arenaSakId"
+             }
+        }"""
+    }
+}
+
 internal class JournalFøringFerdigstill(private val journalPostApi: JournalPostApi) {
     fun handlePacket(packet: Packet) {
-        journalPostApi.oppdater(packet.getStringValue(PacketKeys.JOURNALPOST_ID), velgJson(packet))
+        journalPostApi.oppdater(packet.getStringValue(PacketKeys.JOURNALPOST_ID), velgSaksType(packet))
         journalPostApi.ferdigstill(packet.getStringValue(PacketKeys.JOURNALPOST_ID))
     }
 
-    fun velgJson(packet: Packet): String {
-        val arenaSakFinnes = packet.hasField(PacketKeys.ARENA_SAK_ID)
-        return if (arenaSakFinnes) {
-            arenaJson(packet.getStringValue(FNR), packet.getStringValue(PacketKeys.ARENA_SAK_ID))
-        } else {
-            generellSakJson(packet.getStringValue(FNR))
+    private fun velgSaksType(packet: Packet): Sak {
+        return when (packet.hasField(PacketKeys.ARENA_SAK_ID)) {
+            true -> ArenaSak(packet)
+            else -> GenerellSak(packet)
         }
-    }
-
-    fun arenaJson(fnr: String, fagsakId: String): String {
-        return """{
-  "bruker": {
-    "id": "$fnr",
-    "idType": "FNR"
-  },
-  "tema": "DAG",
-  "behandlingstema": "ab0001",
-  "journalfoerendeEnhet": "9999",
-  "sak": {
-    "sakstype": "FAGSAK",
-    "fagsaksystem": "AO01",
-    "fagsakId": "$fagsakId"
-  }
-}""".trimIndent()
-    }
-
-    fun generellSakJson(fnr: String): String {
-        return """{
-  "bruker": {
-    "id": "$fnr",
-    "idType": "FNR"
-  },
-  "tema": "DAG",
-  "behandlingstema": "ab0001",
-  "journalfoerendeEnhet": "9999",
-  "sak": {
-    "sakstype": "GENERELL_SAK"
-  }
-}""".trimIndent()
     }
 }

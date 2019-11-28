@@ -131,36 +131,22 @@ internal class JournalforingFerdigstillComponentTest {
                 .build()
         )
 
-        val expectedJournalPostJson = """{
-  "bruker": {
-    "id": "fnr",
-    "idType": "FNR"
-  },
-  "tema": "DAG",
-  "behandlingstema": "ab0001",
-  "journalfoerendeEnhet": "9999",
-  "sak": {
-    "sakstype": "FAGSAK",
-    "fagsaksystem": "AO01",
-    "fagsakId": "arenaId"
-  }
-}""".trimIndent()
-
         val expectedFerdigstillJson = """{ "journalfoerendeEnhet" : "9999"}"""
 
+        val packet = Packet().apply {
+            this.putValue(PacketKeys.ARENA_SAK_ID, "arenaId")
+            this.putValue(PacketKeys.JOURNALPOST_ID, "journalId")
+            this.putValue(PacketKeys.ARENA_SAK_OPPRETTET, true)
+            this.putValue(PacketKeys.FNR, "fnr")
+        }
         behovProducer(configuration).run {
-            this.send(ProducerRecord(configuration.kafka.dagpengerJournalpostTopic.name, Packet().apply {
-                this.putValue(PacketKeys.ARENA_SAK_ID, "arenaId")
-                this.putValue(PacketKeys.JOURNALPOST_ID, "journalId")
-                this.putValue(PacketKeys.ARENA_SAK_OPPRETTET, true)
-                this.putValue(PacketKeys.FNR, "fnr")
-            })).get()
+            this.send(ProducerRecord(configuration.kafka.dagpengerJournalpostTopic.name, packet)).get()
         }
 
         retry {
             journalPostApiMock.verify(
                 putRequestedFor(urlMatching("/rest/journalpostapi/v1/journalpost/journalId"))
-                    .withRequestBody(EqualToJsonPattern(expectedJournalPostJson, true, false))
+                    .withRequestBody(EqualToJsonPattern(ArenaSak(packet).toJsonString(), true, false))
                     .withHeader("Content-Type", equalTo("application/json")).withHeader("Authorization", equalTo("Bearer token")))
 
             journalPostApiMock.verify(postRequestedFor(urlMatching("/rest/journalpostapi/v1/journalpost/journalId/ferdigstill"))
