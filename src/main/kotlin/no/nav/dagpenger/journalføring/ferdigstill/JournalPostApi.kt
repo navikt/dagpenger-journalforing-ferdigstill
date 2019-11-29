@@ -43,7 +43,7 @@ internal class JournalPostRestApi(private val url: String, private val oidcClien
                 result.fold(
                     { logger.info("Ferdigstilt journal post: $journalPostId") },
                     { e ->
-                        logger.error("Feilet ferdigstillin av journalpost: : $journalPostId", e.exception)
+                        logger.error("Feilet ferdigstilling av journalpost: : $journalPostId", e.exception)
                         throw e
                     }
                 )
