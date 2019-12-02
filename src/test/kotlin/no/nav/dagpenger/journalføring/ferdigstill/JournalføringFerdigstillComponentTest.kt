@@ -6,8 +6,8 @@ import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.okJson
-import com.github.tomakehurst.wiremock.client.WireMock.post
-import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
+import com.github.tomakehurst.wiremock.client.WireMock.patch
+import com.github.tomakehurst.wiremock.client.WireMock.patchRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
@@ -118,7 +118,7 @@ internal class JournalforingFerdigstillComponentTest {
         )
 
         journalPostApiMock.addStubMapping(
-            post(urlEqualTo("/rest/journalpostapi/v1/journalpost/journalId/ferdigstill"))
+            patch(urlEqualTo("/rest/journalpostapi/v1/journalpost/journalId/ferdigstill"))
                 .willReturn(aResponse()
                     .withStatus(200))
                 .build()
@@ -149,7 +149,7 @@ internal class JournalforingFerdigstillComponentTest {
                     .withRequestBody(EqualToJsonPattern(ArenaSak(packet).toJsonString(), true, false))
                     .withHeader("Content-Type", equalTo("application/json")).withHeader("Authorization", equalTo("Bearer token")))
 
-            journalPostApiMock.verify(1, postRequestedFor(urlMatching("/rest/journalpostapi/v1/journalpost/journalId/ferdigstill"))
+            journalPostApiMock.verify(1, patchRequestedFor(urlMatching("/rest/journalpostapi/v1/journalpost/journalId/ferdigstill"))
                 .withRequestBody(EqualToJsonPattern(expectedFerdigstillJson, true, false))
                 .withHeader("Content-Type", equalTo("application/json")).withHeader("Authorization", equalTo("Bearer token")))
         }

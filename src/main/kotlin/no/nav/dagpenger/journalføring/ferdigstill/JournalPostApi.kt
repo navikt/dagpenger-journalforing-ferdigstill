@@ -1,5 +1,6 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
+import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.httpPatch
@@ -15,6 +16,9 @@ internal interface JournalPostApi {
 }
 
 internal class JournalPostRestApi(private val url: String, private val oidcClient: OidcClient) : JournalPostApi {
+    init {
+        FuelManager.instance.forceMethods = true
+    }
 
     override fun oppdater(journalPostId: String, sak: Sak) {
         val (_, _, result) = url.plus("/rest/journalpostapi/v1/journalpost/$journalPostId")
@@ -34,12 +38,13 @@ internal class JournalPostRestApi(private val url: String, private val oidcClien
     }
 
     override fun ferdigstill(journalPostId: String) {
-        val (_, _, result) = url.plus("/rest/journalpostapi/v1/journalpost/$journalPostId/ferdigstill")
-            .httpPatch()
-            .authentication()
-            .bearer(oidcClient.oidcToken().access_token)
-            .jsonBody("""{"journalfoerendeEnhet": "9999"}""")
-            .response()
+        val (_, _, result) =
+            url.plus("/rest/journalpostapi/v1/journalpost/$journalPostId/ferdigstill")
+                .httpPatch()
+                .authentication()
+                .bearer(oidcClient.oidcToken().access_token)
+                .jsonBody("""{"journalfoerendeEnhet": "9999"}""")
+                .response()
 
         result.fold(
             { logger.info("Ferdigstilt journal post: $journalPostId") },

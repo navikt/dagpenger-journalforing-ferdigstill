@@ -42,7 +42,12 @@ dependencies {
     implementation(Dagpenger.Events)
     implementation("com.github.navikt:dp-biblioteker:2019.11.14-12.52.2f5a90180072")
     implementation("no.finn.unleash:unleash-client-java:3.2.9")
-    implementation(Fuel.fuel)
+    // We need PATCH. SEE https://github.com/kittinunf/fuel/pull/562
+    implementation("com.github.kittinunf.fuel:fuel") {
+        version {
+            strictly("f16bd8e30c")
+        }
+    }
     implementation(Dagpenger.Streams)
     implementation(Kotlin.Logging.kotlinLogging)
     implementation(Prometheus.common)
