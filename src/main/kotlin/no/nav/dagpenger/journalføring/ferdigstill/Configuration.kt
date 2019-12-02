@@ -35,7 +35,7 @@ private val devProperties = ConfigurationMap(
         "application.httpPort" to "8080",
         "application.name" to "dagpenger-journalføring-ferdigstill",
         "application.profile" to Profile.DEV.toString(),
-        "journalPostApi.url" to "http://dokarkiv.t8.svc.nais.local",
+        "journalPostApi.url" to "http://dokarkiv.q1.svc.nais.local",
         "kafka.bootstrap.servers" to "b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443",
         "sts.url" to "http://security-token-service.default.svc.nais.local",
         "unleash.url" to "https://unleash.nais.preprod.local/api/"
