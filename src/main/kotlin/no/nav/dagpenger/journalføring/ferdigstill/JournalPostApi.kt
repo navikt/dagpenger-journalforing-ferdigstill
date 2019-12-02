@@ -2,7 +2,6 @@ package no.nav.dagpenger.journalføring.ferdigstill
 
 import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.core.extensions.jsonBody
-import com.github.kittinunf.fuel.core.response
 import com.github.kittinunf.fuel.httpPatch
 import com.github.kittinunf.fuel.httpPut
 import mu.KotlinLogging
