@@ -118,14 +118,14 @@ internal class JournalforingFerdigstillComponentTest {
         )
 
         journalPostApiMock.addStubMapping(
-            post(urlEqualTo("/rest/journalpostapi/v1/journalpost/1/ferdigstill"))
+            post(urlEqualTo("/rest/journalpostapi/v1/journalpost/journalId/ferdigstill"))
                 .willReturn(aResponse()
                     .withStatus(200))
                 .build()
         )
 
         journalPostApiMock.addStubMapping(
-            put(urlEqualTo("/rest/journalpostapi/v1/journalpost/1"))
+            put(urlEqualTo("/rest/journalpostapi/v1/journalpost/journalId"))
                 .willReturn(aResponse()
                     .withStatus(200))
                 .build()
@@ -144,12 +144,12 @@ internal class JournalforingFerdigstillComponentTest {
         }
 
         retry {
-            journalPostApiMock.verify(
+            journalPostApiMock.verify(1,
                 putRequestedFor(urlMatching("/rest/journalpostapi/v1/journalpost/journalId"))
                     .withRequestBody(EqualToJsonPattern(ArenaSak(packet).toJsonString(), true, false))
                     .withHeader("Content-Type", equalTo("application/json")).withHeader("Authorization", equalTo("Bearer token")))
 
-            journalPostApiMock.verify(postRequestedFor(urlMatching("/rest/journalpostapi/v1/journalpost/journalId/ferdigstill"))
+            journalPostApiMock.verify(1, postRequestedFor(urlMatching("/rest/journalpostapi/v1/journalpost/journalId/ferdigstill"))
                 .withRequestBody(EqualToJsonPattern(expectedFerdigstillJson, true, false))
                 .withHeader("Content-Type", equalTo("application/json")).withHeader("Authorization", equalTo("Bearer token")))
         }
