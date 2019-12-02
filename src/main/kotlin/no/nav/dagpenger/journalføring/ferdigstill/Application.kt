@@ -4,7 +4,7 @@ import mu.KotlinLogging
 import no.finn.unleash.DefaultUnleash
 import no.finn.unleash.Unleash
 import no.nav.dagpenger.events.Packet
-import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.ARENA_SAK_ID
+import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.JOURNALPOST_ID
 import no.nav.dagpenger.oidc.StsOidcClient
 import no.nav.dagpenger.streams.Pond
 import no.nav.dagpenger.streams.streamConfig
@@ -30,7 +30,7 @@ internal class Application(
         if (isEnabled()) {
             logger.info { "Processing: $packet" }.also { journalFøringFerdigstill.handlePacket(packet) }
         } else {
-            logger.info { "Skipping(due to feature toggle) : ${packet.getStringValue(ARENA_SAK_ID)}" }
+            logger.info { "Skipping(due to feature toggle) : ${packet.getStringValue(JOURNALPOST_ID)}" }
         }
     }
 
