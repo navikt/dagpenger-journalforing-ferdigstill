@@ -81,12 +81,17 @@ internal class JournalFøringFerdigstillTest {
 
         arenaSak.toJsonString().trimIndent() shouldBe """
             {
+               "avsenderMottaker": {
+                "id": "fnr",
+                  "idType": "FNR"
+                },
                "bruker": {
                 "id": "fnr",
                   "idType": "FNR"
                 },
                 "behandlingstema": "ab0001",
                 "tema": "DAG",
+                "tittel": "DAG-FIX-ME",
                 "journalfoerendeEnhet": "9999",
                 "sak": {
                    "sakstype": "FAGSAK",
@@ -105,12 +110,17 @@ internal class JournalFøringFerdigstillTest {
 
         generellSak.toJsonString().trimIndent() shouldBe """
             {
+               "avsenderMottaker": {
+                "id": "fnr",
+                  "idType": "FNR"
+                },
                "bruker": {
                 "id": "fnr",
                   "idType": "FNR"
                 },
                 "behandlingstema": "ab0001",
                 "tema": "DAG",
+                "tittel": "DAG-FIX-ME",
                 "journalfoerendeEnhet": "9999",
                 "sak": {
                    "sakstype": "GENERELL_SAK"

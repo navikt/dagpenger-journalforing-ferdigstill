@@ -24,12 +24,17 @@ internal data class GenerellSak(private val packet: Packet) : Sak {
     override fun toJsonString(): String = packet.getStringValue(FNR).let { fnr ->
         return """
         {
+           "avsenderMottaker": {
+            "id": "$fnr",
+              "idType": "FNR"
+            },
            "bruker": {
             "id": "$fnr",
               "idType": "FNR"
             },
             "behandlingstema": "ab0001",
             "tema": "DAG",
+            "tittel": "DAG-FIX-ME",
             "journalfoerendeEnhet": "9999",
             "sak": {
                "sakstype": "GENERELL_SAK"
@@ -44,12 +49,17 @@ internal data class ArenaSak(private val packet: Packet) : Sak {
         val arenaSakId = packet.getStringValue(PacketKeys.ARENA_SAK_ID)
         return """
         {
+           "avsenderMottaker": {
+            "id": "$fnr",
+              "idType": "FNR"
+            },
            "bruker": {
             "id": "$fnr",
               "idType": "FNR"
             },
             "behandlingstema": "ab0001",
             "tema": "DAG",
+            "tittel": "DAG-FIX-ME",
             "journalfoerendeEnhet": "9999",
             "sak": {
                "sakstype": "FAGSAK",
