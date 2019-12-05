@@ -70,12 +70,10 @@ internal class PacketToJoarkPayloadMapperTest {
 
         with(dokumenter.first()) {
             this.dokumentinfoId shouldBe "id1"
-            this.brevkode shouldBe "kode1"
             this.tittel shouldBe "tittel1"
         }
         with(dokumenter.last()) {
             this.dokumentinfoId shouldBe "id2"
-            this.brevkode shouldBe "kode2"
             this.tittel shouldBe "tittel2"
         }
     }
@@ -100,7 +98,7 @@ internal class PacketToJoarkPayloadMapperTest {
         jp.behandlingstema shouldBe "ab0001"
         jp.bruker.id shouldBe "fnr"
         jp.bruker.idType shouldBe "FNR"
-        jp.dokumenter shouldBe listOf(Dokument("dokumentId", "brevKode", "tittel"))
+        jp.dokumenter shouldBe listOf(Dokument("dokumentId", "tittel"))
         jp.journalfoerendeEnhet shouldBe "9999"
         jp.sak.saksType shouldBe SaksType.GENERELL_SAK
         jp.tema shouldBe "DAG"

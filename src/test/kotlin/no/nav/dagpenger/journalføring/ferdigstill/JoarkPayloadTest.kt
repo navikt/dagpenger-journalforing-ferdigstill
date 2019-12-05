@@ -13,7 +13,7 @@ internal class JoarkPayloadTest {
             bruker = Bruker("bruker"),
             tittel = "tittel",
             sak = Sak(SaksType.FAGSAK, "fagsakId", "AO01"),
-            dokumenter = listOf(Dokument("dokumentId", "brevKode", "tittel"))
+            dokumenter = listOf(Dokument("dokumentId", "tittel"))
         ))
 
         json shouldStrictlyEqualJson """
@@ -34,7 +34,6 @@ internal class JoarkPayloadTest {
               "dokumenter": [
                 {
                   "dokumentinfoId": "dokumentId",
-                  "brevkode": "brevKode",
                   "tittel": "tittel"
                 }
               ],
@@ -53,7 +52,7 @@ internal class JoarkPayloadTest {
             bruker = Bruker("bruker"),
             tittel = "tittel",
             sak = Sak(SaksType.GENERELL_SAK, null, null),
-            dokumenter = listOf(Dokument("dokumentId", "brevKode", "tittel"))
+            dokumenter = listOf(Dokument("dokumentId", "tittel"))
         ))
 
         json shouldStrictlyEqualJson """
@@ -72,7 +71,6 @@ internal class JoarkPayloadTest {
               "dokumenter": [
                 {
                   "dokumentinfoId": "dokumentId",
-                  "brevkode": "brevKode",
                   "tittel": "tittel"
                 }
               ],
