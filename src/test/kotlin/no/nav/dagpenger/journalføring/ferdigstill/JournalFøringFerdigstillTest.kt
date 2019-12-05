@@ -6,8 +6,11 @@ import io.mockk.verifyAll
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.ARENA_SAK_ID
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.ARENA_SAK_OPPRETTET
+import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.AVSENDER_NAVN
+import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.DOKUMENTER
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.FNR
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.JOURNALPOST_ID
+import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.journalPostFrom
 import org.junit.jupiter.api.Test
 
 internal class JournalFøringFerdigstillTest {
@@ -19,8 +22,9 @@ internal class JournalFøringFerdigstillTest {
         isJournalFørt.test("", Packet().apply {
             this.putValue(FNR, "fnr")
             this.putValue(JOURNALPOST_ID, "journalPostId")
-            this.putValue(ARENA_SAK_ID, "arenaSakid")
             this.putValue(ARENA_SAK_OPPRETTET, true)
+            this.putValue(DOKUMENTER, true)
+            this.putValue(AVSENDER_NAVN, true)
         }) shouldBe true
     }
 
@@ -43,13 +47,28 @@ internal class JournalFøringFerdigstillTest {
             this.putValue(FNR, "fnr")
             this.putValue(JOURNALPOST_ID, journalPostId)
             this.putValue(ARENA_SAK_ID, "arenaSakId")
+            this.putValue(AVSENDER_NAVN, "et navn")
+            this.putValue(DOKUMENTER, """
+                [
+                  {
+                    "dokumentinfoId": "id1",
+                    "brevkode": "kode1",
+                    "tittel": "tittel1"
+                  },
+                  {
+                    "dokumentinfoId": "id2",
+                    "brevkode": "kode2",
+                    "tittel": "tittel2"
+                  }
+                ]
+            """.trimIndent())
         }
 
         journalFøringFerdigstill.handlePacket(packet)
 
         verifyAll {
             journalPostApi.ferdigstill(journalPostId)
-            journalPostApi.oppdater(journalPostId, ArenaSak(packet))
+            journalPostApi.oppdater(journalPostId, journalPostFrom(packet))
         }
     }
 
@@ -62,70 +81,28 @@ internal class JournalFøringFerdigstillTest {
         val packet = Packet().apply {
             this.putValue(FNR, "fnr")
             this.putValue(JOURNALPOST_ID, journalPostId)
+            this.putValue(AVSENDER_NAVN, "et navn")
+            this.putValue(DOKUMENTER, """
+                [
+                  {
+                    "dokumentinfoId": "id1",
+                    "brevkode": "kode1",
+                    "tittel": "tittel1"
+                  },
+                  {
+                    "dokumentinfoId": "id2",
+                    "brevkode": "kode2",
+                    "tittel": "tittel2"
+                  }
+                ]
+            """.trimIndent())
         }
 
         journalFøringFerdigstill.handlePacket(packet)
 
         verifyAll {
             journalPostApi.ferdigstill(journalPostId)
-            journalPostApi.oppdater(journalPostId, GenerellSak(packet))
+            journalPostApi.oppdater(journalPostId, journalPostFrom(packet))
         }
-    }
-
-    @Test
-    fun `Serialisering av Arena sak til json`() {
-        val arenaSak = ArenaSak(Packet().apply {
-            this.putValue(FNR, "fnr")
-            this.putValue(ARENA_SAK_ID, "arenaSakId")
-        })
-
-        arenaSak.toJsonString().trimIndent() shouldBe """
-            {
-               "avsenderMottaker": {
-                "id": "fnr",
-                  "idType": "FNR"
-                },
-               "bruker": {
-                "id": "fnr",
-                  "idType": "FNR"
-                },
-                "behandlingstema": "ab0001",
-                "tema": "DAG",
-                "tittel": "DAG-FIX-ME",
-                "journalfoerendeEnhet": "9999",
-                "sak": {
-                   "sakstype": "FAGSAK",
-                   "fagsaksystem": "AO01",
-                   "fagsakId": "arenaSakId"
-                 }
-            }
-        """.trimIndent()
-    }
-
-    @Test
-    fun `Serialisering av Generell sak til json`() {
-        val generellSak = GenerellSak(Packet().apply {
-            this.putValue(FNR, "fnr")
-        })
-
-        generellSak.toJsonString().trimIndent() shouldBe """
-            {
-               "avsenderMottaker": {
-                "id": "fnr",
-                  "idType": "FNR"
-                },
-               "bruker": {
-                "id": "fnr",
-                  "idType": "FNR"
-                },
-                "behandlingstema": "ab0001",
-                "tema": "DAG",
-                "tittel": "DAG-FIX-ME",
-                "journalfoerendeEnhet": "9999",
-                "sak": {
-                   "sakstype": "GENERELL_SAK"
-                 }
-            }
-        """.trimIndent()
     }
 }

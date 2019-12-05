@@ -1,85 +1,61 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.Types
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.FNR
+import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.journalPostFrom
 import org.apache.kafka.streams.kstream.Predicate
-
-internal object PacketKeys {
-    const val JOURNALPOST_ID: String = "journalpostId"
-    const val FNR: String = "naturligIdent"
-    const val ARENA_SAK_OPPRETTET: String = "arenaSakOpprettet"
-    const val ARENA_SAK_ID: String = "arenaSakId"
-}
 
 internal val isJournalFørt = Predicate<String, Packet> { _, packet ->
     packet.hasField(PacketKeys.ARENA_SAK_OPPRETTET) &&
-        packet.hasField(FNR) && packet.hasField(PacketKeys.JOURNALPOST_ID)
+        packet.hasField(FNR) &&
+        packet.hasField(PacketKeys.JOURNALPOST_ID) &&
+        packet.hasField(PacketKeys.AVSENDER_NAVN) &&
+        packet.hasField(PacketKeys.DOKUMENTER)
 }
 
-internal interface Sak {
-    fun toJsonString(): String
-}
+internal object PacketToJoarkPayloadMapper {
+    private val dokumentJsonAdapter = Moshi.Builder()
+        .add(KotlinJsonAdapterFactory())
+        .build().adapter<List<Dokument>>(
+            Types.newParameterizedType(
+                List::class.java,
+                Dokument::class.java
+            )
+        )
 
-internal data class GenerellSak(private val packet: Packet) : Sak {
-    override fun toJsonString(): String = packet.getStringValue(FNR).let { fnr ->
-        return """
-        {
-           "avsenderMottaker": {
-            "id": "$fnr",
-              "idType": "FNR"
-            },
-           "bruker": {
-            "id": "$fnr",
-              "idType": "FNR"
-            },
-            "behandlingstema": "ab0001",
-            "tema": "DAG",
-            "tittel": "DAG-FIX-ME",
-            "journalfoerendeEnhet": "9999",
-            "sak": {
-               "sakstype": "GENERELL_SAK"
-             }
-        }"""
+    fun journalPostIdFrom(packet: Packet) = packet.getStringValue(PacketKeys.JOURNALPOST_ID)
+    fun avsenderFrom(packet: Packet) = Avsender(packet.getStringValue(PacketKeys.AVSENDER_NAVN))
+    fun brukerFrom(packet: Packet) = Bruker(packet.getStringValue(FNR))
+    fun dokumenterFrom(packet: Packet) = packet.getStringValue(PacketKeys.DOKUMENTER).let {
+        dokumentJsonAdapter.fromJson(it)!!
     }
-}
 
-internal data class ArenaSak(private val packet: Packet) : Sak {
-    override fun toJsonString(): String {
-        val fnr = packet.getStringValue(FNR)
-        val arenaSakId = packet.getStringValue(PacketKeys.ARENA_SAK_ID)
-        return """
-        {
-           "avsenderMottaker": {
-            "id": "$fnr",
-              "idType": "FNR"
-            },
-           "bruker": {
-            "id": "$fnr",
-              "idType": "FNR"
-            },
-            "behandlingstema": "ab0001",
-            "tema": "DAG",
-            "tittel": "DAG-FIX-ME",
-            "journalfoerendeEnhet": "9999",
-            "sak": {
-               "sakstype": "FAGSAK",
-               "fagsaksystem": "AO01",
-               "fagsakId": "$arenaSakId"
-             }
-        }"""
+    fun tittelFrom(packet: Packet) = dokumenterFrom(packet).first().tittel
+    fun sakFrom(packet: Packet) = when (packet.hasField(PacketKeys.ARENA_SAK_ID)) {
+        true -> Sak(
+            saksType = SaksType.FAGSAK,
+            fagsaksystem = "AO01",
+            fagsakId = packet.getStringValue(PacketKeys.ARENA_SAK_ID))
+        else -> Sak(SaksType.GENERELL_SAK, null, null)
+    }
+
+    fun journalPostFrom(packet: Packet): OppdaterJournalPostPayload {
+        return OppdaterJournalPostPayload(
+            avsenderMottaker = avsenderFrom(packet),
+            bruker = brukerFrom(packet),
+            tittel = tittelFrom(packet),
+            sak = sakFrom(packet),
+            dokumenter = dokumenterFrom(packet)
+        )
     }
 }
 
 internal class JournalFøringFerdigstill(private val journalPostApi: JournalPostApi) {
     fun handlePacket(packet: Packet) {
-        journalPostApi.oppdater(packet.getStringValue(PacketKeys.JOURNALPOST_ID), velgSaksType(packet))
+        journalPostApi.oppdater(packet.getStringValue(PacketKeys.JOURNALPOST_ID), journalPostFrom(packet))
         journalPostApi.ferdigstill(packet.getStringValue(PacketKeys.JOURNALPOST_ID))
-    }
-
-    private fun velgSaksType(packet: Packet): Sak {
-        return when (packet.hasField(PacketKeys.ARENA_SAK_ID)) {
-            true -> ArenaSak(packet)
-            else -> GenerellSak(packet)
-        }
     }
 }
