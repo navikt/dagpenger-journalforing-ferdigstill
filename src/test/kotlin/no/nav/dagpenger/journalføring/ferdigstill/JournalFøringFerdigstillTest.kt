@@ -10,6 +10,7 @@ import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.AVSENDER_NAVN
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.DOKUMENTER
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.FNR
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.JOURNALPOST_ID
+import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.dokumentJsonAdapter
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.journalPostFrom
 import org.junit.jupiter.api.Test
 
@@ -48,20 +49,7 @@ internal class JournalFøringFerdigstillTest {
             this.putValue(JOURNALPOST_ID, journalPostId)
             this.putValue(ARENA_SAK_ID, "arenaSakId")
             this.putValue(AVSENDER_NAVN, "et navn")
-            this.putValue(DOKUMENTER, """
-                [
-                  {
-                    "dokumentInfoId": "id1",
-                    "brevkode": "kode1",
-                    "tittel": "tittel1"
-                  },
-                  {
-                    "dokumentInfoId": "id2",
-                    "brevkode": "kode2",
-                    "tittel": "tittel2"
-                  }
-                ]
-            """.trimIndent())
+            dokumentJsonAdapter.toJsonValue(listOf(Dokument("id1", "tittel1")))?.let { this.putValue(DOKUMENTER, it) }
         }
 
         journalFøringFerdigstill.handlePacket(packet)
@@ -82,20 +70,7 @@ internal class JournalFøringFerdigstillTest {
             this.putValue(FNR, "fnr")
             this.putValue(JOURNALPOST_ID, journalPostId)
             this.putValue(AVSENDER_NAVN, "et navn")
-            this.putValue(DOKUMENTER, """
-                [
-                  {
-                    "dokumentInfoId": "id1",
-                    "brevkode": "kode1",
-                    "tittel": "tittel1"
-                  },
-                  {
-                    "dokumentInfoId": "id2",
-                    "brevkode": "kode2",
-                    "tittel": "tittel2"
-                  }
-                ]
-            """.trimIndent())
+            dokumentJsonAdapter.toJsonValue(listOf(Dokument("id1", "tittel1")))?.let { this.putValue(DOKUMENTER, it) }
         }
 
         journalFøringFerdigstill.handlePacket(packet)

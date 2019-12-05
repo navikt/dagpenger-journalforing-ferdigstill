@@ -21,6 +21,7 @@ import no.nav.common.KafkaEnvironment
 import no.nav.common.embeddedutils.getAvailablePort
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.journalføring.ferdigstill.JournalPostRestApi.Companion.toJsonPayload
+import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.dokumentJsonAdapter
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.journalPostFrom
 import no.nav.dagpenger.oidc.StsOidcClient
 import no.nav.dagpenger.streams.KafkaCredential
@@ -142,20 +143,7 @@ internal class JournalforingFerdigstillComponentTest {
             this.putValue(PacketKeys.JOURNALPOST_ID, journalPostId)
             this.putValue(PacketKeys.ARENA_SAK_ID, "arenaSakId")
             this.putValue(PacketKeys.AVSENDER_NAVN, "et navn")
-            this.putValue(PacketKeys.DOKUMENTER, """
-                [
-                  {
-                    "dokumentInfoId": "id1",
-                    "brevkode": "kode1",
-                    "tittel": "tittel1"
-                  },
-                  {
-                    "dokumentInfoId": "id2",
-                    "brevkode": "kode2",
-                    "tittel": "tittel2"
-                  }
-                ]
-            """.trimIndent())
+            dokumentJsonAdapter.toJsonValue(listOf(Dokument("id1", "tittel1"), Dokument("id1", "tittel1")))?.let { this.putValue(PacketKeys.DOKUMENTER, it) }
         }
 
         val json = journalPostFrom(packet).let { toJsonPayload(it) }

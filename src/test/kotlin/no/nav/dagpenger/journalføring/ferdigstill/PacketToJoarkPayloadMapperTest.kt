@@ -2,6 +2,7 @@ package no.nav.dagpenger.journalføring.ferdigstill
 
 import io.kotlintest.shouldBe
 import no.nav.dagpenger.events.Packet
+import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.dokumentJsonAdapter
 import org.junit.jupiter.api.Test
 
 internal class PacketToJoarkPayloadMapperTest {
@@ -50,20 +51,9 @@ internal class PacketToJoarkPayloadMapperTest {
     @Test
     fun `Extract dokumenter from packet`() {
         val dokumenter = PacketToJoarkPayloadMapper.dokumenterFrom(Packet().apply {
-            this.putValue(PacketKeys.DOKUMENTER, """
-                [
-                  {
-                    "dokumentInfoId": "id1",
-                    "brevkode": "kode1",
-                    "tittel": "tittel1"
-                  },
-                  {
-                    "dokumentInfoId": "id2",
-                    "brevkode": "kode2",
-                    "tittel": "tittel2"
-                  }
-                ]
-            """.trimIndent())
+            dokumentJsonAdapter.toJsonValue(listOf(Dokument("id1", "tittel1"), Dokument("id2", "tittel2")))?.let {
+                this.putValue(PacketKeys.DOKUMENTER, it)
+            }
         })
 
         dokumenter.size shouldBe 2
@@ -84,14 +74,7 @@ internal class PacketToJoarkPayloadMapperTest {
             this.putValue(PacketKeys.JOURNALPOST_ID, "journalPostId")
             this.putValue(PacketKeys.AVSENDER_NAVN, "navn")
             this.putValue(PacketKeys.FNR, "fnr")
-            this.putValue(PacketKeys.DOKUMENTER, """
-                [
-                  {
-                    "dokumentInfoId": "dokumentId",
-                    "brevkode": "brevKode",
-                    "tittel": "tittel"
-                  }
-                ] """)
+            dokumentJsonAdapter.toJsonValue(listOf(Dokument("dokumentId", "tittel")))?.let { this.putValue(PacketKeys.DOKUMENTER, it) }
         })
 
         jp.avsenderMottaker.navn shouldBe "navn"

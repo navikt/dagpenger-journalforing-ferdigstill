@@ -17,20 +17,20 @@ internal val isJournalFørt = Predicate<String, Packet> { _, packet ->
 }
 
 internal object PacketToJoarkPayloadMapper {
-    private val dokumentJsonAdapter = Moshi.Builder()
+    val dokumentJsonAdapter = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
         .build().adapter<List<Dokument>>(
             Types.newParameterizedType(
                 List::class.java,
                 Dokument::class.java
             )
-        )
+        ).lenient()
 
     fun journalPostIdFrom(packet: Packet) = packet.getStringValue(PacketKeys.JOURNALPOST_ID)
     fun avsenderFrom(packet: Packet) = Avsender(packet.getStringValue(PacketKeys.AVSENDER_NAVN))
     fun brukerFrom(packet: Packet) = Bruker(packet.getStringValue(FNR))
-    fun dokumenterFrom(packet: Packet) = packet.getStringValue(PacketKeys.DOKUMENTER).let {
-        dokumentJsonAdapter.fromJson(it)!!
+    fun dokumenterFrom(packet: Packet) = packet.getObjectValue(PacketKeys.DOKUMENTER) {
+        dokumentJsonAdapter.fromJsonValue(it)!!
     }
 
     fun tittelFrom(packet: Packet) = dokumenterFrom(packet).first().tittel
