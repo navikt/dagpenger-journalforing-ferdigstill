@@ -51,12 +51,12 @@ internal class JournalFøringFerdigstillTest {
             this.putValue(DOKUMENTER, """
                 [
                   {
-                    "dokumentinfoId": "id1",
+                    "dokumentInfoId": "id1",
                     "brevkode": "kode1",
                     "tittel": "tittel1"
                   },
                   {
-                    "dokumentinfoId": "id2",
+                    "dokumentInfoId": "id2",
                     "brevkode": "kode2",
                     "tittel": "tittel2"
                   }
@@ -85,12 +85,12 @@ internal class JournalFøringFerdigstillTest {
             this.putValue(DOKUMENTER, """
                 [
                   {
-                    "dokumentinfoId": "id1",
+                    "dokumentInfoId": "id1",
                     "brevkode": "kode1",
                     "tittel": "tittel1"
                   },
                   {
-                    "dokumentinfoId": "id2",
+                    "dokumentInfoId": "id2",
                     "brevkode": "kode2",
                     "tittel": "tittel2"
                   }

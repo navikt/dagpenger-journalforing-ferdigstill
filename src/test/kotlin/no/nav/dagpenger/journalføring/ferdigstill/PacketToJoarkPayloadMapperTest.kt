@@ -53,12 +53,12 @@ internal class PacketToJoarkPayloadMapperTest {
             this.putValue(PacketKeys.DOKUMENTER, """
                 [
                   {
-                    "dokumentinfoId": "id1",
+                    "dokumentInfoId": "id1",
                     "brevkode": "kode1",
                     "tittel": "tittel1"
                   },
                   {
-                    "dokumentinfoId": "id2",
+                    "dokumentInfoId": "id2",
                     "brevkode": "kode2",
                     "tittel": "tittel2"
                   }
@@ -69,11 +69,11 @@ internal class PacketToJoarkPayloadMapperTest {
         dokumenter.size shouldBe 2
 
         with(dokumenter.first()) {
-            this.dokumentinfoId shouldBe "id1"
+            this.dokumentInfoId shouldBe "id1"
             this.tittel shouldBe "tittel1"
         }
         with(dokumenter.last()) {
-            this.dokumentinfoId shouldBe "id2"
+            this.dokumentInfoId shouldBe "id2"
             this.tittel shouldBe "tittel2"
         }
     }
@@ -87,7 +87,7 @@ internal class PacketToJoarkPayloadMapperTest {
             this.putValue(PacketKeys.DOKUMENTER, """
                 [
                   {
-                    "dokumentinfoId": "dokumentId",
+                    "dokumentInfoId": "dokumentId",
                     "brevkode": "brevKode",
                     "tittel": "tittel"
                   }

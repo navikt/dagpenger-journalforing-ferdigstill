@@ -33,7 +33,7 @@ internal class JoarkPayloadTest {
               },
               "dokumenter": [
                 {
-                  "dokumentinfoId": "dokumentId",
+                  "dokumentInfoId": "dokumentId",
                   "tittel": "tittel"
                 }
               ],
@@ -70,7 +70,7 @@ internal class JoarkPayloadTest {
               },
               "dokumenter": [
                 {
-                  "dokumentinfoId": "dokumentId",
+                  "dokumentInfoId": "dokumentId",
                   "tittel": "tittel"
                 }
               ],
