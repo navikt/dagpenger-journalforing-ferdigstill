@@ -50,6 +50,9 @@ dependencies {
     }
     implementation(Dagpenger.Streams)
     implementation(Kotlin.Logging.kotlinLogging)
+    implementation(Moshi.moshi)
+    implementation(Moshi.moshiKotlin)
+    implementation(Moshi.moshiAdapters)
     implementation(Prometheus.common)
     implementation(Prometheus.hotspot)
     implementation(Prometheus.log4j2)
@@ -69,6 +72,7 @@ dependencies {
     testImplementation(kotlin("test"))
     testImplementation(kotlin("test-junit"))
     testImplementation(mockk)
+    testImplementation("com.gregwoodfill.assert:kotlin-json-assert:0.1.0")
     testImplementation(KafkaEmbedded.env)
     testImplementation(Wiremock.standalone)
 
