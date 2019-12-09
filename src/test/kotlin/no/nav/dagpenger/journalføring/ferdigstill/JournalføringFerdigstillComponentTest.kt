@@ -14,6 +14,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern
+import io.kotlintest.matchers.string.shouldContain
 import io.kotlintest.shouldBe
 import no.finn.unleash.FakeUnleash
 import no.nav.common.JAASCredential
@@ -95,8 +96,16 @@ internal class JournalforingFerdigstillComponentTest {
     }
 
     @Test
-    fun ` embedded kafka cluster is up and running `() {
+    fun `Embedded kafka cluster is up and running `() {
         embeddedEnvironment.serverPark.status shouldBe KafkaEnvironment.ServerParkStatus.Started
+    }
+
+    @Test
+    fun `Application has prometheus metrics`() {
+        "http://localhost:${configuration.application.httpPort}/metrics".httpGet().responseString().third.fold(
+            { result -> result shouldContain "jvm" },
+            { e -> fail(e) }
+        )
     }
 
     @Test

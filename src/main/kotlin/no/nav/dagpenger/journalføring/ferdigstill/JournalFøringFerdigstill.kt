@@ -55,7 +55,11 @@ internal object PacketToJoarkPayloadMapper {
 
 internal class JournalFøringFerdigstill(private val journalPostApi: JournalPostApi) {
     fun handlePacket(packet: Packet) {
-        journalPostApi.oppdater(packet.getStringValue(PacketKeys.JOURNALPOST_ID), journalPostFrom(packet))
-        journalPostApi.ferdigstill(packet.getStringValue(PacketKeys.JOURNALPOST_ID))
+        journalPostFrom(packet).let { jp ->
+            packet.getStringValue(PacketKeys.JOURNALPOST_ID).let { jpId ->
+                journalPostApi.oppdater(jpId, jp)
+                journalPostApi.ferdigstill(jpId)
+            }.also { Metrics.jpFerdigStillInc(jp.sak.saksType) }
+        }
     }
 }
