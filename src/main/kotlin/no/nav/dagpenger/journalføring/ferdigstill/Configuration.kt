@@ -23,6 +23,7 @@ private val localProperties = ConfigurationMap(
         "application.name" to "dagpenger-journalføring-ferdigstill",
         "application.profile" to Profile.LOCAL.toString(),
         "journalPostApi.url" to "http://localhost",
+        "gosysApi.url" to "http://localhost",
         "kafka.bootstrap.servers" to "localhost:9092",
         "srvdagpenger.journalforing.ferdigstill.password" to "password",
         "srvdagpenger.journalforing.ferdigstill.username" to "user",
@@ -38,6 +39,7 @@ private val devProperties = ConfigurationMap(
         "application.name" to "dagpenger-journalføring-ferdigstill",
         "application.profile" to Profile.DEV.toString(),
         "journalPostApi.url" to "http://dokarkiv.q1.svc.nais.local",
+        "gosysApi.url" to "http://oppgave.default.svc.nais.local",
         "kafka.bootstrap.servers" to "b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443",
         "sts.url" to "http://security-token-service.default.svc.nais.local",
         "unleash.url" to "https://unleash.nais.preprod.local/api/",
@@ -50,6 +52,7 @@ private val prodProperties = ConfigurationMap(
         "application.name" to "dagpenger-journalføring-ferdigstill",
         "application.profile" to Profile.PROD.toString(),
         "journalPostApi.url" to "http://dokarkiv.default.svc.nais.local",
+        "gosysApi.url" to "http://oppgave.default.svc.nais.local",
         "kafka.bootstrap.servers" to "a01apvl00145.adeo.no:8443,a01apvl00146.adeo.no:8443,a01apvl00147.adeo.no:8443,a01apvl00148.adeo.no:8443,a01apvl00149.adeo.no:8443,a01apvl00150.adeo.no:8443",
         "sts.url" to "http://security-token-service.default.svc.nais.local",
         "unleash.url" to "https://unleash.nais.adeo.no/api/",
@@ -73,6 +76,7 @@ data class Configuration(
     val kafka: Kafka = Kafka(),
     val application: Application = Application(),
     val journalPostApiUrl: String = config()[Key("journalPostApi.url", stringType)],
+    val gosysApiUrl: String = config()[Key("gosysApi.url", stringType)],
     val sts: Sts = Sts(),
     val unleashConfig: UnleashConfig = UnleashConfig.builder()
         .appName(application.name)

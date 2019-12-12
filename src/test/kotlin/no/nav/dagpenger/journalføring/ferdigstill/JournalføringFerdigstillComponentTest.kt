@@ -16,6 +16,7 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern
 import io.kotlintest.matchers.string.shouldContain
 import io.kotlintest.shouldBe
+import io.mockk.mockk
 import no.finn.unleash.FakeUnleash
 import no.nav.common.JAASCredential
 import no.nav.common.KafkaEnvironment
@@ -73,7 +74,7 @@ internal class JournalforingFerdigstillComponentTest {
         )
 
         val stsOidcClient = StsOidcClient(configuration.sts.baseUrl, configuration.sts.username, configuration.sts.password)
-        val journalFøringFerdigstill = JournalFøringFerdigstill(JournalPostRestApi(configuration.journalPostApiUrl, stsOidcClient))
+        val journalFøringFerdigstill = JournalFøringFerdigstill(JournalPostRestApi(configuration.journalPostApiUrl, stsOidcClient), mockk())
         val unleash = FakeUnleash().apply {
             this.enableAll()
         }
