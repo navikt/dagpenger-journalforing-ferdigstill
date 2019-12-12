@@ -18,6 +18,7 @@ internal interface OppgaveClient {
 
 internal data class GosysOppgave(
     val journalpostId: String,
+    val aktoerId: String,
     val tildeltEnhetsnr: String = "4450",
     val opprettetAvEnhetsnr: String = "9999",
     val beskrivelse: String = "Opprettet av Digitale Dagpenger",
@@ -45,13 +46,17 @@ internal class GosysOppgaveClient(private val url: String, private val oidcClien
             .authentication()
             .bearer(oidcClient.oidcToken().access_token)
             .header("X-Correlation-ID", journalPostId)
-            .jsonBody(toOpprettGosysOppgaveJsonPayload(GosysOppgave(journalPostId, aktørId)))
+            .jsonBody(toOpprettGosysOppgaveJsonPayload(GosysOppgave(journalpostId = journalPostId, aktoerId = aktørId)))
             .response()
 
         result.fold(
             { logger.info(" Oppretter manuell journalføringsoppgave for $journalPostId") },
             { e ->
-                logger.error("Feilet oppretting av manuell journalføringsoppgave for $journalPostId", e.exception)
+                logger.error(
+                    "Feilet oppretting av manuell journalføringsoppgave for $journalPostId response message: ${e.response.body().asString(
+                        "application/json"
+                    )}", e.exception
+                )
                 throw e
             }
         )

@@ -44,6 +44,7 @@ internal class JournalPostRestApiTest {
     fun `Opprett gosys-oppgave json payload`() {
         val gosysOppgave = GosysOppgave(
             journalpostId = "12345",
+            aktoerId = "12345678910",
             aktivDato = LocalDate.of(2019, 12, 11),
             fristFerdigstillelse = LocalDate.of(2019, 12, 12)
         )
@@ -53,6 +54,7 @@ internal class JournalPostRestApiTest {
         json shouldStrictlyEqualJson """
             {
                 "journalpostId": "12345",
+                "aktoerId": "12345678910",
                 "tildeltEnhetsnr": "4450",
                 "opprettetAvEnhetsnr": "9999",
                 "beskrivelse": "Opprettet av Digitale Dagpenger",
