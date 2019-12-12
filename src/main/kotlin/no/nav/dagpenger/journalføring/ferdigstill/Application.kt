@@ -41,7 +41,7 @@ internal class Application(
             configuration.kafka.brokers,
             configuration.kafka.credential
         )
-        properties[StreamsConfig.PROCESSING_GUARANTEE_CONFIG] = StreamsConfig.EXACTLY_ONCE
+        properties[StreamsConfig.PROCESSING_GUARANTEE_CONFIG] = configuration.kafka.processingGuarantee
         return properties
     }
 }

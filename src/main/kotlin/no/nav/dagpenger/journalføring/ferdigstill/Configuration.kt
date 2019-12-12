@@ -15,6 +15,7 @@ import no.nav.dagpenger.streams.PacketDeserializer
 import no.nav.dagpenger.streams.PacketSerializer
 import no.nav.dagpenger.streams.Topic
 import org.apache.kafka.common.serialization.Serdes
+import org.apache.kafka.streams.StreamsConfig
 
 private val localProperties = ConfigurationMap(
     mapOf(
@@ -26,7 +27,8 @@ private val localProperties = ConfigurationMap(
         "srvdagpenger.journalforing.ferdigstill.password" to "password",
         "srvdagpenger.journalforing.ferdigstill.username" to "user",
         "sts.url" to "http://localhost",
-        "unleash.url" to "http://localhost"
+        "unleash.url" to "http://localhost",
+        "kafka.processing.guarantee" to StreamsConfig.AT_LEAST_ONCE
 
     )
 )
@@ -38,7 +40,8 @@ private val devProperties = ConfigurationMap(
         "journalPostApi.url" to "http://dokarkiv.q1.svc.nais.local",
         "kafka.bootstrap.servers" to "b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443",
         "sts.url" to "http://security-token-service.default.svc.nais.local",
-        "unleash.url" to "https://unleash.nais.preprod.local/api/"
+        "unleash.url" to "https://unleash.nais.preprod.local/api/",
+        "kafka.processing.guarantee" to StreamsConfig.AT_LEAST_ONCE
     )
 )
 private val prodProperties = ConfigurationMap(
@@ -49,7 +52,8 @@ private val prodProperties = ConfigurationMap(
         "journalPostApi.url" to "http://dokarkiv.default.svc.nais.local",
         "kafka.bootstrap.servers" to "a01apvl00145.adeo.no:8443,a01apvl00146.adeo.no:8443,a01apvl00147.adeo.no:8443,a01apvl00148.adeo.no:8443,a01apvl00149.adeo.no:8443,a01apvl00150.adeo.no:8443",
         "sts.url" to "http://security-token-service.default.svc.nais.local",
-        "unleash.url" to "https://unleash.nais.adeo.no/api/"
+        "unleash.url" to "https://unleash.nais.adeo.no/api/",
+        "kafka.processing.guarantee" to StreamsConfig.EXACTLY_ONCE
     )
 )
 
@@ -86,7 +90,8 @@ data class Configuration(
         val credential: KafkaCredential = KafkaCredential(
             username = config()[Key("srvdagpenger.journalforing.ferdigstill.username", stringType)],
             password = config()[Key("srvdagpenger.journalforing.ferdigstill.password", stringType)]
-        )
+        ),
+        val processingGuarantee: String = config()[Key("kafka.processing.guarantee", stringType)]
     )
 
     data class Sts(
