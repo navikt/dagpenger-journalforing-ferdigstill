@@ -36,7 +36,7 @@ internal class Application(
     }
 
     override fun getConfig(): Properties {
-        val properties =  streamConfig(
+        val properties = streamConfig(
             SERVICE_APP_ID,
             configuration.kafka.brokers,
             configuration.kafka.credential
