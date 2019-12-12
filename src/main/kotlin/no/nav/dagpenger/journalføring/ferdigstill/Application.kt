@@ -36,7 +36,7 @@ internal class Application(
     }
 
     override fun getConfig(): Properties {
-        val properties =  streamConfig(
+        val properties = streamConfig(
             SERVICE_APP_ID,
             configuration.kafka.brokers,
             configuration.kafka.credential
@@ -49,7 +49,9 @@ internal class Application(
 fun main() {
     val configuration = Configuration()
     val stsOidcClient = StsOidcClient(configuration.sts.baseUrl, configuration.sts.username, configuration.sts.password)
-    val journalFøringFerdigstill = JournalFøringFerdigstill(JournalPostRestApi(configuration.journalPostApiUrl, stsOidcClient))
+    val journalFøringFerdigstill = JournalFøringFerdigstill(
+        JournalPostRestApi(configuration.journalPostApiUrl, stsOidcClient),
+        GosysOppgaveClient(configuration.gosysApiUrl, stsOidcClient))
     val unleash = DefaultUnleash(configuration.unleashConfig)
 
     Application(configuration, journalFøringFerdigstill, unleash).start()

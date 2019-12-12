@@ -4,7 +4,9 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import no.nav.dagpenger.events.Packet
+import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.AKTØR_ID
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.FNR
+import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.aktørFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.journalPostFrom
 import org.apache.kafka.streams.kstream.Predicate
 
@@ -29,6 +31,7 @@ internal object PacketToJoarkPayloadMapper {
     fun journalPostIdFrom(packet: Packet) = packet.getStringValue(PacketKeys.JOURNALPOST_ID)
     fun avsenderFrom(packet: Packet) = Avsender(packet.getStringValue(PacketKeys.AVSENDER_NAVN))
     fun brukerFrom(packet: Packet) = Bruker(packet.getStringValue(FNR))
+    fun aktørFrom(packet: Packet) = Bruker(packet.getStringValue(AKTØR_ID), "AKTØR")
     fun dokumenterFrom(packet: Packet) = packet.getObjectValue(PacketKeys.DOKUMENTER) {
         dokumentJsonAdapter.fromJsonValue(it)!!
     }
@@ -53,12 +56,20 @@ internal object PacketToJoarkPayloadMapper {
     }
 }
 
-internal class JournalFøringFerdigstill(private val journalPostApi: JournalPostApi) {
+internal class JournalFøringFerdigstill(
+    private val journalPostApi: JournalPostApi,
+    private val gosysOppgaveClient: OppgaveClient
+) {
+
     fun handlePacket(packet: Packet) {
         journalPostFrom(packet).let { jp ->
             packet.getStringValue(PacketKeys.JOURNALPOST_ID).let { jpId ->
                 journalPostApi.oppdater(jpId, jp)
-                journalPostApi.ferdigstill(jpId)
+                if (jp.sak.saksType == SaksType.GENERELL_SAK) {
+                    gosysOppgaveClient.opprettOppgave(jpId, aktørFrom(packet).id)
+                } else {
+                    journalPostApi.ferdigstill(jpId)
+                }
             }.also { Metrics.jpFerdigStillInc(jp.sak.saksType) }
         }
     }
