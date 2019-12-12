@@ -8,6 +8,7 @@ import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.JOURNALPOST_ID
 import no.nav.dagpenger.oidc.StsOidcClient
 import no.nav.dagpenger.streams.Pond
 import no.nav.dagpenger.streams.streamConfig
+import org.apache.kafka.streams.StreamsConfig
 import java.util.Properties
 
 private val logger = KotlinLogging.logger {}
@@ -35,11 +36,13 @@ internal class Application(
     }
 
     override fun getConfig(): Properties {
-        return streamConfig(
+        val properties =  streamConfig(
             SERVICE_APP_ID,
             configuration.kafka.brokers,
             configuration.kafka.credential
         )
+        properties[StreamsConfig.PROCESSING_GUARANTEE_CONFIG] = StreamsConfig.EXACTLY_ONCE
+        return properties
     }
 }
 
