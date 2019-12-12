@@ -58,7 +58,7 @@ internal object PacketToJoarkPayloadMapper {
 
 internal class JournalFøringFerdigstill(
     private val journalPostApi: JournalPostApi,
-    private val gosysOppgaveClient: OppgaveClient
+    private val oppgaveClient: OppgaveClient
 ) {
 
     fun handlePacket(packet: Packet) {
@@ -66,7 +66,7 @@ internal class JournalFøringFerdigstill(
             packet.getStringValue(PacketKeys.JOURNALPOST_ID).let { jpId ->
                 journalPostApi.oppdater(jpId, jp)
                 if (jp.sak.saksType == SaksType.GENERELL_SAK) {
-                    gosysOppgaveClient.opprettOppgave(jpId, aktørFrom(packet).id)
+                    oppgaveClient.opprettOppgave(jpId, aktørFrom(packet).id)
                 } else {
                     journalPostApi.ferdigstill(jpId)
                 }
