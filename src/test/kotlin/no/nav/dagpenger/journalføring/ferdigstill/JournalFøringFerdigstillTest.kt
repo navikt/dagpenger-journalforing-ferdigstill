@@ -1,5 +1,6 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
+import io.kotlintest.matchers.doubles.shouldBeGreaterThan
 import io.kotlintest.shouldBe
 import io.mockk.mockk
 import io.mockk.verify
@@ -94,8 +95,6 @@ internal class JournalFøringFerdigstillTest {
     @Test
     fun `Metrikker blir oppdatert når journal poster blir ferdigstilt`() {
 
-        CollectorRegistry.defaultRegistry.clear()
-
         JournalFøringFerdigstill(journalPostApi, oppgaveClient).apply {
             val generellPacket = Packet().apply {
                 this.putValue(FNR, "fnr")
@@ -117,7 +116,7 @@ internal class JournalFøringFerdigstillTest {
             this.handlePacket(fagsakPacket)
         }
 
-        CollectorRegistry.defaultRegistry.getSampleValue("dagpenger_journalpost_ferdigstilt", arrayOf("saksType"), arrayOf(SaksType.FAGSAK.name.toLowerCase())) shouldBe 1.0
-        CollectorRegistry.defaultRegistry.getSampleValue("dagpenger_journalpost_ferdigstilt", arrayOf("saksType"), arrayOf(SaksType.GENERELL_SAK.name.toLowerCase())) shouldBe 1.0
+        CollectorRegistry.defaultRegistry.getSampleValue("dagpenger_journalpost_ferdigstilt", arrayOf("saksType"), arrayOf(SaksType.FAGSAK.name.toLowerCase())) shouldBeGreaterThan 0.0
+        CollectorRegistry.defaultRegistry.getSampleValue("dagpenger_journalpost_ferdigstilt", arrayOf("saksType"), arrayOf(SaksType.GENERELL_SAK.name.toLowerCase())) shouldBeGreaterThan 0.0
     }
 }
