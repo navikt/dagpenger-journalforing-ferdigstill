@@ -57,7 +57,7 @@ internal class JournalPostRestApiTest {
                 "aktoerId": "12345678910",
                 "tildeltEnhetsnr": "4450",
                 "opprettetAvEnhetsnr": "9999",
-                "beskrivelse": "Opprettet av Digitale Dagpenger",
+                "beskrivelse": "Kunne ikke automatisk journalføres",
                 "tema": "DAG",
                 "oppgavetype": "JFR",
                 "aktivDato": "2019-12-11",
@@ -84,7 +84,8 @@ internal class JournalPostRestApiTest {
         assertDoesNotThrow {
             client.opprettOppgave(
                 journalPostId = "12345",
-                aktørId = "12345678910"
+                aktørId = "12345678910",
+                søknadstittel = "tittel1"
             )
         }
     }
