@@ -8,6 +8,7 @@ import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.AKTØR_ID
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.FNR
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.aktørFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.journalPostFrom
+import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.tittelFrom
 import org.apache.kafka.streams.kstream.Predicate
 
 internal val isJournalFørt = Predicate<String, Packet> { _, packet ->
@@ -66,7 +67,7 @@ internal class JournalFøringFerdigstill(
             packet.getStringValue(PacketKeys.JOURNALPOST_ID).let { jpId ->
                 journalPostApi.oppdater(jpId, jp)
                 if (jp.sak.saksType == SaksType.GENERELL_SAK) {
-                    oppgaveClient.opprettOppgave(jpId, aktørFrom(packet).id)
+                    oppgaveClient.opprettOppgave(jpId, aktørFrom(packet).id, tittelFrom(packet))
                 } else {
                     journalPostApi.ferdigstill(jpId)
                 }
