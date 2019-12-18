@@ -8,4 +8,5 @@ internal object PacketKeys {
     const val ARENA_SAK_OPPRETTET: String = "arenaSakOpprettet"
     const val ARENA_SAK_ID: String = "arenaSakId"
     const val DOKUMENTER: String = "dokumenter"
+    const val TOGGLE_BEHANDLE_NY_SØKNAD: String = "toggleBehandleNySøknad"
 }
