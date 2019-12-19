@@ -6,20 +6,20 @@ import com.github.kittinunf.fuel.httpPost
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import mu.KotlinLogging
-import no.nav.dagpenger.events.moshiInstance
+import no.nav.dagpenger.events.LocalDateJsonAdapter
 import no.nav.dagpenger.oidc.OidcClient
 import java.time.LocalDate
 
 private val logger = KotlinLogging.logger {}
 
 internal interface OppgaveClient {
-    fun opprettOppgave(journalPostId: String, aktørId: String)
+    fun opprettOppgave(journalPostId: String, aktørId: String, tildeltEnhetsnr: String)
 }
 
 internal data class GosysOppgave(
     val journalpostId: String,
     val aktoerId: String,
-    val tildeltEnhetsnr: String = "4450",
+    val tildeltEnhetsnr: String,
     val opprettetAvEnhetsnr: String = "9999",
     val beskrivelse: String = "Opprettet av Digitale Dagpenger",
     val tema: String = "DAG",
@@ -34,19 +34,19 @@ internal class GosysOppgaveClient(private val url: String, private val oidcClien
     companion object {
         private val moishiInstance = Moshi.Builder()
             .add(KotlinJsonAdapterFactory())
+            .add(LocalDateJsonAdapter())
             .build()
 
-        fun toOpprettGosysOppgaveJsonPayload(gosysOppgave: GosysOppgave): String =
-            moshiInstance.adapter<GosysOppgave>(GosysOppgave::class.java).toJson(gosysOppgave)
+        fun toOpprettGosysOppgaveJsonPayload(gosysOppgave: GosysOppgave) = moishiInstance.adapter<GosysOppgave>(GosysOppgave::class.java).toJson(gosysOppgave)
     }
 
-    override fun opprettOppgave(journalPostId: String, aktørId: String) {
+    override fun opprettOppgave(journalPostId: String, aktørId: String, tildeltEnhetsnr: String) {
         val (_, _, result) = url.plus("/api/v1/oppgaver")
             .httpPost()
             .authentication()
             .bearer(oidcClient.oidcToken().access_token)
             .header("X-Correlation-ID", journalPostId)
-            .jsonBody(toOpprettGosysOppgaveJsonPayload(GosysOppgave(journalpostId = journalPostId, aktoerId = aktørId)))
+            .jsonBody(toOpprettGosysOppgaveJsonPayload(GosysOppgave(journalpostId = journalPostId, aktoerId = aktørId, tildeltEnhetsnr = tildeltEnhetsnr)))
             .response()
 
         result.fold(

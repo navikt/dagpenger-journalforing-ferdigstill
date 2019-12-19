@@ -153,6 +153,7 @@ internal class JournalforingFerdigstillComponentTest {
             this.putValue(PacketKeys.JOURNALPOST_ID, journalPostId)
             this.putValue(PacketKeys.ARENA_SAK_ID, "arenaSakId")
             this.putValue(PacketKeys.AVSENDER_NAVN, "et navn")
+            this.putValue(PacketKeys.BEHANDLENDE_ENHET, "9999")
             dokumentJsonAdapter.toJsonValue(listOf(Dokument("id1", "tittel1"), Dokument("id1", "tittel1")))?.let { this.putValue(PacketKeys.DOKUMENTER, it) }
         }
 

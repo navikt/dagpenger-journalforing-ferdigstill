@@ -32,21 +32,15 @@ internal class JournalPostRestApiTest {
         }
     }
 
-    /*
-    @BeforeEach
-    fun configure() {
-        WireMock.configureFor(server.port())
-    }
-
-     */
-
     @Test
     fun `Opprett gosys-oppgave json payload`() {
         val gosysOppgave = GosysOppgave(
             journalpostId = "12345",
             aktoerId = "12345678910",
             aktivDato = LocalDate.of(2019, 12, 11),
-            fristFerdigstillelse = LocalDate.of(2019, 12, 12)
+            fristFerdigstillelse = LocalDate.of(2019, 12, 12),
+            tildeltEnhetsnr = "9999"
+
         )
 
         val json = GosysOppgaveClient.toOpprettGosysOppgaveJsonPayload(gosysOppgave)
@@ -62,7 +56,8 @@ internal class JournalPostRestApiTest {
                 "oppgavetype": "JFR",
                 "aktivDato": "2019-12-11",
                 "fristFerdigstillelse": "2019-12-12",
-                "prioritet": "NORM"
+                "prioritet": "NORM",
+                "tildeltEnhetsnr": "9999"
             }
         """.trimIndent()
     }
@@ -84,7 +79,8 @@ internal class JournalPostRestApiTest {
         assertDoesNotThrow {
             client.opprettOppgave(
                 journalPostId = "12345",
-                aktørId = "12345678910"
+                aktørId = "12345678910",
+                tildeltEnhetsnr = "9999"
             )
         }
     }
