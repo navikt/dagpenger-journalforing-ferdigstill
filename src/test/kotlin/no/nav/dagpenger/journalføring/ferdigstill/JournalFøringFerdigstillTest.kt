@@ -11,6 +11,7 @@ import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.AKTØR_ID
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.ARENA_SAK_ID
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.ARENA_SAK_OPPRETTET
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.AVSENDER_NAVN
+import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.BEHANDLENDE_ENHET
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.DOKUMENTER
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.FNR
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.JOURNALPOST_ID
@@ -31,6 +32,7 @@ internal class JournalFøringFerdigstillTest {
             this.putValue(ARENA_SAK_OPPRETTET, true)
             this.putValue(DOKUMENTER, true)
             this.putValue(AVSENDER_NAVN, true)
+            this.putValue(BEHANDLENDE_ENHET, "9999")
         }) shouldBe true
     }
 
@@ -71,19 +73,21 @@ internal class JournalFøringFerdigstillTest {
         val journalFøringFerdigstill = JournalFøringFerdigstill(journalPostApi, oppgaveClient)
         val journalPostId = "journalPostId"
         val aktørId = "12345678910"
+        val enhet = "999"
 
         val packet = Packet().apply {
             this.putValue(FNR, "fnr")
             this.putValue(JOURNALPOST_ID, journalPostId)
             this.putValue(AVSENDER_NAVN, "et navn")
             this.putValue(AKTØR_ID, aktørId)
+            this.putValue(BEHANDLENDE_ENHET, enhet)
             dokumentJsonAdapter.toJsonValue(listOf(Dokument("id1", "tittel1")))?.let { this.putValue(DOKUMENTER, it) }
         }
 
         journalFøringFerdigstill.handlePacket(packet)
 
         verifyAll {
-            oppgaveClient.opprettOppgave(journalPostId, aktørId, "tittel1")
+            oppgaveClient.opprettOppgave(journalPostId, aktørId, "tittel1", enhet)
             journalPostApi.oppdater(journalPostId, journalPostFrom(packet))
         }
 
@@ -101,6 +105,7 @@ internal class JournalFøringFerdigstillTest {
                 this.putValue(AKTØR_ID, "aktør")
                 this.putValue(JOURNALPOST_ID, "journalPostId")
                 this.putValue(AVSENDER_NAVN, "et navn")
+                this.putValue(BEHANDLENDE_ENHET, "9999")
                 dokumentJsonAdapter.toJsonValue(listOf(Dokument("id1", "tittel1")))?.let { this.putValue(DOKUMENTER, it) }
             }
             this.handlePacket(generellPacket)

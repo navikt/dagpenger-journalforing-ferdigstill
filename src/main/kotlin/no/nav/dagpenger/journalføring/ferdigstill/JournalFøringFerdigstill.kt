@@ -5,9 +5,11 @@ import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.AKTØR_ID
+import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.BEHANDLENDE_ENHET
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.FNR
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.aktørFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.journalPostFrom
+import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.tildeltEnhetsNrFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.tittelFrom
 import org.apache.kafka.streams.kstream.Predicate
 
@@ -16,7 +18,8 @@ internal val isJournalFørt = Predicate<String, Packet> { _, packet ->
         packet.hasField(FNR) &&
         packet.hasField(PacketKeys.JOURNALPOST_ID) &&
         packet.hasField(PacketKeys.AVSENDER_NAVN) &&
-        packet.hasField(PacketKeys.DOKUMENTER)
+        packet.hasField(PacketKeys.DOKUMENTER) &&
+        packet.hasField(BEHANDLENDE_ENHET)
 }
 
 internal object PacketToJoarkPayloadMapper {
@@ -33,6 +36,7 @@ internal object PacketToJoarkPayloadMapper {
     fun avsenderFrom(packet: Packet) = Avsender(packet.getStringValue(PacketKeys.AVSENDER_NAVN))
     fun brukerFrom(packet: Packet) = Bruker(packet.getStringValue(FNR))
     fun aktørFrom(packet: Packet) = Bruker(packet.getStringValue(AKTØR_ID), "AKTØR")
+    fun tildeltEnhetsNrFrom(packet: Packet) = packet.getStringValue(BEHANDLENDE_ENHET)
     fun dokumenterFrom(packet: Packet) = packet.getObjectValue(PacketKeys.DOKUMENTER) {
         dokumentJsonAdapter.fromJsonValue(it)!!
     }
@@ -67,7 +71,7 @@ internal class JournalFøringFerdigstill(
             packet.getStringValue(PacketKeys.JOURNALPOST_ID).let { jpId ->
                 journalPostApi.oppdater(jpId, jp)
                 if (jp.sak.saksType == SaksType.GENERELL_SAK) {
-                    oppgaveClient.opprettOppgave(jpId, aktørFrom(packet).id, tittelFrom(packet))
+                    oppgaveClient.opprettOppgave(jpId, aktørFrom(packet).id, tittelFrom(packet), tildeltEnhetsNrFrom(packet))
                 } else {
                     journalPostApi.ferdigstill(jpId)
                 }
