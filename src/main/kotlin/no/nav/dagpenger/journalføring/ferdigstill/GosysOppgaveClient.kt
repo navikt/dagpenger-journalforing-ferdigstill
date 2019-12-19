@@ -13,15 +13,15 @@ import java.time.LocalDate
 private val logger = KotlinLogging.logger {}
 
 internal interface OppgaveClient {
-    fun opprettOppgave(journalPostId: String, aktørId: String, tildeltEnhetsnr: String)
+    fun opprettOppgave(journalPostId: String, aktørId: String,søknadstittel: String, tildeltEnhetsnr: String)
 }
 
 internal data class GosysOppgave(
     val journalpostId: String,
     val aktoerId: String,
     val tildeltEnhetsnr: String,
+    val beskrivelse: String = "Kunne ikke automatisk journalføres",
     val opprettetAvEnhetsnr: String = "9999",
-    val beskrivelse: String = "Opprettet av Digitale Dagpenger",
     val tema: String = "DAG",
     val oppgavetype: String = "JFR",
     val aktivDato: LocalDate = LocalDate.now(),
@@ -40,13 +40,13 @@ internal class GosysOppgaveClient(private val url: String, private val oidcClien
         fun toOpprettGosysOppgaveJsonPayload(gosysOppgave: GosysOppgave) = moishiInstance.adapter<GosysOppgave>(GosysOppgave::class.java).toJson(gosysOppgave)
     }
 
-    override fun opprettOppgave(journalPostId: String, aktørId: String, tildeltEnhetsnr: String) {
+    override fun opprettOppgave(journalPostId: String, aktørId: String, søknadstittel: String,tildeltEnhetsnr: String) {
         val (_, _, result) = url.plus("/api/v1/oppgaver")
             .httpPost()
             .authentication()
             .bearer(oidcClient.oidcToken().access_token)
             .header("X-Correlation-ID", journalPostId)
-            .jsonBody(toOpprettGosysOppgaveJsonPayload(GosysOppgave(journalpostId = journalPostId, aktoerId = aktørId, tildeltEnhetsnr = tildeltEnhetsnr)))
+            .jsonBody(toOpprettGosysOppgaveJsonPayload(GosysOppgave(journalpostId = journalPostId, aktoerId = aktørId, beskrivelse = søknadstittel,tildeltEnhetsnr = tildeltEnhetsnr)))
             .response()
 
         result.fold(

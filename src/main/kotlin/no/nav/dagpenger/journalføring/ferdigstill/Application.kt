@@ -1,10 +1,9 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
 import mu.KotlinLogging
-import no.finn.unleash.DefaultUnleash
-import no.finn.unleash.Unleash
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.JOURNALPOST_ID
+import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.TOGGLE_BEHANDLE_NY_SØKNAD
 import no.nav.dagpenger.oidc.StsOidcClient
 import no.nav.dagpenger.streams.Pond
 import no.nav.dagpenger.streams.streamConfig
@@ -16,19 +15,18 @@ internal const val JOURNALFØRING_FEATURE_TOGGLE_NAME = "dp-journalforing.ferdig
 
 internal class Application(
     private val configuration: Configuration,
-    private val journalFøringFerdigstill: JournalFøringFerdigstill,
-    private val unleash: Unleash
+    private val journalFøringFerdigstill: JournalFøringFerdigstill
 ) : Pond(configuration.kafka.dagpengerJournalpostTopic) {
 
     override val SERVICE_APP_ID = configuration.application.name
     override val HTTP_PORT: Int = configuration.application.httpPort
 
-    private fun isEnabled(): Boolean = unleash.isEnabled(JOURNALFØRING_FEATURE_TOGGLE_NAME, false)
+    private fun isEnabled(packet: Packet): Boolean = packet.hasField(TOGGLE_BEHANDLE_NY_SØKNAD) && packet.getBoolean(TOGGLE_BEHANDLE_NY_SØKNAD)
 
     override fun filterPredicates() = listOf(isJournalFørt)
 
     override fun onPacket(packet: Packet) {
-        if (isEnabled()) {
+        if (isEnabled(packet)) {
             logger.info { "Processing: $packet" }.also { journalFøringFerdigstill.handlePacket(packet) }
         } else {
             logger.info { "Skipping(due to feature toggle) : ${packet.getStringValue(JOURNALPOST_ID)}" }
@@ -52,7 +50,6 @@ fun main() {
     val journalFøringFerdigstill = JournalFøringFerdigstill(
         JournalPostRestApi(configuration.journalPostApiUrl, stsOidcClient),
         GosysOppgaveClient(configuration.gosysApiUrl, stsOidcClient))
-    val unleash = DefaultUnleash(configuration.unleashConfig)
 
-    Application(configuration, journalFøringFerdigstill, unleash).start()
+    Application(configuration, journalFøringFerdigstill).start()
 }

@@ -8,7 +8,6 @@ import com.natpryce.konfig.Key
 import com.natpryce.konfig.intType
 import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
-import no.finn.unleash.util.UnleashConfig
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.streams.KafkaCredential
 import no.nav.dagpenger.streams.PacketDeserializer
@@ -28,7 +27,6 @@ private val localProperties = ConfigurationMap(
         "srvdagpenger.journalforing.ferdigstill.password" to "password",
         "srvdagpenger.journalforing.ferdigstill.username" to "user",
         "sts.url" to "http://localhost",
-        "unleash.url" to "http://localhost",
         "kafka.processing.guarantee" to StreamsConfig.AT_LEAST_ONCE
 
     )
@@ -42,7 +40,6 @@ private val devProperties = ConfigurationMap(
         "gosysApi.url" to "http://oppgave.default.svc.nais.local",
         "kafka.bootstrap.servers" to "b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443",
         "sts.url" to "http://security-token-service.default.svc.nais.local",
-        "unleash.url" to "https://unleash.nais.preprod.local/api/",
         "kafka.processing.guarantee" to StreamsConfig.AT_LEAST_ONCE
     )
 )
@@ -55,7 +52,6 @@ private val prodProperties = ConfigurationMap(
         "gosysApi.url" to "http://oppgave.default.svc.nais.local",
         "kafka.bootstrap.servers" to "a01apvl00145.adeo.no:8443,a01apvl00146.adeo.no:8443,a01apvl00147.adeo.no:8443,a01apvl00148.adeo.no:8443,a01apvl00149.adeo.no:8443,a01apvl00150.adeo.no:8443",
         "sts.url" to "http://security-token-service.default.svc.nais.local",
-        "unleash.url" to "https://unleash.nais.adeo.no/api/",
         "kafka.processing.guarantee" to StreamsConfig.EXACTLY_ONCE
     )
 )
@@ -77,11 +73,7 @@ data class Configuration(
     val application: Application = Application(),
     val journalPostApiUrl: String = config()[Key("journalPostApi.url", stringType)],
     val gosysApiUrl: String = config()[Key("gosysApi.url", stringType)],
-    val sts: Sts = Sts(),
-    val unleashConfig: UnleashConfig = UnleashConfig.builder()
-        .appName(application.name)
-        .unleashAPI(config()[Key("unleash.url", stringType)])
-        .build()
+    val sts: Sts = Sts()
 ) {
 
     data class Kafka(
