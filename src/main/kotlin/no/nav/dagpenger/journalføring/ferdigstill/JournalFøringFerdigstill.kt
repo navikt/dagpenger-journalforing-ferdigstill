@@ -71,7 +71,7 @@ internal class JournalFøringFerdigstill(
             packet.getStringValue(PacketKeys.JOURNALPOST_ID).let { jpId ->
                 journalPostApi.oppdater(jpId, jp)
                 if (jp.sak.saksType == SaksType.GENERELL_SAK) {
-                    oppgaveClient.opprettOppgave(jpId, aktørFrom(packet).id,tittelFrom(packet), tildeltEnhetsNrFrom(packet))
+                    oppgaveClient.opprettOppgave(jpId, aktørFrom(packet).id, tittelFrom(packet), tildeltEnhetsNrFrom(packet))
                 } else {
                     journalPostApi.ferdigstill(jpId)
                 }

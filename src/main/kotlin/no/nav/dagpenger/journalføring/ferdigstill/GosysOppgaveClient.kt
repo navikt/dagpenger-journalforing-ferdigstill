@@ -13,7 +13,7 @@ import java.time.LocalDate
 private val logger = KotlinLogging.logger {}
 
 internal interface OppgaveClient {
-    fun opprettOppgave(journalPostId: String, aktørId: String,søknadstittel: String, tildeltEnhetsnr: String)
+    fun opprettOppgave(journalPostId: String, aktørId: String, søknadstittel: String, tildeltEnhetsnr: String)
 }
 
 internal data class GosysOppgave(
@@ -40,13 +40,13 @@ internal class GosysOppgaveClient(private val url: String, private val oidcClien
         fun toOpprettGosysOppgaveJsonPayload(gosysOppgave: GosysOppgave) = moishiInstance.adapter<GosysOppgave>(GosysOppgave::class.java).toJson(gosysOppgave)
     }
 
-    override fun opprettOppgave(journalPostId: String, aktørId: String, søknadstittel: String,tildeltEnhetsnr: String) {
+    override fun opprettOppgave(journalPostId: String, aktørId: String, søknadstittel: String, tildeltEnhetsnr: String) {
         val (_, _, result) = url.plus("/api/v1/oppgaver")
             .httpPost()
             .authentication()
             .bearer(oidcClient.oidcToken().access_token)
             .header("X-Correlation-ID", journalPostId)
-            .jsonBody(toOpprettGosysOppgaveJsonPayload(GosysOppgave(journalpostId = journalPostId, aktoerId = aktørId, beskrivelse = søknadstittel,tildeltEnhetsnr = tildeltEnhetsnr)))
+            .jsonBody(toOpprettGosysOppgaveJsonPayload(GosysOppgave(journalpostId = journalPostId, aktoerId = aktørId, beskrivelse = søknadstittel, tildeltEnhetsnr = tildeltEnhetsnr)))
             .response()
 
         result.fold(

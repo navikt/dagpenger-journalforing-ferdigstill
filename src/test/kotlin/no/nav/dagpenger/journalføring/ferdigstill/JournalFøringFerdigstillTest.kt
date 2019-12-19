@@ -87,7 +87,7 @@ internal class JournalFøringFerdigstillTest {
         journalFøringFerdigstill.handlePacket(packet)
 
         verifyAll {
-            oppgaveClient.opprettOppgave(journalPostId, aktørId, "tittel1",enhet)
+            oppgaveClient.opprettOppgave(journalPostId, aktørId, "tittel1", enhet)
             journalPostApi.oppdater(journalPostId, journalPostFrom(packet))
         }
 
