@@ -26,11 +26,14 @@ internal class Application(
     override fun filterPredicates() = listOf(isJournalFørt)
 
     override fun onPacket(packet: Packet) {
+        logger.info { "Skipping (quick fix): ${packet.getStringValue(JOURNALPOST_ID)}" }
+        /*
         if (isEnabled(packet)) {
             logger.info { "Processing: $packet" }.also { journalFøringFerdigstill.handlePacket(packet) }
         } else {
             logger.info { "Skipping(due to feature toggle) : ${packet.getStringValue(JOURNALPOST_ID)}" }
         }
+         */
     }
 
     override fun getConfig(): Properties {
