@@ -35,6 +35,7 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.config.SaslConfigs
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import java.util.Properties
@@ -115,6 +116,7 @@ internal class JournalforingFerdigstillComponentTest {
     }
 
     @Test
+    @Disabled
     fun ` Component test of JournalføringFerdigstill`() {
 
         journalPostApiMock.addStubMapping(
