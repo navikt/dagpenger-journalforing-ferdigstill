@@ -3,10 +3,6 @@ kind: "Alert"
 metadata:
   name: dagpenger-journalforing-ferdigstill
 spec:
-  receivers:
-    slack:
-      channel: '#team-dagpenger-alert'
-      prependText: '<!here> | '
   alerts:
     - alert: applikasjon nede
       expr: kube_deployment_status_replicas_unavailable{deployment="dagpenger-journalforing-ferdigstill",job="kubernetes-service-endpoints"} > 0
