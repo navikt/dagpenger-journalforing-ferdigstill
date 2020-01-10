@@ -70,12 +70,16 @@ internal class PacketToJoarkPayloadMapperTest {
 
     @Test
     fun `Extract journal post from packet`() {
-        val jp = PacketToJoarkPayloadMapper.journalPostFrom(Packet().apply {
-            this.putValue(PacketKeys.JOURNALPOST_ID, "journalPostId")
-            this.putValue(PacketKeys.AVSENDER_NAVN, "navn")
-            this.putValue(PacketKeys.NATURLIG_IDENT, "fnr")
-            dokumentJsonAdapter.toJsonValue(listOf(Dokument("dokumentId", "tittel")))?.let { this.putValue(PacketKeys.DOKUMENTER, it) }
-        })
+        val jp = PacketToJoarkPayloadMapper.journalPostFrom(
+            Packet().apply {
+                this.putValue(PacketKeys.JOURNALPOST_ID, "journalPostId")
+                this.putValue(PacketKeys.AVSENDER_NAVN, "navn")
+                this.putValue(PacketKeys.NATURLIG_IDENT, "fnr")
+                dokumentJsonAdapter.toJsonValue(listOf(Dokument("dokumentId", "tittel")))
+                    ?.let { this.putValue(PacketKeys.DOKUMENTER, it) }
+            },
+            "bla"
+        )
 
         jp.avsenderMottaker.navn shouldBe "navn"
         jp.behandlingstema shouldBe "ab0001"

@@ -158,7 +158,7 @@ internal class JournalforingFerdigstillComponentTest {
             dokumentJsonAdapter.toJsonValue(listOf(Dokument("id1", "tittel1"), Dokument("id1", "tittel1")))?.let { this.putValue(PacketKeys.DOKUMENTER, it) }
         }
 
-        val json = journalPostFrom(packet).let { toJsonPayload(it) }
+        val json = journalPostFrom(packet, "arenaSakId").let { toJsonPayload(it) }
 
         behovProducer(configuration).run {
             this.send(ProducerRecord(configuration.kafka.dagpengerJournalpostTopic.name, packet)).get()

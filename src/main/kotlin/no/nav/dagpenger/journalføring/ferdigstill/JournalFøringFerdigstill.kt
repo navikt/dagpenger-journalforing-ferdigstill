@@ -3,10 +3,12 @@ package no.nav.dagpenger.journalføring.ferdigstill
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.events.moshiInstance
 import no.nav.dagpenger.journalføring.arena.adapter.ArenaClient
 import no.nav.dagpenger.journalføring.arena.adapter.ArenaSakStatus
+import no.nav.dagpenger.journalføring.arena.adapter.BestillOppgaveArenaException
 import no.nav.dagpenger.journalføring.arena.adapter.createArenaTilleggsinformasjon
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.AKTØR_ID
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.BEHANDLENDE_ENHET
@@ -18,10 +20,13 @@ import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.ha
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.journalPostFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.journalPostIdFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.registrertDatoFrom
-import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.sakFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.tildeltEnhetsNrFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.tittelFrom
+import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonErInaktiv
+import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonIkkeFunnet
 import org.apache.kafka.streams.kstream.Predicate
+
+private val logger = KotlinLogging.logger {}
 
 internal val erJournalpost = Predicate<String, Packet> { _, packet ->
         packet.hasField(PacketKeys.JOURNALPOST_ID)
@@ -66,12 +71,15 @@ internal object PacketToJoarkPayloadMapper {
         else -> Sak(SaksType.GENERELL_SAK, null, null)
     }
 
-    fun journalPostFrom(packet: Packet): OppdaterJournalPostPayload {
+    fun journalPostFrom(packet: Packet, fagsakId: String): OppdaterJournalPostPayload {
         return OppdaterJournalPostPayload(
             avsenderMottaker = avsenderFrom(packet),
             bruker = brukerFrom(packet),
             tittel = tittelFrom(packet),
-            sak = sakFrom(packet),
+            sak = Sak(
+                saksType = SaksType.FAGSAK,
+                fagsaksystem = "AO01",
+                fagsakId = fagsakId),
             dokumenter = dokumenterFrom(packet)
         )
     }
@@ -84,7 +92,6 @@ internal class JournalFøringFerdigstill(
 ) {
 
     fun handlePacket(packet: Packet) {
-        val saksType = sakFrom(packet).saksType
         val journalpostId = journalPostIdFrom(packet)
 
         if (!hasNaturligIdent(packet)) {
@@ -92,20 +99,37 @@ internal class JournalFøringFerdigstill(
             return
         }
 
+        val aktørId = aktørFrom(packet).id
         val arenasaker = arenaClient.hentArenaSaker(brukerFrom(packet).id)
-        if (arenasaker.none { it.status == ArenaSakStatus.Aktiv }) {
-            val tilleggsinformasjon = createArenaTilleggsinformasjon(dokumentTitlerFrom(packet), registrertDatoFrom(packet))
-            arenaClient.bestillOppgave(brukerFrom(packet).id, tildeltEnhetsNrFrom(packet), tilleggsinformasjon)
-        } else {
-            val aktørId = if (hasNaturligIdent(packet)) aktørFrom(packet).id else null
+
+        if (arenasaker.any { it.status == ArenaSakStatus.Aktiv }) {
             manuellJournalføringsOppgaveClient.opprettOppgave(journalpostId, aktørId, tittelFrom(packet), tildeltEnhetsNrFrom(packet))
             return
         }
 
-        journalPostApi.oppdater(journalpostId, journalPostFrom(packet))
-        journalPostApi.ferdigstill(journalpostId)
+        val tilleggsinformasjon = createArenaTilleggsinformasjon(dokumentTitlerFrom(packet), registrertDatoFrom(packet))
 
-        Metrics.jpFerdigStillInc(saksType)
+        try {
+            val fagsakId = arenaClient.bestillOppgave(brukerFrom(packet).id, tildeltEnhetsNrFrom(packet), tilleggsinformasjon)
+            journalPostApi.oppdater(journalpostId, journalPostFrom(packet, fagsakId))
+            journalPostApi.ferdigstill(journalpostId)
+        } catch (e: BestillOppgaveArenaException) {
+            when (e.cause) {
+                is BestillOppgavePersonErInaktiv -> {
+                    logger.warn { "Kan ikke bestille oppgave for journalpost $journalpostId. Person ikke arbeidssøker " }
+                    manuellJournalføringsOppgaveClient.opprettOppgave(journalpostId, aktørId, tittelFrom(packet), tildeltEnhetsNrFrom(packet))
+                }
+                is BestillOppgavePersonIkkeFunnet -> {
+                    logger.warn { "Kan ikke bestille oppgave for journalpost $journalpostId. Person ikke funnet i arena " }
+                    manuellJournalføringsOppgaveClient.opprettOppgave(journalpostId, aktørId, tittelFrom(packet), tildeltEnhetsNrFrom(packet))
+                }
+                else -> {
+                    logger.warn { "Kan ikke bestille oppgave for journalpost $journalpostId. Ukjent feil. " }
+                    throw e
+                }
+            }
+        }
+        //Metrics.jpFerdigStillInc(saksType)
     }
 
 }

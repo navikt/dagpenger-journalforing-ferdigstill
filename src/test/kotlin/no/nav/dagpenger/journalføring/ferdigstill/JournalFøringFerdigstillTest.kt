@@ -11,6 +11,7 @@ import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.journalføring.arena.adapter.ArenaClient
 import no.nav.dagpenger.journalføring.arena.adapter.ArenaSak
 import no.nav.dagpenger.journalføring.arena.adapter.ArenaSakStatus
+import no.nav.dagpenger.journalføring.arena.adapter.BestillOppgaveArenaException
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.AKTØR_ID
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.ARENA_SAK_ID
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.ARENA_SAK_OPPRETTET
@@ -22,6 +23,8 @@ import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.NATURLIG_IDENT
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.JOURNALPOST_ID
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.dokumentJsonAdapter
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.journalPostFrom
+import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonErInaktiv
+import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonIkkeFunnet
 import org.junit.jupiter.api.Test
 
 internal class JournalFøringFerdigstillTest {
@@ -70,7 +73,7 @@ internal class JournalFøringFerdigstillTest {
 
         verifyAll {
             journalPostApi.ferdigstill(journalPostId)
-            journalPostApi.oppdater(journalPostId, journalPostFrom(packet))
+            journalPostApi.oppdater(journalPostId, journalPostFrom(packet, "arenaSakId"))
         }
     }
 
@@ -203,6 +206,45 @@ internal class JournalFøringFerdigstillTest {
 
 
         verify { manuellJournalføringsOppgaveClient.opprettOppgave(journalPostId, aktørId, "tittel1", "9999") }
+        verify(exactly = 0) { journalPostApi.ferdigstill(any()) }
+    }
+
+    @Test
+    fun `Opprett manuell journalføringsoppgave når bestilling av arena-oppgave feiler`() {
+        val journalFøringFerdigstill = JournalFøringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient)
+        val journalPostId = "journalPostId"
+        val naturligIdent = "12345678910"
+        val behandlendeEnhet = "9999"
+        val aktørId = "987654321"
+
+        val packet = Packet().apply {
+            this.putValue(JOURNALPOST_ID, journalPostId)
+            this.putValue(NATURLIG_IDENT, naturligIdent)
+            this.putValue(BEHANDLENDE_ENHET, behandlendeEnhet)
+            this.putValue(DATO_REGISTRERT, "2020-01-01")
+            this.putValue(AKTØR_ID, aktørId)
+            this.putValue(AVSENDER_NAVN, "Donald")
+            dokumentJsonAdapter.toJsonValue(listOf(Dokument("id1", "tittel1")))?.let { this.putValue(DOKUMENTER, it) }
+        }
+
+        //Person er ikke arbeidssøker
+        every {
+            arenaClient.bestillOppgave(naturligIdent, behandlendeEnhet, any())
+        } throws BestillOppgaveArenaException(BestillOppgavePersonErInaktiv())
+
+        journalFøringFerdigstill.handlePacket(packet)
+
+        verify(exactly = 1) { manuellJournalføringsOppgaveClient.opprettOppgave(journalPostId, aktørId, "tittel1", "9999") }
+        verify(exactly = 0) { journalPostApi.ferdigstill(any()) }
+
+        //Person er ikke funnet i arena
+        every {
+            arenaClient.bestillOppgave(naturligIdent, behandlendeEnhet, any())
+        } throws BestillOppgaveArenaException(BestillOppgavePersonIkkeFunnet())
+
+        journalFøringFerdigstill.handlePacket(packet)
+
+        verify(exactly = 2) { manuellJournalføringsOppgaveClient.opprettOppgave(journalPostId, aktørId, "tittel1", "9999") }
         verify(exactly = 0) { journalPostApi.ferdigstill(any()) }
     }
 
