@@ -24,7 +24,7 @@ internal class PacketToJoarkPayloadMapperTest {
     @Test
     fun `Exctract bruker from packet`() {
         PacketToJoarkPayloadMapper.brukerFrom(Packet().apply {
-            this.putValue(PacketKeys.FNR, "fnr")
+            this.putValue(PacketKeys.NATURLIG_IDENT, "fnr")
         }).id shouldBe "fnr"
     }
 
@@ -73,7 +73,7 @@ internal class PacketToJoarkPayloadMapperTest {
         val jp = PacketToJoarkPayloadMapper.journalPostFrom(Packet().apply {
             this.putValue(PacketKeys.JOURNALPOST_ID, "journalPostId")
             this.putValue(PacketKeys.AVSENDER_NAVN, "navn")
-            this.putValue(PacketKeys.FNR, "fnr")
+            this.putValue(PacketKeys.NATURLIG_IDENT, "fnr")
             dokumentJsonAdapter.toJsonValue(listOf(Dokument("dokumentId", "tittel")))?.let { this.putValue(PacketKeys.DOKUMENTER, it) }
         })
 

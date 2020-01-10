@@ -12,13 +12,13 @@ import java.time.LocalDate
 
 private val logger = KotlinLogging.logger {}
 
-internal interface OppgaveClient {
-    fun opprettOppgave(journalPostId: String, aktørId: String, søknadstittel: String, tildeltEnhetsnr: String)
+internal interface ManuellJournalføringsOppgaveClient {
+    fun opprettOppgave(journalPostId: String, aktørId: String?, søknadstittel: String, tildeltEnhetsnr: String)
 }
 
 internal data class GosysOppgave(
     val journalpostId: String,
-    val aktoerId: String,
+    val aktoerId: String?,
     val tildeltEnhetsnr: String,
     val beskrivelse: String = "Kunne ikke automatisk journalføres",
     val opprettetAvEnhetsnr: String = "9999",
@@ -29,7 +29,7 @@ internal data class GosysOppgave(
     val prioritet: String = "NORM"
 )
 
-internal class GosysOppgaveClient(private val url: String, private val oidcClient: OidcClient) : OppgaveClient {
+internal class GosysOppgaveClient(private val url: String, private val oidcClient: OidcClient) : ManuellJournalføringsOppgaveClient {
 
     companion object {
         private val moishiInstance = Moshi.Builder()
@@ -40,7 +40,7 @@ internal class GosysOppgaveClient(private val url: String, private val oidcClien
         fun toOpprettGosysOppgaveJsonPayload(gosysOppgave: GosysOppgave) = moishiInstance.adapter<GosysOppgave>(GosysOppgave::class.java).toJson(gosysOppgave)
     }
 
-    override fun opprettOppgave(journalPostId: String, aktørId: String, søknadstittel: String, tildeltEnhetsnr: String) {
+    override fun opprettOppgave(journalPostId: String, aktørId: String?, søknadstittel: String, tildeltEnhetsnr: String) {
         val (_, _, result) = url.plus("/api/v1/oppgaver")
             .httpPost()
             .authentication()

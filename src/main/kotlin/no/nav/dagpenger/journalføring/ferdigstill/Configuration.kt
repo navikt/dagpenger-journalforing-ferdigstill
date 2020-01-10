@@ -27,6 +27,8 @@ private val localProperties = ConfigurationMap(
         "srvdagpenger.journalforing.ferdigstill.password" to "password",
         "srvdagpenger.journalforing.ferdigstill.username" to "user",
         "sts.url" to "http://localhost",
+        "behandlearbeidsytelsesak.v1.url" to "https://localhost/ail_ws/BehandleArbeidOgAktivitetOppgave_v1",
+        "ytelseskontrakt.v3.url" to "https://localhost/ail_ws/Ytelseskontrakt_v3",
         "kafka.processing.guarantee" to StreamsConfig.AT_LEAST_ONCE
 
     )
@@ -40,6 +42,8 @@ private val devProperties = ConfigurationMap(
         "gosysApi.url" to "http://oppgave.default.svc.nais.local",
         "kafka.bootstrap.servers" to "b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443",
         "sts.url" to "http://security-token-service.default.svc.nais.local",
+        "behandlearbeidsytelsesak.v1.url" to "https://arena-q1.adeo.no/ail_ws/BehandleArbeidOgAktivitetOppgave_v1",
+        "ytelseskontrakt.v3.url" to "https://arena-q1.adeo.no/ail_ws/Ytelseskontrakt_v3",
         "kafka.processing.guarantee" to StreamsConfig.AT_LEAST_ONCE
     )
 )
@@ -52,6 +56,8 @@ private val prodProperties = ConfigurationMap(
         "gosysApi.url" to "http://oppgave.default.svc.nais.local",
         "kafka.bootstrap.servers" to "a01apvl00145.adeo.no:8443,a01apvl00146.adeo.no:8443,a01apvl00147.adeo.no:8443,a01apvl00148.adeo.no:8443,a01apvl00149.adeo.no:8443,a01apvl00150.adeo.no:8443",
         "sts.url" to "http://security-token-service.default.svc.nais.local",
+        "behandlearbeidsytelsesak.v1.url" to "https://arena.adeo.no/ail_ws/BehandleArbeidOgAktivitetOppgave_v1",
+        "ytelseskontrakt.v3.url" to "https://arena.adeo.no/ail_ws/Ytelseskontrakt_v3",
         "kafka.processing.guarantee" to StreamsConfig.EXACTLY_ONCE
     )
 )
@@ -73,6 +79,8 @@ data class Configuration(
     val application: Application = Application(),
     val journalPostApiUrl: String = config()[Key("journalPostApi.url", stringType)],
     val gosysApiUrl: String = config()[Key("gosysApi.url", stringType)],
+    val behandleArbeidsytelseSakConfig: BehandleArbeidsytelseSakConfig = BehandleArbeidsytelseSakConfig(),
+    val ytelseskontraktV3Config: YtelseskontraktV3Config = YtelseskontraktV3Config(),
     val sts: Sts = Sts()
 ) {
 
@@ -100,6 +108,15 @@ data class Configuration(
         val profile: Profile = config()[Key("application.profile", stringType)].let { Profile.valueOf(it) },
         val httpPort: Int = config()[Key("application.httpPort", intType)],
         val name: String = config()[Key("application.name", stringType)]
+    )
+
+
+    data class BehandleArbeidsytelseSakConfig(
+        val endpoint: String = config()[Key("behandlearbeidsytelsesak.v1.url", stringType)]
+    )
+
+    data class YtelseskontraktV3Config(
+        val endpoint: String = config()[Key("ytelseskontrakt.v3.url", stringType)]
     )
 }
 

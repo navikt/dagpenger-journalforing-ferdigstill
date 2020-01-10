@@ -74,7 +74,7 @@ internal class JournalforingFerdigstillComponentTest {
         )
 
         val stsOidcClient = StsOidcClient(configuration.sts.baseUrl, configuration.sts.username, configuration.sts.password)
-        val journalFøringFerdigstill = JournalFøringFerdigstill(JournalPostRestApi(configuration.journalPostApiUrl, stsOidcClient), mockk())
+        val journalFøringFerdigstill = JournalFøringFerdigstill(JournalPostRestApi(configuration.journalPostApiUrl, stsOidcClient), mockk(), mockk())
         val unleash = FakeUnleash().apply {
             this.enableAll()
         }
@@ -149,7 +149,7 @@ internal class JournalforingFerdigstillComponentTest {
 
         val packet = Packet().apply {
             this.putValue(PacketKeys.ARENA_SAK_OPPRETTET, true)
-            this.putValue(PacketKeys.FNR, "fnr")
+            this.putValue(PacketKeys.NATURLIG_IDENT, "fnr")
             this.putValue(PacketKeys.JOURNALPOST_ID, journalPostId)
             this.putValue(PacketKeys.ARENA_SAK_ID, "arenaSakId")
             this.putValue(PacketKeys.AVSENDER_NAVN, "et navn")

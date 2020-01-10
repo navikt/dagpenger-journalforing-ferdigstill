@@ -2,11 +2,15 @@ package no.nav.dagpenger.journalføring.ferdigstill
 
 import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
+import no.nav.dagpenger.journalføring.arena.adapter.ArenaClient
+import no.nav.dagpenger.journalføring.arena.adapter.soap.SoapPort
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.JOURNALPOST_ID
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.TOGGLE_BEHANDLE_NY_SØKNAD
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.arena.SoapArenaClient
 import no.nav.dagpenger.oidc.StsOidcClient
 import no.nav.dagpenger.streams.Pond
 import no.nav.dagpenger.streams.streamConfig
+import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3
 import org.apache.kafka.streams.StreamsConfig
 import java.util.Properties
 
@@ -23,7 +27,7 @@ internal class Application(
 
     private fun isEnabled(packet: Packet): Boolean = packet.hasField(TOGGLE_BEHANDLE_NY_SØKNAD) && packet.getBoolean(TOGGLE_BEHANDLE_NY_SØKNAD)
 
-    override fun filterPredicates() = listOf(isJournalFørt)
+    override fun filterPredicates() = listOf(erJournalpost)
 
     override fun onPacket(packet: Packet) {
         if (isEnabled(packet)) {
@@ -46,10 +50,20 @@ internal class Application(
 
 fun main() {
     val configuration = Configuration()
+    val ytelseskontraktV3: YtelseskontraktV3 =
+        SoapPort.ytelseskontraktV3(configuration.ytelseskontraktV3Config.endpoint)
+
+    val behandleArbeidsytelseSak =
+        SoapPort.behandleArbeidOgAktivitetOppgaveV1(configuration.behandleArbeidsytelseSakConfig.endpoint)
+
+    val arenaClient: ArenaClient =
+        SoapArenaClient(behandleArbeidsytelseSak, ytelseskontraktV3)
+
     val stsOidcClient = StsOidcClient(configuration.sts.baseUrl, configuration.sts.username, configuration.sts.password)
     val journalFøringFerdigstill = JournalFøringFerdigstill(
         JournalPostRestApi(configuration.journalPostApiUrl, stsOidcClient),
-        GosysOppgaveClient(configuration.gosysApiUrl, stsOidcClient))
+        GosysOppgaveClient(configuration.gosysApiUrl, stsOidcClient),
+        arenaClient)
 
     Application(configuration, journalFøringFerdigstill).start()
 }
