@@ -6,6 +6,10 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.events.moshiInstance
+import no.nav.dagpenger.journalføring.ferdigstill.Metrics.aktiveDagpengeSakTeller
+import no.nav.dagpenger.journalføring.ferdigstill.Metrics.automatiskJournalførtNeiTeller
+import no.nav.dagpenger.journalføring.ferdigstill.Metrics.avsluttetDagpengeSakTeller
+import no.nav.dagpenger.journalføring.ferdigstill.Metrics.inaktivDagpengeSakTeller
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.BestillOppgaveArenaException
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.createArenaTilleggsinformasjon
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.AKTØR_ID
@@ -21,6 +25,7 @@ import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.re
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.tildeltEnhetsNrFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.tittelFrom
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSak
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSakStatus
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonErInaktiv
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonIkkeFunnet
@@ -124,7 +129,30 @@ internal class JournalFøringFerdigstill(
     }
 
     private fun kanBestilleFagsak(packet: Packet): Boolean {
-        return hasNaturligIdent(packet) && arenaClient.hentArenaSaker(brukerFrom(packet).id).none { it.status == ArenaSakStatus.Aktiv }
+        if (!hasNaturligIdent(packet)) {
+            automatiskJournalførtNeiTeller("ukjent_bruker")
+            return false
+        }
+
+        val saker = arenaClient.hentArenaSaker(brukerFrom(packet).id).also {
+            registrerMetrikker(it)
+            logger.info {
+                "Innsender av journalpost ${journalPostIdFrom(packet)} har ${it.filter { it.status == ArenaSakStatus.Aktiv }.size} aktive saker av ${it.size} dagpengesaker totalt"
+            }
+        }
+
+        if (saker.any { it.status == ArenaSakStatus.Aktiv }) {
+            automatiskJournalførtNeiTeller("aktiv_sak")
+            return false
+        }
+
+        return true
+    }
+
+    private fun registrerMetrikker(saker: List<ArenaSak>) {
+        saker.filter { it.status == ArenaSakStatus.Aktiv }.also { aktiveDagpengeSakTeller.inc(it.size.toDouble()) }
+        saker.filter { it.status == ArenaSakStatus.Lukket }.also { avsluttetDagpengeSakTeller.inc(it.size.toDouble()) }
+        saker.filter { it.status == ArenaSakStatus.Inaktiv }.also { inaktivDagpengeSakTeller.inc(it.size.toDouble()) }
     }
 
     private fun bestillFagsak(packet: Packet): String {
@@ -132,8 +160,10 @@ internal class JournalFøringFerdigstill(
         val tilleggsinformasjon =
             createArenaTilleggsinformasjon(dokumentTitlerFrom(packet), registrertDatoFrom(packet))
         return try {
-                arenaClient.bestillOppgave(brukerFrom(packet).id, tildeltEnhetsNrFrom(packet), tilleggsinformasjon)
+            arenaClient.bestillOppgave(brukerFrom(packet).id, tildeltEnhetsNrFrom(packet), tilleggsinformasjon)
         } catch (e: BestillOppgaveArenaException) {
+            automatiskJournalførtNeiTeller(e.cause?.javaClass?.simpleName ?: "ukjent")
+
             when (e.cause) {
                 is BestillOppgavePersonErInaktiv -> {
                     logger.warn { "Kan ikke bestille oppgave for journalpost $journalpostId. Person ikke arbeidssøker " }
