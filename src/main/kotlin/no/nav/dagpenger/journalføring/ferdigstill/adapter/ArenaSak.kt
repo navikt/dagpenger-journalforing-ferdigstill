@@ -1,4 +1,4 @@
-package no.nav.dagpenger.journalføring.arena.adapter
+package no.nav.dagpenger.journalføring.ferdigstill.adapter
 
 data class ArenaSakId(val id: String)
 

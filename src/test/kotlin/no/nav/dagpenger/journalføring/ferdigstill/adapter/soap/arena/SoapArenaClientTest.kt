@@ -4,8 +4,8 @@ import io.kotlintest.shouldBe
 import io.kotlintest.shouldThrow
 import io.mockk.every
 import io.mockk.mockk
-import no.nav.dagpenger.journalføring.arena.adapter.ArenaSakStatus
-import no.nav.dagpenger.journalføring.arena.adapter.HentArenaSakerException
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSakStatus
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.HentArenaSakerException
 import no.nav.dagpenger.streams.HealthStatus
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BehandleArbeidOgAktivitetOppgaveV1
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.meldinger.WSBestillOppgaveResponse

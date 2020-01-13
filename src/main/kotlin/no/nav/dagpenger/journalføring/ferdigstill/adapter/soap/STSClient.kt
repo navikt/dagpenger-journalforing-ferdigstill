@@ -1,6 +1,5 @@
-package no.nav.dagpenger.journalføring.arena.adapter.soap
+package no.nav.dagpenger.journalføring.ferdigstill.adapter.soap
 
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.CallIdInterceptor
 import org.apache.cxf.Bus
 import org.apache.cxf.BusFactory
 import org.apache.cxf.binding.soap.Soap12

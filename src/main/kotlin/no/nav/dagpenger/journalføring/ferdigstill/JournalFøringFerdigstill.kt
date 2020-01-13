@@ -6,10 +6,8 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.events.moshiInstance
-import no.nav.dagpenger.journalføring.arena.adapter.ArenaClient
-import no.nav.dagpenger.journalføring.arena.adapter.ArenaSakStatus
-import no.nav.dagpenger.journalføring.arena.adapter.BestillOppgaveArenaException
-import no.nav.dagpenger.journalføring.arena.adapter.createArenaTilleggsinformasjon
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.BestillOppgaveArenaException
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.createArenaTilleggsinformasjon
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.AKTØR_ID
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.BEHANDLENDE_ENHET
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.NATURLIG_IDENT
@@ -22,6 +20,8 @@ import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.jo
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.registrertDatoFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.tildeltEnhetsNrFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.tittelFrom
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSakStatus
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonErInaktiv
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonIkkeFunnet
 import org.apache.kafka.streams.kstream.Predicate
@@ -67,14 +67,6 @@ internal object PacketToJoarkPayloadMapper {
         packet.getObjectValue(PacketKeys.DOKUMENTER) { dokumentAdapter.fromJsonValue(it)!! }.map { it.tittel }
 
     fun tittelFrom(packet: Packet) = dokumenterFrom(packet).first().tittel
-    fun sakFrom(packet: Packet) = when (packet.hasField(PacketKeys.ARENA_SAK_ID)) {
-        true -> Sak(
-            saksType = SaksType.FAGSAK,
-            fagsaksystem = "AO01",
-            fagsakId = packet.getStringValue(PacketKeys.ARENA_SAK_ID)
-        )
-        else -> Sak(SaksType.GENERELL_SAK, null, null)
-    }
 
     fun journalPostFrom(packet: Packet, fagsakId: String): OppdaterJournalPostPayload {
         return OppdaterJournalPostPayload(

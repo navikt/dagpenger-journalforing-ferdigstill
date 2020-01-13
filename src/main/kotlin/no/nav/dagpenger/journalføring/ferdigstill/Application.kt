@@ -2,10 +2,10 @@ package no.nav.dagpenger.journalføring.ferdigstill
 
 import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
-import no.nav.dagpenger.journalføring.arena.adapter.ArenaClient
-import no.nav.dagpenger.journalføring.arena.adapter.soap.SoapPort
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.JOURNALPOST_ID
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.TOGGLE_BEHANDLE_NY_SØKNAD
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.SoapPort
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.arena.SoapArenaClient
 import no.nav.dagpenger.oidc.StsOidcClient
 import no.nav.dagpenger.streams.Pond

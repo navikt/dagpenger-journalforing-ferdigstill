@@ -1,4 +1,4 @@
-package no.nav.dagpenger.journalføring.arena.adapter
+package no.nav.dagpenger.journalføring.ferdigstill.adapter
 
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter

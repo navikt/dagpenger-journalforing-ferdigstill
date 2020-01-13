@@ -1,6 +1,5 @@
 package no.nav.dagpenger.journalføring.ferdigstill.adapter
 
-import no.nav.dagpenger.journalføring.arena.adapter.createArenaTilleggsinformasjon
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 

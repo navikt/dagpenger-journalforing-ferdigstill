@@ -29,26 +29,6 @@ internal class PacketToJoarkPayloadMapperTest {
     }
 
     @Test
-    fun `Exctract Arena sak from packet`() {
-        val sak = PacketToJoarkPayloadMapper.sakFrom(Packet().apply {
-            this.putValue(PacketKeys.ARENA_SAK_ID, "sakId")
-        })
-
-        sak.fagsakId shouldBe "sakId"
-        sak.saksType shouldBe SaksType.FAGSAK
-        sak.fagsaksystem shouldBe "AO01"
-    }
-
-    @Test
-    fun `Exctract Generell sak from packet`() {
-        val sak = PacketToJoarkPayloadMapper.sakFrom(Packet())
-
-        sak.saksType shouldBe SaksType.GENERELL_SAK
-        sak.fagsaksystem shouldBe null
-        sak.fagsakId shouldBe null
-    }
-
-    @Test
     fun `Extract dokumenter from packet`() {
         val dokumenter = PacketToJoarkPayloadMapper.dokumenterFrom(Packet().apply {
             dokumentJsonAdapter.toJsonValue(listOf(Dokument("id1", "tittel1"), Dokument("id2", "tittel2")))?.let {

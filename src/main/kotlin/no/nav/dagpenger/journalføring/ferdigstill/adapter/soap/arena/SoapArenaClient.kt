@@ -1,10 +1,10 @@
 package no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.arena
 
-import no.nav.dagpenger.journalføring.arena.adapter.ArenaClient
-import no.nav.dagpenger.journalføring.arena.adapter.ArenaSak
-import no.nav.dagpenger.journalføring.arena.adapter.ArenaSakStatus
-import no.nav.dagpenger.journalføring.arena.adapter.BestillOppgaveArenaException
-import no.nav.dagpenger.journalføring.arena.adapter.HentArenaSakerException
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSak
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSakStatus
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.BestillOppgaveArenaException
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.HentArenaSakerException
 import no.nav.dagpenger.streams.HealthStatus
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BehandleArbeidOgAktivitetOppgaveV1
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.informasjon.WSOppgave
@@ -22,7 +22,8 @@ import java.time.ZonedDateTime
 import java.util.GregorianCalendar
 import javax.xml.datatype.DatatypeFactory
 
-class SoapArenaClient(private val oppgaveV1: BehandleArbeidOgAktivitetOppgaveV1, private val ytelseskontraktV3: YtelseskontraktV3) : ArenaClient {
+class SoapArenaClient(private val oppgaveV1: BehandleArbeidOgAktivitetOppgaveV1, private val ytelseskontraktV3: YtelseskontraktV3) :
+    ArenaClient {
 
     override fun bestillOppgave(naturligIdent: String, behandlendeEnhetId: String, tilleggsinformasjon: String): String {
         val soapRequest = WSBestillOppgaveRequest()
