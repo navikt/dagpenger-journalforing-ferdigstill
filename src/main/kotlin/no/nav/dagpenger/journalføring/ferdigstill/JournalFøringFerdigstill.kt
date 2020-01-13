@@ -21,6 +21,7 @@ import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.do
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.hasNaturligIdent
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.journalPostFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.journalPostIdFrom
+import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.nullableAktørFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.registrertDatoFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.tildeltEnhetsNrFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.tittelFrom
@@ -59,7 +60,8 @@ internal object PacketToJoarkPayloadMapper {
     fun avsenderFrom(packet: Packet) = Avsender(packet.getStringValue(PacketKeys.AVSENDER_NAVN))
     fun brukerFrom(packet: Packet) = Bruker(packet.getStringValue(NATURLIG_IDENT))
     fun hasNaturligIdent(packet: Packet) = packet.hasField(NATURLIG_IDENT)
-    fun aktørFrom(packet: Packet) =
+    fun aktørFrom(packet: Packet) = Bruker(packet.getStringValue(AKTØR_ID), "AKTØR")
+    fun nullableAktørFrom(packet: Packet) =
         if (packet.hasField(AKTØR_ID)) Bruker(packet.getStringValue(AKTØR_ID), "AKTØR") else null
 
     fun tildeltEnhetsNrFrom(packet: Packet) = packet.getStringValue(BEHANDLENDE_ENHET)
@@ -98,7 +100,7 @@ internal class JournalFøringFerdigstill(
         val journalpostId = journalPostIdFrom(packet)
 
         if (kanBestilleFagsak(packet)) {
-            val aktørId = aktørFrom(packet)!!.id
+            val aktørId = aktørFrom(packet).id
 
             try {
                 val fagsakId = bestillFagsak(packet)
@@ -119,7 +121,7 @@ internal class JournalFøringFerdigstill(
         } else {
             manuellJournalføringsOppgaveClient.opprettOppgave(
                 journalpostId,
-                aktørFrom(packet)?.id,
+                nullableAktørFrom(packet)?.id,
                 tittelFrom(packet),
                 tildeltEnhetsNrFrom(packet)
             )
