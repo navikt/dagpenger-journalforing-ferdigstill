@@ -87,7 +87,6 @@ internal class PacketToJoarkPayloadMapperTest {
         jp.bruker.idType shouldBe "FNR"
         jp.dokumenter shouldBe listOf(Dokument("dokumentId", "tittel"))
         jp.journalfoerendeEnhet shouldBe "9999"
-        jp.sak.saksType shouldBe SaksType.GENERELL_SAK
         jp.tema shouldBe "DAG"
         jp.tittel shouldBe "tittel"
     }

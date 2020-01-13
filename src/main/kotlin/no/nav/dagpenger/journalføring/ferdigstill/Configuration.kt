@@ -110,7 +110,6 @@ data class Configuration(
         val name: String = config()[Key("application.name", stringType)]
     )
 
-
     data class BehandleArbeidsytelseSakConfig(
         val endpoint: String = config()[Key("behandlearbeidsytelsesak.v1.url", stringType)]
     )
