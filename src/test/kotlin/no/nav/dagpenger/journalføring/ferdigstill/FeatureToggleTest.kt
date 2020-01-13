@@ -3,7 +3,6 @@ package no.nav.dagpenger.journalføring.ferdigstill
 import io.mockk.mockk
 import io.mockk.verify
 import no.nav.dagpenger.events.Packet
-import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.ARENA_SAK_ID
 import org.junit.jupiter.api.Test
 
 internal class FeatureToggleTest {
@@ -15,7 +14,6 @@ internal class FeatureToggleTest {
         val journalFøringFerdigstill = mockk<JournalFøringFerdigstill>(relaxed = true)
 
         val packetWithoutToggle = Packet().apply {
-            this.putValue(ARENA_SAK_ID, "arenaSakid")
         }
 
         Application(configuration, journalFøringFerdigstill).onPacket(packetWithoutToggle)
@@ -25,7 +23,6 @@ internal class FeatureToggleTest {
         }
 
         val packetWithToggleFalse = Packet().apply {
-            this.putValue(ARENA_SAK_ID, "arenaSakid")
             this.putValue("toggleBehandleNySøknad", false)
         }
 
@@ -41,7 +38,6 @@ internal class FeatureToggleTest {
         val journalFøringFerdigstill = mockk<JournalFøringFerdigstill>(relaxed = true)
 
         val packet = Packet().apply {
-            this.putValue(ARENA_SAK_ID, "arenaSakid")
             this.putValue("toggleBehandleNySøknad", true)
         }
 

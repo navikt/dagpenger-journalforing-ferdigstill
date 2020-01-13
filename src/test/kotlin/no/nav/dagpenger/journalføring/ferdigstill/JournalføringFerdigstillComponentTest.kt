@@ -16,6 +16,7 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern
 import io.kotlintest.matchers.string.shouldContain
 import io.kotlintest.shouldBe
+import io.mockk.every
 import io.mockk.mockk
 import no.finn.unleash.FakeUnleash
 import no.nav.common.JAASCredential
@@ -25,6 +26,7 @@ import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.journalføring.ferdigstill.JournalPostRestApi.Companion.toJsonPayload
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.dokumentJsonAdapter
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.journalPostFrom
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
 import no.nav.dagpenger.oidc.StsOidcClient
 import no.nav.dagpenger.streams.KafkaCredential
 import org.apache.kafka.clients.CommonClientConfigs
@@ -53,7 +55,7 @@ internal class JournalforingFerdigstillComponentTest {
             topicInfos = listOf(KafkaEnvironment.TopicInfo("privat-dagpenger-journalpost-mottatt-v1"))
         )
 
-        val journalPostApiMock by lazy {
+        val wireMockServer by lazy {
             WireMockServer(wireMockConfig().dynamicPort()).also {
                 it.start()
             }
@@ -68,13 +70,19 @@ internal class JournalforingFerdigstillComponentTest {
                 httpPort = getAvailablePort()
             ),
             sts = Configuration.Sts(
-                baseUrl = journalPostApiMock.baseUrl()
+                baseUrl = wireMockServer.baseUrl()
             ),
-            journalPostApiUrl = journalPostApiMock.baseUrl()
+            journalPostApiUrl = wireMockServer.baseUrl()
         )
 
+        val arenaClientMock: ArenaClient = mockk(relaxed = true)
+
         val stsOidcClient = StsOidcClient(configuration.sts.baseUrl, configuration.sts.username, configuration.sts.password)
-        val journalFøringFerdigstill = JournalFøringFerdigstill(JournalPostRestApi(configuration.journalPostApiUrl, stsOidcClient), mockk())
+        val journalFøringFerdigstill = JournalFøringFerdigstill(
+            JournalPostRestApi(configuration.journalPostApiUrl, stsOidcClient),
+            manuellJournalføringsOppgaveClient = mockk(),
+            arenaClient = arenaClientMock)
+
         val unleash = FakeUnleash().apply {
             this.enableAll()
         }
@@ -91,7 +99,7 @@ internal class JournalforingFerdigstillComponentTest {
         @JvmStatic
         fun teardown() {
             embeddedEnvironment.tearDown()
-            journalPostApiMock.stop()
+            wireMockServer.stop()
             app.stop()
         }
     }
@@ -111,13 +119,13 @@ internal class JournalforingFerdigstillComponentTest {
 
     @Test
     fun `Mock journal post API  up and running `() {
-        "${journalPostApiMock.baseUrl()}/__admin".httpGet().response().second.statusCode shouldBe 200
+        "${wireMockServer.baseUrl()}/__admin".httpGet().response().second.statusCode shouldBe 200
     }
 
     @Test
     fun ` Component test of JournalføringFerdigstill`() {
 
-        journalPostApiMock.addStubMapping(
+        wireMockServer.addStubMapping(
             get(urlEqualTo("/rest/v1/sts/token/?grant_type=client_credentials&scope=openid"))
                 .willReturn(okJson("""
                    {
@@ -131,46 +139,50 @@ internal class JournalforingFerdigstillComponentTest {
         )
 
         val journalPostId = "journalPostId"
-        journalPostApiMock.addStubMapping(
+        wireMockServer.addStubMapping(
             patch(urlEqualTo("/rest/journalpostapi/v1/journalpost/$journalPostId/ferdigstill"))
                 .willReturn(aResponse()
                     .withStatus(200))
                 .build()
         )
 
-        journalPostApiMock.addStubMapping(
+        wireMockServer.addStubMapping(
             put(urlEqualTo("/rest/journalpostapi/v1/journalpost/$journalPostId"))
                 .willReturn(aResponse()
                     .withStatus(200))
                 .build()
         )
 
+        every {
+            arenaClientMock.bestillOppgave(naturligIdent = "fnr", behandlendeEnhetId = "9999", tilleggsinformasjon = any())
+        } returns "arenaSakId"
+
         val expectedFerdigstillJson = """{ "journalfoerendeEnhet" : "9999"}"""
 
         val packet = Packet().apply {
-            this.putValue(PacketKeys.ARENA_SAK_OPPRETTET, true)
-            this.putValue(PacketKeys.FNR, "fnr")
+            this.putValue(PacketKeys.NATURLIG_IDENT, "fnr")
+            this.putValue(PacketKeys.AKTØR_ID, "1234567")
             this.putValue(PacketKeys.JOURNALPOST_ID, journalPostId)
-            this.putValue(PacketKeys.ARENA_SAK_ID, "arenaSakId")
             this.putValue(PacketKeys.AVSENDER_NAVN, "et navn")
             this.putValue(PacketKeys.TOGGLE_BEHANDLE_NY_SØKNAD, true)
             this.putValue(PacketKeys.BEHANDLENDE_ENHET, "9999")
+            this.putValue(PacketKeys.DATO_REGISTRERT, "2020-01-01")
             dokumentJsonAdapter.toJsonValue(listOf(Dokument("id1", "tittel1"), Dokument("id1", "tittel1")))?.let { this.putValue(PacketKeys.DOKUMENTER, it) }
         }
 
-        val json = journalPostFrom(packet).let { toJsonPayload(it) }
+        val json = journalPostFrom(packet, "arenaSakId").let { toJsonPayload(it) }
 
         behovProducer(configuration).run {
             this.send(ProducerRecord(configuration.kafka.dagpengerJournalpostTopic.name, packet)).get()
         }
 
         retry {
-            journalPostApiMock.verify(1,
+            wireMockServer.verify(1,
                 putRequestedFor(urlMatching("/rest/journalpostapi/v1/journalpost/$journalPostId"))
                     .withRequestBody(EqualToJsonPattern(json, true, false))
                     .withHeader("Content-Type", equalTo("application/json")).withHeader("Authorization", equalTo("Bearer token")))
 
-            journalPostApiMock.verify(1, patchRequestedFor(urlMatching("/rest/journalpostapi/v1/journalpost/$journalPostId/ferdigstill"))
+            wireMockServer.verify(1, patchRequestedFor(urlMatching("/rest/journalpostapi/v1/journalpost/$journalPostId/ferdigstill"))
                 .withRequestBody(EqualToJsonPattern(expectedFerdigstillJson, true, false))
                 .withHeader("Content-Type", equalTo("application/json")).withHeader("Authorization", equalTo("Bearer token")))
         }

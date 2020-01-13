@@ -74,7 +74,7 @@ internal class JournalPostRestApiTest {
 
         val stsOidcClient: StsOidcClient = mockk(relaxed = true)
 
-        val client: OppgaveClient = GosysOppgaveClient(server.baseUrl(), stsOidcClient)
+        val client: ManuellJournalføringsOppgaveClient = GosysOppgaveClient(server.baseUrl(), stsOidcClient)
 
         assertDoesNotThrow {
             client.opprettOppgave(

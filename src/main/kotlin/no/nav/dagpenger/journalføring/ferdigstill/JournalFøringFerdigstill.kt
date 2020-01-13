@@ -3,24 +3,48 @@ package no.nav.dagpenger.journalføring.ferdigstill
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
+import no.nav.dagpenger.events.moshiInstance
+import no.nav.dagpenger.journalføring.ferdigstill.Metrics.aktiveDagpengeSakTeller
+import no.nav.dagpenger.journalføring.ferdigstill.Metrics.automatiskJournalførtNeiTeller
+import no.nav.dagpenger.journalføring.ferdigstill.Metrics.avsluttetDagpengeSakTeller
+import no.nav.dagpenger.journalføring.ferdigstill.Metrics.inaktivDagpengeSakTeller
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.BestillOppgaveArenaException
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.createArenaTilleggsinformasjon
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.AKTØR_ID
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.BEHANDLENDE_ENHET
-import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.FNR
+import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.NATURLIG_IDENT
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.aktørFrom
+import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.brukerFrom
+import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.dokumentTitlerFrom
+import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.hasNaturligIdent
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.journalPostFrom
+import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.journalPostIdFrom
+import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.nullableAktørFrom
+import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.registrertDatoFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.tildeltEnhetsNrFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.tittelFrom
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSak
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSakStatus
+import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonErInaktiv
+import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonIkkeFunnet
 import org.apache.kafka.streams.kstream.Predicate
+import java.lang.RuntimeException
 
-internal val isJournalFørt = Predicate<String, Packet> { _, packet ->
-    packet.hasField(PacketKeys.ARENA_SAK_OPPRETTET) &&
-        packet.hasField(FNR) &&
-        packet.hasField(PacketKeys.JOURNALPOST_ID) &&
-        packet.hasField(PacketKeys.AVSENDER_NAVN) &&
-        packet.hasField(PacketKeys.DOKUMENTER) &&
-        packet.hasField(BEHANDLENDE_ENHET)
+private val logger = KotlinLogging.logger {}
+
+internal val erJournalpost = Predicate<String, Packet> { _, packet ->
+    packet.hasField(PacketKeys.JOURNALPOST_ID)
 }
+
+internal val dokumentAdapter = moshiInstance.adapter<List<Dokument>>(
+    Types.newParameterizedType(
+        List::class.java,
+        Dokument::class.java
+    )
+)
 
 internal object PacketToJoarkPayloadMapper {
     val dokumentJsonAdapter = Moshi.Builder()
@@ -34,28 +58,33 @@ internal object PacketToJoarkPayloadMapper {
 
     fun journalPostIdFrom(packet: Packet) = packet.getStringValue(PacketKeys.JOURNALPOST_ID)
     fun avsenderFrom(packet: Packet) = Avsender(packet.getStringValue(PacketKeys.AVSENDER_NAVN))
-    fun brukerFrom(packet: Packet) = Bruker(packet.getStringValue(FNR))
+    fun brukerFrom(packet: Packet) = Bruker(packet.getStringValue(NATURLIG_IDENT))
+    fun hasNaturligIdent(packet: Packet) = packet.hasField(NATURLIG_IDENT)
     fun aktørFrom(packet: Packet) = Bruker(packet.getStringValue(AKTØR_ID), "AKTØR")
+    fun nullableAktørFrom(packet: Packet) =
+        if (packet.hasField(AKTØR_ID)) Bruker(packet.getStringValue(AKTØR_ID), "AKTØR") else null
+
     fun tildeltEnhetsNrFrom(packet: Packet) = packet.getStringValue(BEHANDLENDE_ENHET)
     fun dokumenterFrom(packet: Packet) = packet.getObjectValue(PacketKeys.DOKUMENTER) {
         dokumentJsonAdapter.fromJsonValue(it)!!
     }
 
-    fun tittelFrom(packet: Packet) = dokumenterFrom(packet).first().tittel
-    fun sakFrom(packet: Packet) = when (packet.hasField(PacketKeys.ARENA_SAK_ID)) {
-        true -> Sak(
-            saksType = SaksType.FAGSAK,
-            fagsaksystem = "AO01",
-            fagsakId = packet.getStringValue(PacketKeys.ARENA_SAK_ID))
-        else -> Sak(SaksType.GENERELL_SAK, null, null)
-    }
+    fun registrertDatoFrom(packet: Packet) = packet.getStringValue(PacketKeys.DATO_REGISTRERT)
+    fun dokumentTitlerFrom(packet: Packet) =
+        packet.getObjectValue(PacketKeys.DOKUMENTER) { dokumentAdapter.fromJsonValue(it)!! }.map { it.tittel }
 
-    fun journalPostFrom(packet: Packet): OppdaterJournalPostPayload {
+    fun tittelFrom(packet: Packet) = dokumenterFrom(packet).first().tittel
+
+    fun journalPostFrom(packet: Packet, fagsakId: String): OppdaterJournalPostPayload {
         return OppdaterJournalPostPayload(
             avsenderMottaker = avsenderFrom(packet),
             bruker = brukerFrom(packet),
             tittel = tittelFrom(packet),
-            sak = sakFrom(packet),
+            sak = Sak(
+                saksType = SaksType.FAGSAK,
+                fagsaksystem = "AO01",
+                fagsakId = fagsakId
+            ),
             dokumenter = dokumenterFrom(packet)
         )
     }
@@ -63,19 +92,96 @@ internal object PacketToJoarkPayloadMapper {
 
 internal class JournalFøringFerdigstill(
     private val journalPostApi: JournalPostApi,
-    private val oppgaveClient: OppgaveClient
+    private val manuellJournalføringsOppgaveClient: ManuellJournalføringsOppgaveClient,
+    private val arenaClient: ArenaClient
 ) {
 
     fun handlePacket(packet: Packet) {
-        journalPostFrom(packet).let { jp ->
-            packet.getStringValue(PacketKeys.JOURNALPOST_ID).let { jpId ->
-                journalPostApi.oppdater(jpId, jp)
-                if (jp.sak.saksType == SaksType.GENERELL_SAK) {
-                    oppgaveClient.opprettOppgave(jpId, aktørFrom(packet).id, tittelFrom(packet), tildeltEnhetsNrFrom(packet))
-                } else {
-                    journalPostApi.ferdigstill(jpId)
+        val journalpostId = journalPostIdFrom(packet)
+
+        if (kanBestilleFagsak(packet)) {
+            val aktørId = aktørFrom(packet).id
+
+            val fagsakId = bestillFagsak(packet)
+            if (fagsakId != null) {
+                journalPostApi.oppdater(journalpostId, journalPostFrom(packet, fagsakId))
+                journalPostApi.ferdigstill(journalpostId)
+                Metrics.jpFerdigStillInc(SaksType.FAGSAK)
+                logger.info { "Automatisk journalført $journalpostId" }
+            } else {
+                manuellJournalføringsOppgaveClient.opprettOppgave(
+                    journalpostId,
+                    aktørId,
+                    tittelFrom(packet),
+                    tildeltEnhetsNrFrom(packet)
+                )
+                Metrics.jpFerdigStillInc(SaksType.GENERELL_SAK)
+                logger.info { "Manuelt journalført $journalpostId" }
+            }
+        } else {
+            manuellJournalføringsOppgaveClient.opprettOppgave(
+                journalpostId,
+                nullableAktørFrom(packet)?.id,
+                tittelFrom(packet),
+                tildeltEnhetsNrFrom(packet)
+            )
+            Metrics.jpFerdigStillInc(SaksType.GENERELL_SAK)
+            logger.info { "Manuelt journalført $journalpostId" }
+        }
+    }
+
+    private fun kanBestilleFagsak(packet: Packet): Boolean {
+        if (!hasNaturligIdent(packet)) {
+            automatiskJournalførtNeiTeller("ukjent_bruker")
+            return false
+        }
+
+        val saker = arenaClient.hentArenaSaker(brukerFrom(packet).id).also {
+            registrerMetrikker(it)
+            logger.info {
+                "Innsender av journalpost ${journalPostIdFrom(packet)} har ${it.filter { it.status == ArenaSakStatus.Aktiv }.size} aktive saker av ${it.size} dagpengesaker totalt"
+            }
+        }
+
+        if (saker.any { it.status == ArenaSakStatus.Aktiv }) {
+            automatiskJournalførtNeiTeller("aktiv_sak")
+            return false
+        }
+
+        return true
+    }
+
+    private fun registrerMetrikker(saker: List<ArenaSak>) {
+        saker.filter { it.status == ArenaSakStatus.Aktiv }.also { aktiveDagpengeSakTeller.inc(it.size.toDouble()) }
+        saker.filter { it.status == ArenaSakStatus.Lukket }.also { avsluttetDagpengeSakTeller.inc(it.size.toDouble()) }
+        saker.filter { it.status == ArenaSakStatus.Inaktiv }.also { inaktivDagpengeSakTeller.inc(it.size.toDouble()) }
+    }
+
+    private fun bestillFagsak(packet: Packet): String? {
+        val journalpostId = journalPostIdFrom(packet)
+        val tilleggsinformasjon =
+            createArenaTilleggsinformasjon(dokumentTitlerFrom(packet), registrertDatoFrom(packet))
+        return try {
+            arenaClient.bestillOppgave(brukerFrom(packet).id, tildeltEnhetsNrFrom(packet), tilleggsinformasjon)
+        } catch (e: BestillOppgaveArenaException) {
+            automatiskJournalførtNeiTeller(e.cause?.javaClass?.simpleName ?: "ukjent")
+
+            return when (e.cause) {
+                is BestillOppgavePersonErInaktiv -> {
+                    logger.warn { "Kan ikke bestille oppgave for journalpost $journalpostId. Person ikke arbeidssøker " }
+                    null
                 }
-            }.also { Metrics.jpFerdigStillInc(jp.sak.saksType) }
+                is BestillOppgavePersonIkkeFunnet -> {
+                    logger.warn { "Kan ikke bestille oppgave for journalpost $journalpostId. Person ikke funnet i arena " }
+                    null
+                }
+                else -> {
+                    logger.warn { "Kan ikke bestille oppgave for journalpost $journalpostId. Ukjent feil. " }
+                    throw e
+                }
+            }
         }
     }
 }
+
+class MåManueltBehandlesException : RuntimeException()

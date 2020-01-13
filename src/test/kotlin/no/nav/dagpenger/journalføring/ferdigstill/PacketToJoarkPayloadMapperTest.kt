@@ -24,28 +24,8 @@ internal class PacketToJoarkPayloadMapperTest {
     @Test
     fun `Exctract bruker from packet`() {
         PacketToJoarkPayloadMapper.brukerFrom(Packet().apply {
-            this.putValue(PacketKeys.FNR, "fnr")
+            this.putValue(PacketKeys.NATURLIG_IDENT, "fnr")
         }).id shouldBe "fnr"
-    }
-
-    @Test
-    fun `Exctract Arena sak from packet`() {
-        val sak = PacketToJoarkPayloadMapper.sakFrom(Packet().apply {
-            this.putValue(PacketKeys.ARENA_SAK_ID, "sakId")
-        })
-
-        sak.fagsakId shouldBe "sakId"
-        sak.saksType shouldBe SaksType.FAGSAK
-        sak.fagsaksystem shouldBe "AO01"
-    }
-
-    @Test
-    fun `Exctract Generell sak from packet`() {
-        val sak = PacketToJoarkPayloadMapper.sakFrom(Packet())
-
-        sak.saksType shouldBe SaksType.GENERELL_SAK
-        sak.fagsaksystem shouldBe null
-        sak.fagsakId shouldBe null
     }
 
     @Test
@@ -70,12 +50,16 @@ internal class PacketToJoarkPayloadMapperTest {
 
     @Test
     fun `Extract journal post from packet`() {
-        val jp = PacketToJoarkPayloadMapper.journalPostFrom(Packet().apply {
-            this.putValue(PacketKeys.JOURNALPOST_ID, "journalPostId")
-            this.putValue(PacketKeys.AVSENDER_NAVN, "navn")
-            this.putValue(PacketKeys.FNR, "fnr")
-            dokumentJsonAdapter.toJsonValue(listOf(Dokument("dokumentId", "tittel")))?.let { this.putValue(PacketKeys.DOKUMENTER, it) }
-        })
+        val jp = PacketToJoarkPayloadMapper.journalPostFrom(
+            Packet().apply {
+                this.putValue(PacketKeys.JOURNALPOST_ID, "journalPostId")
+                this.putValue(PacketKeys.AVSENDER_NAVN, "navn")
+                this.putValue(PacketKeys.NATURLIG_IDENT, "fnr")
+                dokumentJsonAdapter.toJsonValue(listOf(Dokument("dokumentId", "tittel")))
+                    ?.let { this.putValue(PacketKeys.DOKUMENTER, it) }
+            },
+            "bla"
+        )
 
         jp.avsenderMottaker.navn shouldBe "navn"
         jp.behandlingstema shouldBe "ab0001"
@@ -83,7 +67,6 @@ internal class PacketToJoarkPayloadMapperTest {
         jp.bruker.idType shouldBe "FNR"
         jp.dokumenter shouldBe listOf(Dokument("dokumentId", "tittel"))
         jp.journalfoerendeEnhet shouldBe "9999"
-        jp.sak.saksType shouldBe SaksType.GENERELL_SAK
         jp.tema shouldBe "DAG"
         jp.tittel shouldBe "tittel"
     }
