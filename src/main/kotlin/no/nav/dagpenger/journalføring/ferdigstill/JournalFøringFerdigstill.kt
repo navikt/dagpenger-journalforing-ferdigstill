@@ -102,13 +102,13 @@ internal class JournalFøringFerdigstill(
         if (kanBestilleFagsak(packet)) {
             val aktørId = aktørFrom(packet).id
 
-            try {
-                val fagsakId = bestillFagsak(packet)
+            val fagsakId = bestillFagsak(packet)
+            if (fagsakId != null) {
                 journalPostApi.oppdater(journalpostId, journalPostFrom(packet, fagsakId))
                 journalPostApi.ferdigstill(journalpostId)
                 Metrics.jpFerdigStillInc(SaksType.FAGSAK)
                 logger.info { "Automatisk journalført $journalpostId" }
-            } catch (e: MåManueltBehandlesException) {
+            } else {
                 manuellJournalføringsOppgaveClient.opprettOppgave(
                     journalpostId,
                     aktørId,
@@ -157,7 +157,7 @@ internal class JournalFøringFerdigstill(
         saker.filter { it.status == ArenaSakStatus.Inaktiv }.also { inaktivDagpengeSakTeller.inc(it.size.toDouble()) }
     }
 
-    private fun bestillFagsak(packet: Packet): String {
+    private fun bestillFagsak(packet: Packet): String? {
         val journalpostId = journalPostIdFrom(packet)
         val tilleggsinformasjon =
             createArenaTilleggsinformasjon(dokumentTitlerFrom(packet), registrertDatoFrom(packet))
@@ -166,14 +166,14 @@ internal class JournalFøringFerdigstill(
         } catch (e: BestillOppgaveArenaException) {
             automatiskJournalførtNeiTeller(e.cause?.javaClass?.simpleName ?: "ukjent")
 
-            when (e.cause) {
+            return when (e.cause) {
                 is BestillOppgavePersonErInaktiv -> {
                     logger.warn { "Kan ikke bestille oppgave for journalpost $journalpostId. Person ikke arbeidssøker " }
-                    throw MåManueltBehandlesException()
+                    null
                 }
                 is BestillOppgavePersonIkkeFunnet -> {
                     logger.warn { "Kan ikke bestille oppgave for journalpost $journalpostId. Person ikke funnet i arena " }
-                    throw MåManueltBehandlesException()
+                    null
                 }
                 else -> {
                     logger.warn { "Kan ikke bestille oppgave for journalpost $journalpostId. Ukjent feil. " }
