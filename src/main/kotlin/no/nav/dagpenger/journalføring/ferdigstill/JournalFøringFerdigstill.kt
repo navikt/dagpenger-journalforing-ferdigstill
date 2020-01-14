@@ -97,21 +97,25 @@ internal class JournalFøringFerdigstill(
 ) {
 
     fun handlePacket(packet: Packet) {
-        val journalpostId = journalPostIdFrom(packet)
 
         if (kanBestilleFagsak(packet)) {
             val fagsakId = bestillFagsak(packet)
             if (fagsakId != null) {
-                journalPostApi.oppdater(journalpostId, journalPostFrom(packet, fagsakId))
-                journalPostApi.ferdigstill(journalpostId)
-                Metrics.jpFerdigStillInc(SaksType.FAGSAK)
-                logger.info { "Automatisk journalført $journalpostId" }
+                bestillAutomatiskJournalføring(packet, fagsakId)
             } else {
                 bestillManuellJournalføring(packet)
             }
         } else {
             bestillManuellJournalføring(packet)
         }
+    }
+
+    private fun bestillAutomatiskJournalføring(packet: Packet, fagsakId: String) {
+        val journalpostId = journalPostIdFrom(packet)
+        journalPostApi.oppdater(journalpostId, journalPostFrom(packet, fagsakId))
+        journalPostApi.ferdigstill(journalpostId)
+        Metrics.jpFerdigStillInc(SaksType.FAGSAK)
+        logger.info { "Automatisk journalført $journalpostId" }
     }
 
     private fun bestillManuellJournalføring(packet: Packet) {
