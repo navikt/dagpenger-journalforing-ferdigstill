@@ -24,4 +24,4 @@ spec:
       memory: 512Mi
   vault:
     enabled: true
-  webproxy: true
+  webproxy: false
