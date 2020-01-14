@@ -26,8 +26,8 @@ private val localProperties = ConfigurationMap(
         "journalPostApi.url" to "http://localhost",
         "gosysApi.url" to "http://localhost",
         "kafka.bootstrap.servers" to "localhost:9092",
-        "srvdagpenger.journalforing.ferdigstill.password" to "password",
-        "srvdagpenger.journalforing.ferdigstill.username" to "user",
+        "srvdagpenger.journ.password" to "password",
+        "srvdagpenger.journ.username" to "user",
         "sts.url" to "http://localhost",
         "soapsecuritytokenservice.url" to "http://localhost",
         "behandlearbeidsytelsesak.v1.url" to "https://localhost/ail_ws/BehandleArbeidOgAktivitetOppgave_v1",
@@ -98,22 +98,22 @@ data class Configuration(
         ),
         val brokers: String = config()[Key("kafka.bootstrap.servers", stringType)],
         val credential: KafkaCredential = KafkaCredential(
-            username = config()[Key("srvdagpenger.journalforing.ferdigstill.username", stringType)],
-            password = config()[Key("srvdagpenger.journalforing.ferdigstill.password", stringType)]
+            username = config()[Key("srvdagpenger.journ.username", stringType)],
+            password = config()[Key("srvdagpenger.journ.password", stringType)]
         ),
         val processingGuarantee: String = config()[Key("kafka.processing.guarantee", stringType)]
     )
 
     data class Sts(
         val baseUrl: String = config()[Key("sts.url", stringType)],
-        val username: String = config()[Key("srvdagpenger.journalforing.ferdigstill.username", stringType)],
-        val password: String = config()[Key("srvdagpenger.journalforing.ferdigstill.password", stringType)]
+        val username: String = config()[Key("srvdagpenger.journ.username", stringType)],
+        val password: String = config()[Key("srvdagpenger.journ.password", stringType)]
     )
 
     data class SoapSTSClient(
         val endpoint: String = config()[Key("soapsecuritytokenservice.url", stringType)],
-        val username: String = config()[Key("srvdagpenger.journalforing.ferdigstill.username", stringType)],
-        val password: String = config()[Key("srvdagpenger.journalforing.ferdigstill.password", stringType)],
+        val username: String = config()[Key("srvdagpenger.journ.username", stringType)],
+        val password: String = config()[Key("srvdagpenger.journ.password", stringType)],
         val allowInsecureSoapRequests: Boolean = config()[Key("allow.insecure.soap.requests", booleanType)]
     )
 
