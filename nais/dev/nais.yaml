@@ -6,7 +6,7 @@ spec:
   vault:
     paths:
       - kvPath: "serviceuser/data/dev/srvdp-jrnf-ferdig"
-        mountPath: "/secrets/serviceuser/srvdagpenger-journ"
+        mountPath: "/secrets/serviceuser/srvdp-jrnf-ferdig"
 
 
 
