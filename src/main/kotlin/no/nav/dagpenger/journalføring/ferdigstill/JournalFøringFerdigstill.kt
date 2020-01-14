@@ -58,7 +58,6 @@ internal object PacketToJoarkPayloadMapper {
     fun avsenderFrom(packet: Packet) = Avsender(packet.getStringValue(PacketKeys.AVSENDER_NAVN))
     fun brukerFrom(packet: Packet) = Bruker(packet.getStringValue(NATURLIG_IDENT))
     fun hasNaturligIdent(packet: Packet) = packet.hasField(NATURLIG_IDENT)
-    fun aktørFrom(packet: Packet) = Bruker(packet.getStringValue(AKTØR_ID), "AKTØR")
     fun nullableAktørFrom(packet: Packet) =
         if (packet.hasField(AKTØR_ID)) Bruker(packet.getStringValue(AKTØR_ID), "AKTØR") else null
 
@@ -101,16 +100,16 @@ internal class JournalFøringFerdigstill(
         if (kanBestilleFagsak(packet)) {
             val fagsakId = bestillFagsak(packet)
             if (fagsakId != null) {
-                bestillAutomatiskJournalføring(packet, fagsakId)
+                journalførAutomatisk(packet, fagsakId)
             } else {
-                bestillManuellJournalføring(packet)
+                journalførManuelt(packet)
             }
         } else {
-            bestillManuellJournalføring(packet)
+            journalførManuelt(packet)
         }
     }
 
-    private fun bestillAutomatiskJournalføring(packet: Packet, fagsakId: String) {
+    private fun journalførAutomatisk(packet: Packet, fagsakId: String) {
         val journalpostId = journalPostIdFrom(packet)
         journalPostApi.oppdater(journalpostId, journalPostFrom(packet, fagsakId))
         journalPostApi.ferdigstill(journalpostId)
@@ -118,7 +117,7 @@ internal class JournalFøringFerdigstill(
         logger.info { "Automatisk journalført $journalpostId" }
     }
 
-    private fun bestillManuellJournalføring(packet: Packet) {
+    private fun journalførManuelt(packet: Packet) {
         val journalpostId = journalPostIdFrom(packet)
 
         nullableAktørFrom(packet)?.let { journalPostApi.oppdater(journalpostId, journalPostFrom(packet, null)) }
