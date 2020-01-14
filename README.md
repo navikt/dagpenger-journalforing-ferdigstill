@@ -1,6 +1,6 @@
 # Dagpenger-journalføring-ferdigstill
 
-Leser midlertidige journalposter fra kafka, og ferdigstiller de.
+Leser midlertidige journalposter fra kafka, og ferdigstiller de. 
 
 # Komme i gang
 
