@@ -5,8 +5,11 @@ import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.JOURNALPOST_ID
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.TOGGLE_BEHANDLE_NY_SØKNAD
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.STS_SAML_POLICY_NO_TRANSPORT_BINDING
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.SoapPort
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.arena.SoapArenaClient
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.configureFor
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.stsClient
 import no.nav.dagpenger.oidc.StsOidcClient
 import no.nav.dagpenger.streams.Pond
 import no.nav.dagpenger.streams.streamConfig
@@ -60,6 +63,19 @@ fun main() {
         SoapArenaClient(behandleArbeidsytelseSak, ytelseskontraktV3)
 
     val stsOidcClient = StsOidcClient(configuration.sts.baseUrl, configuration.sts.username, configuration.sts.password)
+
+    val soapStsClient = stsClient(
+        stsUrl = configuration.soapSTSClient.endpoint,
+        credentials = configuration.soapSTSClient.username to configuration.soapSTSClient.password
+    )
+    if (configuration.soapSTSClient.allowInsecureSoapRequests) {
+        soapStsClient.configureFor(behandleArbeidsytelseSak, STS_SAML_POLICY_NO_TRANSPORT_BINDING)
+        soapStsClient.configureFor(ytelseskontraktV3, STS_SAML_POLICY_NO_TRANSPORT_BINDING)
+    } else {
+        soapStsClient.configureFor(behandleArbeidsytelseSak)
+        soapStsClient.configureFor(ytelseskontraktV3)
+    }
+
     val journalFøringFerdigstill = JournalFøringFerdigstill(
         JournalPostRestApi(configuration.journalPostApiUrl, stsOidcClient),
         GosysOppgaveClient(configuration.gosysApiUrl, stsOidcClient),

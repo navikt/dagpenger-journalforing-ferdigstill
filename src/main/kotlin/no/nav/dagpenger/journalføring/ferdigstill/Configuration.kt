@@ -5,6 +5,7 @@ import com.natpryce.konfig.ConfigurationMap
 import com.natpryce.konfig.ConfigurationProperties
 import com.natpryce.konfig.EnvironmentVariables
 import com.natpryce.konfig.Key
+import com.natpryce.konfig.booleanType
 import com.natpryce.konfig.intType
 import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
@@ -21,12 +22,14 @@ private val localProperties = ConfigurationMap(
         "application.httpPort" to "8080",
         "application.name" to "dagpenger-journalføring-ferdigstill",
         "application.profile" to Profile.LOCAL.toString(),
+        "allow.insecure.soap.requests" to false.toString(),
         "journalPostApi.url" to "http://localhost",
         "gosysApi.url" to "http://localhost",
         "kafka.bootstrap.servers" to "localhost:9092",
         "srvdagpenger.journalforing.ferdigstill.password" to "password",
         "srvdagpenger.journalforing.ferdigstill.username" to "user",
         "sts.url" to "http://localhost",
+        "soapsecuritytokenservice.url" to "http://localhost",
         "behandlearbeidsytelsesak.v1.url" to "https://localhost/ail_ws/BehandleArbeidOgAktivitetOppgave_v1",
         "ytelseskontrakt.v3.url" to "https://localhost/ail_ws/Ytelseskontrakt_v3",
         "kafka.processing.guarantee" to StreamsConfig.AT_LEAST_ONCE
@@ -42,6 +45,7 @@ private val devProperties = ConfigurationMap(
         "gosysApi.url" to "http://oppgave.default.svc.nais.local",
         "kafka.bootstrap.servers" to "b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443",
         "sts.url" to "http://security-token-service.default.svc.nais.local",
+        "soapsecuritytokenservice.url" to "https://sts-q1.preprod.local/SecurityTokenServiceProvider/",
         "behandlearbeidsytelsesak.v1.url" to "https://arena-q1.adeo.no/ail_ws/BehandleArbeidOgAktivitetOppgave_v1",
         "ytelseskontrakt.v3.url" to "https://arena-q1.adeo.no/ail_ws/Ytelseskontrakt_v3",
         "kafka.processing.guarantee" to StreamsConfig.AT_LEAST_ONCE
@@ -56,6 +60,7 @@ private val prodProperties = ConfigurationMap(
         "gosysApi.url" to "http://oppgave.default.svc.nais.local",
         "kafka.bootstrap.servers" to "a01apvl00145.adeo.no:8443,a01apvl00146.adeo.no:8443,a01apvl00147.adeo.no:8443,a01apvl00148.adeo.no:8443,a01apvl00149.adeo.no:8443,a01apvl00150.adeo.no:8443",
         "sts.url" to "http://security-token-service.default.svc.nais.local",
+        "soapsecuritytokenservice.url" to "https://sts.adeo.no/SecurityTokenServiceProvider/",
         "behandlearbeidsytelsesak.v1.url" to "https://arena.adeo.no/ail_ws/BehandleArbeidOgAktivitetOppgave_v1",
         "ytelseskontrakt.v3.url" to "https://arena.adeo.no/ail_ws/Ytelseskontrakt_v3",
         "kafka.processing.guarantee" to StreamsConfig.EXACTLY_ONCE
@@ -81,6 +86,7 @@ data class Configuration(
     val gosysApiUrl: String = config()[Key("gosysApi.url", stringType)],
     val behandleArbeidsytelseSakConfig: BehandleArbeidsytelseSakConfig = BehandleArbeidsytelseSakConfig(),
     val ytelseskontraktV3Config: YtelseskontraktV3Config = YtelseskontraktV3Config(),
+    val soapSTSClient: SoapSTSClient = SoapSTSClient(),
     val sts: Sts = Sts()
 ) {
 
@@ -102,6 +108,13 @@ data class Configuration(
         val baseUrl: String = config()[Key("sts.url", stringType)],
         val username: String = config()[Key("srvdagpenger.journalforing.ferdigstill.username", stringType)],
         val password: String = config()[Key("srvdagpenger.journalforing.ferdigstill.password", stringType)]
+    )
+
+    data class SoapSTSClient(
+        val endpoint: String = config()[Key("soapsecuritytokenservice.url", stringType)],
+        val username: String = config()[Key("srvdagpenger.journalforing.ferdigstill.username", stringType)],
+        val password: String = config()[Key("srvdagpenger.journalforing.ferdigstill.password", stringType)],
+        val allowInsecureSoapRequests: Boolean = config()[Key("allow.insecure.soap.requests", booleanType)]
     )
 
     data class Application(
