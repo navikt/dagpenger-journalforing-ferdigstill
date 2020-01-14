@@ -89,6 +89,7 @@ internal class JournalFøringFerdigstillTest {
         journalFøringFerdigstill.handlePacket(packet)
 
         verify { manuellJournalføringsOppgaveClient.opprettOppgave(journalPostId, null, "tittel1", "4450") }
+        verify(exactly = 0) { journalPostApi.oppdater(any(), any()) }
     }
 
     @Test

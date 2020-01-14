@@ -10,12 +10,9 @@ import no.nav.dagpenger.journalføring.ferdigstill.Metrics.aktiveDagpengeSakTell
 import no.nav.dagpenger.journalføring.ferdigstill.Metrics.automatiskJournalførtNeiTeller
 import no.nav.dagpenger.journalføring.ferdigstill.Metrics.avsluttetDagpengeSakTeller
 import no.nav.dagpenger.journalføring.ferdigstill.Metrics.inaktivDagpengeSakTeller
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.BestillOppgaveArenaException
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.createArenaTilleggsinformasjon
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.AKTØR_ID
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.BEHANDLENDE_ENHET
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.NATURLIG_IDENT
-import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.aktørFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.brukerFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.dokumentTitlerFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.hasNaturligIdent
@@ -28,10 +25,11 @@ import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.ti
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSak
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSakStatus
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.BestillOppgaveArenaException
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.createArenaTilleggsinformasjon
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonErInaktiv
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonIkkeFunnet
 import org.apache.kafka.streams.kstream.Predicate
-import java.lang.RuntimeException
 
 private val logger = KotlinLogging.logger {}
 
@@ -75,16 +73,18 @@ internal object PacketToJoarkPayloadMapper {
 
     fun tittelFrom(packet: Packet) = dokumenterFrom(packet).first().tittel
 
-    fun journalPostFrom(packet: Packet, fagsakId: String): OppdaterJournalPostPayload {
+    fun sakFrom(fagsakId: String?) = if (fagsakId != null) Sak(
+        saksType = SaksType.FAGSAK,
+        fagsaksystem = "AO01",
+        fagsakId = fagsakId
+    ) else Sak(SaksType.GENERELL_SAK, null, null)
+
+    fun journalPostFrom(packet: Packet, fagsakId: String?): OppdaterJournalPostPayload {
         return OppdaterJournalPostPayload(
             avsenderMottaker = avsenderFrom(packet),
             bruker = brukerFrom(packet),
             tittel = tittelFrom(packet),
-            sak = Sak(
-                saksType = SaksType.FAGSAK,
-                fagsaksystem = "AO01",
-                fagsakId = fagsakId
-            ),
+            sak = sakFrom(fagsakId),
             dokumenter = dokumenterFrom(packet)
         )
     }
@@ -100,8 +100,6 @@ internal class JournalFøringFerdigstill(
         val journalpostId = journalPostIdFrom(packet)
 
         if (kanBestilleFagsak(packet)) {
-            val aktørId = aktørFrom(packet).id
-
             val fagsakId = bestillFagsak(packet)
             if (fagsakId != null) {
                 journalPostApi.oppdater(journalpostId, journalPostFrom(packet, fagsakId))
@@ -109,25 +107,27 @@ internal class JournalFøringFerdigstill(
                 Metrics.jpFerdigStillInc(SaksType.FAGSAK)
                 logger.info { "Automatisk journalført $journalpostId" }
             } else {
-                manuellJournalføringsOppgaveClient.opprettOppgave(
-                    journalpostId,
-                    aktørId,
-                    tittelFrom(packet),
-                    tildeltEnhetsNrFrom(packet)
-                )
-                Metrics.jpFerdigStillInc(SaksType.GENERELL_SAK)
-                logger.info { "Manuelt journalført $journalpostId" }
+                bestillManuellJournalføring(packet)
             }
         } else {
-            manuellJournalføringsOppgaveClient.opprettOppgave(
-                journalpostId,
-                nullableAktørFrom(packet)?.id,
-                tittelFrom(packet),
-                tildeltEnhetsNrFrom(packet)
-            )
-            Metrics.jpFerdigStillInc(SaksType.GENERELL_SAK)
-            logger.info { "Manuelt journalført $journalpostId" }
+            bestillManuellJournalføring(packet)
         }
+    }
+
+    private fun bestillManuellJournalføring(packet: Packet) {
+        val journalpostId = journalPostIdFrom(packet)
+
+        nullableAktørFrom(packet)?.let { journalPostApi.oppdater(journalpostId, journalPostFrom(packet, null)) }
+
+        manuellJournalføringsOppgaveClient.opprettOppgave(
+            journalpostId,
+            nullableAktørFrom(packet)?.id,
+            tittelFrom(packet),
+            tildeltEnhetsNrFrom(packet)
+        )
+
+        Metrics.jpFerdigStillInc(SaksType.GENERELL_SAK)
+        logger.info { "Manuelt journalført $journalpostId" }
     }
 
     private fun kanBestilleFagsak(packet: Packet): Boolean {
