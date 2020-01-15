@@ -64,7 +64,7 @@ internal class JournalPostRestApi(private val url: String, private val oidcClien
             { logger.info("Oppdatert journal post: $journalPostId") },
             { e ->
                 logger.error("Feilet oppdatering av journalpost: $journalPostId", e.exception)
-                throw e
+                throw AdapterException(e.exception)
             }
         )
     }
@@ -82,7 +82,7 @@ internal class JournalPostRestApi(private val url: String, private val oidcClien
             { logger.info("Ferdigstilt journal post: $journalPostId") },
             { e ->
                 logger.error("Feilet ferdigstilling av journalpost: : $journalPostId, respons fra joark ${e.response}", e.exception)
-                throw e
+                throw AdapterException(e.exception)
             }
         )
     }

@@ -53,11 +53,13 @@ class KafkaFeilhåndteringTest {
         val behandlendeEnhet = "9999"
         val aktørId = "987654321"
 
-        every { arenaClient.hentArenaSaker(naturligIdent) } returns listOf(ArenaSak(123, ArenaSakStatus.Aktiv))
-        every { journalpostApi.oppdater(any(), any()) } throws RuntimeException() andThen { Unit }
+        every { arenaClient.hentArenaSaker(naturligIdent) } returns listOf(ArenaSak(123, ArenaSakStatus.Inaktiv))
+        every { arenaClient.bestillOppgave(naturligIdent, behandlendeEnhet, any()) } returns "abc"
+        every { journalpostApi.oppdater(any(), any()) } throws AdapterException(RuntimeException()) andThen { Unit }
 
         val packet = Packet().apply {
             this.putValue(PacketKeys.JOURNALPOST_ID, journalPostId)
+            this.putValue(PacketKeys.TOGGLE_BEHANDLE_NY_SØKNAD, true)
             this.putValue(PacketKeys.NATURLIG_IDENT, naturligIdent)
             this.putValue(PacketKeys.BEHANDLENDE_ENHET, behandlendeEnhet)
             this.putValue(PacketKeys.DATO_REGISTRERT, "2020-01-01")
@@ -71,10 +73,15 @@ class KafkaFeilhåndteringTest {
             val inputRecord = factory.create(packet)
             topologyTestDriver.pipeInput(inputRecord)
 
-            val ut = readOutput(topologyTestDriver)
+            val utMedFagsakId = readOutput(topologyTestDriver)
 
-            ut shouldNotBe null
-            ut?.value()?.getStringValue("arenasakId") shouldBe "abc"
+            utMedFagsakId shouldNotBe null
+            utMedFagsakId?.value()?.getStringValue("fagsakId") shouldBe "abc"
+
+            val utFerdigstilt = readOutput(topologyTestDriver)
+
+            utFerdigstilt shouldNotBe null
+            utFerdigstilt?.value()?.hasField("ferdigBehandlet")
         }
     }
 

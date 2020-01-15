@@ -1,50 +1,43 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
+import io.kotlintest.shouldBe
 import io.mockk.mockk
-import io.mockk.verify
 import no.nav.dagpenger.events.Packet
 import org.junit.jupiter.api.Test
 
 internal class FeatureToggleTest {
 
-    private val configuration = Configuration()
-
     @Test
     fun `By default journalforing feature is off`() {
         val journalFøringFerdigstill = mockk<JournalFøringFerdigstill>(relaxed = true)
+        val service = Application(Configuration(), journalFøringFerdigstill)
 
         val packetWithoutToggle = Packet().apply {
-        }
-
-        Application(configuration, journalFøringFerdigstill).onPacket(packetWithoutToggle)
-
-        verify(exactly = 0) {
-            journalFøringFerdigstill.handlePacket(any())
+            this.putValue("journalpostId", "123")
+            this.putValue("journalføringState", "MOTTATT")
         }
 
         val packetWithToggleFalse = Packet().apply {
+            this.putValue("journalpostId", "123")
+            this.putValue("journalføringState", "MOTTATT")
             this.putValue("toggleBehandleNySøknad", false)
         }
 
-        Application(configuration, journalFøringFerdigstill).onPacket(packetWithToggleFalse)
-
-        verify(exactly = 0) {
-            journalFøringFerdigstill.handlePacket(any())
-        }
+        service.filterPredicates().all { it.test("", packetWithToggleFalse) } shouldBe false
+        service.filterPredicates().all { it.test("", packetWithoutToggle) } shouldBe false
     }
 
     @Test
     fun `Journalforing feature is on if toggle is on`() {
         val journalFøringFerdigstill = mockk<JournalFøringFerdigstill>(relaxed = true)
+        val service = Application(Configuration(), journalFøringFerdigstill)
 
-        val packet = Packet().apply {
+        val packetWithToggle = Packet().apply {
+            this.putValue("journalpostId", "123")
+            this.putValue("journalføringState", "MOTTATT")
             this.putValue("toggleBehandleNySøknad", true)
         }
 
-        Application(configuration, journalFøringFerdigstill).onPacket(packet)
-
-        verify(exactly = 1) {
-            journalFøringFerdigstill.handlePacket(any())
-        }
+        service.filterPredicates().all { it.test("", packetWithToggle) } shouldBe true
     }
 }

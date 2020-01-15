@@ -10,9 +10,6 @@ import no.nav.dagpenger.journalføring.ferdigstill.Metrics.aktiveDagpengeSakTell
 import no.nav.dagpenger.journalføring.ferdigstill.Metrics.automatiskJournalførtNeiTeller
 import no.nav.dagpenger.journalføring.ferdigstill.Metrics.avsluttetDagpengeSakTeller
 import no.nav.dagpenger.journalføring.ferdigstill.Metrics.inaktivDagpengeSakTeller
-import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.AKTØR_ID
-import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.BEHANDLENDE_ENHET
-import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.NATURLIG_IDENT
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.brukerFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.dokumentTitlerFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.hasNaturligIdent
@@ -33,8 +30,13 @@ import org.apache.kafka.streams.kstream.Predicate
 
 private val logger = KotlinLogging.logger {}
 
-internal val erJournalpost = Predicate<String, Packet> { _, packet ->
-    packet.hasField(PacketKeys.JOURNALPOST_ID)
+internal val erIkkeFerdigBehandletJournalpost = Predicate<String, Packet> { _, packet ->
+    packet.hasField(PacketKeys.JOURNALPOST_ID) &&
+    !packet.hasField(PacketKeys.FERDIG_BEHANDLET)
+}
+
+internal val featureToggleOn = Predicate<String, Packet> { _, packet ->
+    packet.hasField(PacketKeys.TOGGLE_BEHANDLE_NY_SØKNAD) && packet.getBoolean(PacketKeys.TOGGLE_BEHANDLE_NY_SØKNAD)
 }
 
 internal val dokumentAdapter = moshiInstance.adapter<List<Dokument>>(
@@ -56,12 +58,12 @@ internal object PacketToJoarkPayloadMapper {
 
     fun journalPostIdFrom(packet: Packet) = packet.getStringValue(PacketKeys.JOURNALPOST_ID)
     fun avsenderFrom(packet: Packet) = Avsender(packet.getStringValue(PacketKeys.AVSENDER_NAVN))
-    fun brukerFrom(packet: Packet) = Bruker(packet.getStringValue(NATURLIG_IDENT))
-    fun hasNaturligIdent(packet: Packet) = packet.hasField(NATURLIG_IDENT)
+    fun brukerFrom(packet: Packet) = Bruker(packet.getStringValue(PacketKeys.NATURLIG_IDENT))
+    fun hasNaturligIdent(packet: Packet) = packet.hasField(PacketKeys.NATURLIG_IDENT)
     fun nullableAktørFrom(packet: Packet) =
-        if (packet.hasField(AKTØR_ID)) Bruker(packet.getStringValue(AKTØR_ID), "AKTØR") else null
+        if (packet.hasField(PacketKeys.AKTØR_ID)) Bruker(packet.getStringValue(PacketKeys.AKTØR_ID), "AKTØR") else null
 
-    fun tildeltEnhetsNrFrom(packet: Packet) = packet.getStringValue(BEHANDLENDE_ENHET)
+    fun tildeltEnhetsNrFrom(packet: Packet) = packet.getStringValue(PacketKeys.BEHANDLENDE_ENHET)
     fun dokumenterFrom(packet: Packet) = packet.getObjectValue(PacketKeys.DOKUMENTER) {
         dokumentJsonAdapter.fromJsonValue(it)!!
     }
@@ -95,18 +97,26 @@ internal class JournalFøringFerdigstill(
     private val arenaClient: ArenaClient
 ) {
 
-    fun handlePacket(packet: Packet) {
-
-        if (kanBestilleFagsak(packet)) {
-            val fagsakId = bestillFagsak(packet)
-            if (fagsakId != null) {
-                journalførAutomatisk(packet, fagsakId)
+    fun handlePacket(packet: Packet): Packet {
+        try {
+            if (kanBestilleFagsak(packet)) {
+                val fagsakId = bestillFagsak(packet)
+                if (fagsakId != null) {
+                    if (!packet.hasField(PacketKeys.FAGSAK_ID)) packet.putValue(PacketKeys.FAGSAK_ID, fagsakId)
+                    journalførAutomatisk(packet, fagsakId)
+                    packet.putValue(PacketKeys.FERDIG_BEHANDLET, true)
+                } else {
+                    journalførManuelt(packet)
+                    packet.putValue(PacketKeys.FERDIG_BEHANDLET, true)
+                }
             } else {
                 journalførManuelt(packet)
+                packet.putValue(PacketKeys.FERDIG_BEHANDLET, true)
             }
-        } else {
-            journalførManuelt(packet)
+        } catch (e: AdapterException) {
         }
+
+        return packet
     }
 
     private fun journalførAutomatisk(packet: Packet, fagsakId: String) {
@@ -180,11 +190,11 @@ internal class JournalFøringFerdigstill(
                 }
                 else -> {
                     logger.warn { "Kan ikke bestille oppgave for journalpost $journalpostId. Ukjent feil. " }
-                    throw e
+                    throw AdapterException(e)
                 }
             }
         }
     }
 }
 
-class MåManueltBehandlesException : RuntimeException()
+class AdapterException(val exception: Throwable) : RuntimeException(exception)

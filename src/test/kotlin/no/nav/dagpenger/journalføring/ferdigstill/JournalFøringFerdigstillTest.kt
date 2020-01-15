@@ -36,6 +36,7 @@ internal class JournalFøringFerdigstillTest {
 
         application.filterPredicates().all { it.test("", Packet().apply {
             this.putValue(JOURNALPOST_ID, "journalPostId")
+            this.putValue("toggleBehandleNySøknad", true)
         }) } shouldBe true
 
         application.filterPredicates().all { it.test("", Packet().apply {
@@ -154,7 +155,7 @@ internal class JournalFøringFerdigstillTest {
         val behandlendeEnhet = "9999"
         val aktørId = "987654321"
 
-        val packet = Packet().apply {
+        val packetPersonInaktiv = Packet().apply {
             this.putValue(JOURNALPOST_ID, journalPostId)
             this.putValue(NATURLIG_IDENT, naturligIdent)
             this.putValue(BEHANDLENDE_ENHET, behandlendeEnhet)
@@ -164,12 +165,14 @@ internal class JournalFøringFerdigstillTest {
             dokumentJsonAdapter.toJsonValue(listOf(Dokument("id1", "tittel1")))?.let { this.putValue(DOKUMENTER, it) }
         }
 
+        val packetPersonIkkeFunnet = Packet(packetPersonInaktiv.toJson()!!)
+
         // Person er ikke arbeidssøker
         every {
             arenaClient.bestillOppgave(naturligIdent, behandlendeEnhet, any())
         } throws BestillOppgaveArenaException(BestillOppgavePersonErInaktiv())
 
-        journalFøringFerdigstill.handlePacket(packet)
+        journalFøringFerdigstill.handlePacket(packetPersonInaktiv)
 
         verify(exactly = 1) { manuellJournalføringsOppgaveClient.opprettOppgave(journalPostId, aktørId, "tittel1", "9999") }
         verify(exactly = 0) { journalPostApi.ferdigstill(any()) }
@@ -179,7 +182,7 @@ internal class JournalFøringFerdigstillTest {
             arenaClient.bestillOppgave(naturligIdent, behandlendeEnhet, any())
         } throws BestillOppgaveArenaException(BestillOppgavePersonIkkeFunnet())
 
-        journalFøringFerdigstill.handlePacket(packet)
+        journalFøringFerdigstill.handlePacket(packetPersonIkkeFunnet)
 
         verify(exactly = 2) { manuellJournalføringsOppgaveClient.opprettOppgave(journalPostId, aktørId, "tittel1", "9999") }
         verify(exactly = 0) { journalPostApi.ferdigstill(any()) }

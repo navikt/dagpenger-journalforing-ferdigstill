@@ -57,7 +57,7 @@ internal class GosysOppgaveClient(private val url: String, private val oidcClien
                         "application/json"
                     )}", e.exception
                 )
-                throw e
+                throw AdapterException(e.exception)
             }
         )
     }
