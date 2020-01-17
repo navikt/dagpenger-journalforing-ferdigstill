@@ -4,6 +4,7 @@ import io.kotlintest.shouldBe
 import io.kotlintest.shouldNotBe
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSak
@@ -83,6 +84,8 @@ class KafkaFeilhåndteringTest {
             utFerdigstilt shouldNotBe null
             utFerdigstilt?.value()?.hasField("ferdigBehandlet")
         }
+
+        verify(exactly = 1) { arenaClient.bestillOppgave(naturligIdent, behandlendeEnhet, any()) }
     }
 
     private fun readOutput(topologyTestDriver: TopologyTestDriver): ProducerRecord<String, Packet>? {
