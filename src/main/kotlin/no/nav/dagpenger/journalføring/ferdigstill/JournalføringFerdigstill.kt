@@ -100,9 +100,7 @@ internal class JournalføringFerdigstill(
     fun handlePacket(packet: Packet): Packet {
         try {
             if (kanBestilleFagsak(packet)) {
-                val fagsakId =
-                    if (packet.hasField(PacketKeys.FAGSAK_ID)) packet.getStringValue(PacketKeys.FAGSAK_ID)
-                    else bestillFagsak(packet)
+                val fagsakId = packet.getNullableStringValue(PacketKeys.FAGSAK_ID) ?: bestillFagsak(packet)
 
                 if (fagsakId != null) {
                     if (!packet.hasField(PacketKeys.FAGSAK_ID)) packet.putValue(PacketKeys.FAGSAK_ID, fagsakId)
