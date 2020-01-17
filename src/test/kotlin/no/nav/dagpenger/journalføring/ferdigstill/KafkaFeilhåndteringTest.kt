@@ -46,7 +46,8 @@ class KafkaFeilhåndteringTest {
 
     @Test
     fun `skal fortsette der den slapp når noe feiler`() {
-        val journalFøringFerdigstill = JournalføringFerdigstill(journalpostApi, manuellJournalføringsOppgaveClient, arenaClient)
+        val journalFøringFerdigstill =
+            JournalføringFerdigstill(journalpostApi, manuellJournalføringsOppgaveClient, arenaClient)
         val application = Application(configuration, journalFøringFerdigstill)
 
         val journalPostId = "journalPostId"
@@ -66,8 +67,11 @@ class KafkaFeilhåndteringTest {
             this.putValue(PacketKeys.DATO_REGISTRERT, "2020-01-01")
             this.putValue(PacketKeys.AKTØR_ID, aktørId)
             this.putValue(PacketKeys.AVSENDER_NAVN, "Donald")
-            PacketToJoarkPayloadMapper.dokumentJsonAdapter.toJsonValue(listOf(Dokument("id1", "tittel1")))?.let { this.putValue(
-                PacketKeys.DOKUMENTER, it) }
+            PacketToJoarkPayloadMapper.dokumentJsonAdapter.toJsonValue(listOf(Dokument("id1", "tittel1")))?.let {
+                this.putValue(
+                    PacketKeys.DOKUMENTER, it
+                )
+            }
         }
 
         TopologyTestDriver(application.buildTopology(), streamProperties).use { topologyTestDriver ->

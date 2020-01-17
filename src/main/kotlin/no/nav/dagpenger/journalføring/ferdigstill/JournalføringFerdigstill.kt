@@ -1,8 +1,14 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
+import com.github.kittinunf.fuel.core.FuelError
+import com.github.kittinunf.fuel.core.Request
+import com.github.kittinunf.fuel.core.Response
+import com.github.kittinunf.result.Result
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.events.moshiInstance
@@ -196,6 +202,30 @@ internal class JournalføringFerdigstill(
             }
         }
     }
+}
+
+fun <T : Any> retryFuel(
+    times: Int = 3,
+    initialDelay: Long = 500,
+    maxDelay: Long = 2000,
+    factor: Double = 2.0,
+    fuelFunction: () -> Triple<Request, Response, Result<T, FuelError>>
+): Triple<Request, Response, Result<T, FuelError>> {
+    var currentDelay = initialDelay
+    repeat(times - 1) {
+
+        val res = fuelFunction()
+        val (_, response, result) = res
+
+        when {
+            result is Result.Success -> return res
+            result is Result.Failure -> logger.warn { result.getException() }
+        }
+
+        runBlocking { delay(currentDelay) }
+        currentDelay = (currentDelay * factor).toLong().coerceAtMost(maxDelay)
+    }
+    return fuelFunction() // last attempt
 }
 
 class AdapterException(val exception: Throwable) : RuntimeException(exception)

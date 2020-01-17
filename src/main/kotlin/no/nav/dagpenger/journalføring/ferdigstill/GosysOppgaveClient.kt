@@ -29,7 +29,8 @@ internal data class GosysOppgave(
     val prioritet: String = "NORM"
 )
 
-internal class GosysOppgaveClient(private val url: String, private val oidcClient: OidcClient) : ManuellJournalføringsOppgaveClient {
+internal class GosysOppgaveClient(private val url: String, private val oidcClient: OidcClient) :
+    ManuellJournalføringsOppgaveClient {
 
     companion object {
         private val moishiInstance = Moshi.Builder()
@@ -37,17 +38,34 @@ internal class GosysOppgaveClient(private val url: String, private val oidcClien
             .add(LocalDateJsonAdapter())
             .build()
 
-        fun toOpprettGosysOppgaveJsonPayload(gosysOppgave: GosysOppgave) = moishiInstance.adapter<GosysOppgave>(GosysOppgave::class.java).toJson(gosysOppgave)
+        fun toOpprettGosysOppgaveJsonPayload(gosysOppgave: GosysOppgave) =
+            moishiInstance.adapter<GosysOppgave>(GosysOppgave::class.java).toJson(gosysOppgave)
     }
 
-    override fun opprettOppgave(journalPostId: String, aktørId: String?, søknadstittel: String, tildeltEnhetsnr: String) {
-        val (_, _, result) = url.plus("/api/v1/oppgaver")
-            .httpPost()
-            .authentication()
-            .bearer(oidcClient.oidcToken().access_token)
-            .header("X-Correlation-ID", journalPostId)
-            .jsonBody(toOpprettGosysOppgaveJsonPayload(GosysOppgave(journalpostId = journalPostId, aktoerId = aktørId, beskrivelse = søknadstittel, tildeltEnhetsnr = tildeltEnhetsnr)))
-            .response()
+    override fun opprettOppgave(
+        journalPostId: String,
+        aktørId: String?,
+        søknadstittel: String,
+        tildeltEnhetsnr: String
+    ) {
+        val (_, _, result) = retryFuel(initialDelay = 5000, maxDelay = 30000) {
+            url.plus("/api/v1/oppgaver")
+                .httpPost()
+                .authentication()
+                .bearer(oidcClient.oidcToken().access_token)
+                .header("X-Correlation-ID", journalPostId)
+                .jsonBody(
+                    toOpprettGosysOppgaveJsonPayload(
+                        GosysOppgave(
+                            journalpostId = journalPostId,
+                            aktoerId = aktørId,
+                            beskrivelse = søknadstittel,
+                            tildeltEnhetsnr = tildeltEnhetsnr
+                        )
+                    )
+                )
+                .response()
+        }
 
         result.fold(
             { logger.info(" Oppretter manuell journalføringsoppgave for $journalPostId") },

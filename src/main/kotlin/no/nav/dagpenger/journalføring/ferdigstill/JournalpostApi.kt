@@ -53,12 +53,14 @@ internal class JournalpostRestApi(private val url: String, private val oidcClien
     }
 
     override fun oppdater(journalpostId: String, jp: OppdaterJournalpostPayload) {
-        val (_, _, result) = url.plus("/rest/journalpostapi/v1/journalpost/$journalpostId")
-            .httpPut()
-            .authentication()
-            .bearer(oidcClient.oidcToken().access_token)
-            .jsonBody(toJsonPayload(jp))
-            .response()
+        val (_, _, result) = retryFuel {
+            url.plus("/rest/journalpostapi/v1/journalpost/$journalpostId")
+                .httpPut()
+                .authentication()
+                .bearer(oidcClient.oidcToken().access_token)
+                .jsonBody(toJsonPayload(jp))
+                .response()
+        }
 
         result.fold(
             { logger.info("Oppdatert journalpost: $journalpostId") },
@@ -71,17 +73,22 @@ internal class JournalpostRestApi(private val url: String, private val oidcClien
 
     override fun ferdigstill(journalpostId: String) {
         val (_, _, result) =
-            url.plus("/rest/journalpostapi/v1/journalpost/$journalpostId/ferdigstill")
-                .httpPatch()
-                .authentication()
-                .bearer(oidcClient.oidcToken().access_token)
-                .jsonBody("""{"journalfoerendeEnhet": "9999"}""")
-                .response()
+            retryFuel {
+                url.plus("/rest/journalpostapi/v1/journalpost/$journalpostId/ferdigstill")
+                    .httpPatch()
+                    .authentication()
+                    .bearer(oidcClient.oidcToken().access_token)
+                    .jsonBody("""{"journalfoerendeEnhet": "9999"}""")
+                    .response()
+            }
 
         result.fold(
             { logger.info("Ferdigstilt journalpost: $journalpostId") },
             { e ->
-                logger.error("Feilet ferdigstilling av journalpost: : $journalpostId, respons fra joark ${e.response}", e.exception)
+                logger.error(
+                    "Feilet ferdigstilling av journalpost: : $journalpostId, respons fra joark ${e.response}",
+                    e.exception
+                )
                 throw AdapterException(e.exception)
             }
         )
