@@ -14,7 +14,7 @@ import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.br
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.dokumentTitlerFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.hasNaturligIdent
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.journalPostFrom
-import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.journalPostIdFrom
+import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.journalpostIdFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.nullableAktørFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.registrertDatoFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.tildeltEnhetsNrFrom
@@ -32,7 +32,7 @@ private val logger = KotlinLogging.logger {}
 
 internal val erIkkeFerdigBehandletJournalpost = Predicate<String, Packet> { _, packet ->
     packet.hasField(PacketKeys.JOURNALPOST_ID) &&
-    !packet.hasField(PacketKeys.FERDIG_BEHANDLET)
+        !packet.hasField(PacketKeys.FERDIG_BEHANDLET)
 }
 
 internal val featureToggleOn = Predicate<String, Packet> { _, packet ->
@@ -56,7 +56,7 @@ internal object PacketToJoarkPayloadMapper {
             )
         ).lenient()
 
-    fun journalPostIdFrom(packet: Packet) = packet.getStringValue(PacketKeys.JOURNALPOST_ID)
+    fun journalpostIdFrom(packet: Packet) = packet.getStringValue(PacketKeys.JOURNALPOST_ID)
     fun avsenderFrom(packet: Packet) = Avsender(packet.getStringValue(PacketKeys.AVSENDER_NAVN))
     fun brukerFrom(packet: Packet) = Bruker(packet.getStringValue(PacketKeys.NATURLIG_IDENT))
     fun hasNaturligIdent(packet: Packet) = packet.hasField(PacketKeys.NATURLIG_IDENT)
@@ -80,8 +80,8 @@ internal object PacketToJoarkPayloadMapper {
         fagsakId = fagsakId
     ) else Sak(SaksType.GENERELL_SAK, null, null)
 
-    fun journalPostFrom(packet: Packet, fagsakId: String?): OppdaterJournalPostPayload {
-        return OppdaterJournalPostPayload(
+    fun journalPostFrom(packet: Packet, fagsakId: String?): OppdaterJournalpostPayload {
+        return OppdaterJournalpostPayload(
             avsenderMottaker = avsenderFrom(packet),
             bruker = brukerFrom(packet),
             tittel = tittelFrom(packet),
@@ -91,8 +91,8 @@ internal object PacketToJoarkPayloadMapper {
     }
 }
 
-internal class JournalFøringFerdigstill(
-    private val journalPostApi: JournalPostApi,
+internal class JournalføringFerdigstill(
+    private val journalPostApi: JournalpostApi,
     private val manuellJournalføringsOppgaveClient: ManuellJournalføringsOppgaveClient,
     private val arenaClient: ArenaClient
 ) {
@@ -120,7 +120,7 @@ internal class JournalFøringFerdigstill(
     }
 
     private fun journalførAutomatisk(packet: Packet, fagsakId: String) {
-        val journalpostId = journalPostIdFrom(packet)
+        val journalpostId = journalpostIdFrom(packet)
         journalPostApi.oppdater(journalpostId, journalPostFrom(packet, fagsakId))
         journalPostApi.ferdigstill(journalpostId)
         Metrics.jpFerdigStillInc(SaksType.FAGSAK)
@@ -128,7 +128,7 @@ internal class JournalFøringFerdigstill(
     }
 
     private fun journalførManuelt(packet: Packet) {
-        val journalpostId = journalPostIdFrom(packet)
+        val journalpostId = journalpostIdFrom(packet)
 
         nullableAktørFrom(packet)?.let { journalPostApi.oppdater(journalpostId, journalPostFrom(packet, null)) }
 
@@ -152,7 +152,7 @@ internal class JournalFøringFerdigstill(
         val saker = arenaClient.hentArenaSaker(brukerFrom(packet).id).also {
             registrerMetrikker(it)
             logger.info {
-                "Innsender av journalpost ${journalPostIdFrom(packet)} har ${it.filter { it.status == ArenaSakStatus.Aktiv }.size} aktive saker av ${it.size} dagpengesaker totalt"
+                "Innsender av journalpost ${journalpostIdFrom(packet)} har ${it.filter { it.status == ArenaSakStatus.Aktiv }.size} aktive saker av ${it.size} dagpengesaker totalt"
             }
         }
 
@@ -171,7 +171,7 @@ internal class JournalFøringFerdigstill(
     }
 
     private fun bestillFagsak(packet: Packet): String? {
-        val journalpostId = journalPostIdFrom(packet)
+        val journalpostId = journalpostIdFrom(packet)
         val tilleggsinformasjon =
             createArenaTilleggsinformasjon(dokumentTitlerFrom(packet), registrertDatoFrom(packet))
         return try {

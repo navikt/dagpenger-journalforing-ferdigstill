@@ -19,7 +19,7 @@ private val logger = KotlinLogging.logger {}
 
 internal class Application(
     private val configuration: Configuration,
-    private val journalFøringFerdigstill: JournalFøringFerdigstill
+    private val journalføringFerdigstill: JournalføringFerdigstill
 ) : River(configuration.kafka.dagpengerJournalpostTopic) {
 
     override val SERVICE_APP_ID = configuration.application.name
@@ -28,7 +28,7 @@ internal class Application(
     override fun filterPredicates() = listOf(erIkkeFerdigBehandletJournalpost, featureToggleOn)
 
     override fun onPacket(packet: Packet): Packet {
-        logger.info { "Processing: $packet" }.also { return journalFøringFerdigstill.handlePacket(packet) }
+        logger.info { "Processing: $packet" }.also { return journalføringFerdigstill.handlePacket(packet) }
     }
 
     override fun getConfig(): Properties {
@@ -67,8 +67,8 @@ fun main() {
         soapStsClient.configureFor(ytelseskontraktV3)
     }
 
-    val journalFøringFerdigstill = JournalFøringFerdigstill(
-        JournalPostRestApi(configuration.journalPostApiUrl, stsOidcClient),
+    val journalFøringFerdigstill = JournalføringFerdigstill(
+        JournalpostRestApi(configuration.journalPostApiUrl, stsOidcClient),
         GosysOppgaveClient(configuration.gosysApiUrl, stsOidcClient),
         arenaClient
     )

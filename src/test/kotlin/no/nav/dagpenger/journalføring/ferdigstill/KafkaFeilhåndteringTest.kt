@@ -39,13 +39,13 @@ class KafkaFeilhåndteringTest {
         dagpengerJournalpostTopic.valueSerde.serializer()
     )
 
-    private val journalpostApi = mockk<JournalPostApi>(relaxed = true)
+    private val journalpostApi = mockk<JournalpostApi>(relaxed = true)
     private val manuellJournalføringsOppgaveClient = mockk<ManuellJournalføringsOppgaveClient>(relaxed = true)
     private val arenaClient = mockk<ArenaClient>(relaxed = true)
 
     @Test
     fun `skal fortsette der den slapp når noe feiler`() {
-        val journalFøringFerdigstill = JournalFøringFerdigstill(journalpostApi, manuellJournalføringsOppgaveClient, arenaClient)
+        val journalFøringFerdigstill = JournalføringFerdigstill(journalpostApi, manuellJournalføringsOppgaveClient, arenaClient)
         val application = Application(configuration, journalFøringFerdigstill)
 
         val journalPostId = "journalPostId"

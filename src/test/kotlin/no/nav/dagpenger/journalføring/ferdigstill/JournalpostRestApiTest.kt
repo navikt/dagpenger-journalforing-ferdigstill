@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import java.time.LocalDate
 
-internal class JournalPostRestApiTest {
+internal class JournalpostRestApiTest {
 
     companion object {
         val server: WireMockServer = WireMockServer(WireMockConfiguration.options().dynamicPort())

@@ -23,9 +23,9 @@ import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOpp
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonIkkeFunnet
 import org.junit.jupiter.api.Test
 
-internal class JournalFøringFerdigstillTest {
+internal class JournalføringFerdigstillTest {
 
-    private val journalPostApi = mockk<JournalPostApi>(relaxed = true)
+    private val journalPostApi = mockk<JournalpostApi>(relaxed = true)
     private val manuellJournalføringsOppgaveClient = mockk<ManuellJournalføringsOppgaveClient>(relaxed = true)
     private val arenaClient = mockk<ArenaClient>(relaxed = true)
 
@@ -51,7 +51,7 @@ internal class JournalFøringFerdigstillTest {
             arenaClient.hentArenaSaker("fnr")
         } returns listOf(ArenaSak(123, ArenaSakStatus.Inaktiv))
 
-        JournalFøringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient).apply {
+        JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient).apply {
             val generellPacket = Packet().apply {
                 this.putValue(JOURNALPOST_ID, "journalPostId")
                 this.putValue(AVSENDER_NAVN, "et navn")
@@ -78,7 +78,7 @@ internal class JournalFøringFerdigstillTest {
 
     @Test
     fun `Opprett manuell journalføringsoppgave når bruker er ukjent`() {
-        val journalFøringFerdigstill = JournalFøringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient)
+        val journalFøringFerdigstill = JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient)
         val journalPostId = "journalPostId"
 
         val packet = Packet().apply {
@@ -95,7 +95,7 @@ internal class JournalFøringFerdigstillTest {
 
     @Test
     fun `Opprett fagsak og oppgave, og ferdigstill, når bruker ikke har aktiv fagsak`() {
-        val journalFøringFerdigstill = JournalFøringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient)
+        val journalFøringFerdigstill = JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient)
         val journalPostId = "journalPostId"
         val naturligIdent = "12345678910"
         val behandlendeEnhet = "9999"
@@ -123,7 +123,7 @@ internal class JournalFøringFerdigstillTest {
 
     @Test
     fun `Opprett manuell journalføringsoppgave når bruker har aktiv fagsak`() {
-        val journalFøringFerdigstill = JournalFøringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient)
+        val journalFøringFerdigstill = JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient)
         val journalPostId = "journalPostId"
         val naturligIdent = "12345678910"
         val behandlendeEnhet = "9999"
@@ -149,7 +149,7 @@ internal class JournalFøringFerdigstillTest {
 
     @Test
     fun `Opprett manuell journalføringsoppgave når bestilling av arena-oppgave feiler`() {
-        val journalFøringFerdigstill = JournalFøringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient)
+        val journalFøringFerdigstill = JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient)
         val journalPostId = "journalPostId"
         val naturligIdent = "12345678910"
         val behandlendeEnhet = "9999"

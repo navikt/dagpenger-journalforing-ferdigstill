@@ -12,12 +12,12 @@ import no.nav.dagpenger.oidc.OidcClient
 
 private val logger = KotlinLogging.logger {}
 
-internal interface JournalPostApi {
-    fun ferdigstill(journalPostId: String)
-    fun oppdater(journalPostId: String, jp: OppdaterJournalPostPayload)
+internal interface JournalpostApi {
+    fun ferdigstill(journalpostId: String)
+    fun oppdater(journalpostId: String, jp: OppdaterJournalpostPayload)
 }
 
-internal data class OppdaterJournalPostPayload(
+internal data class OppdaterJournalpostPayload(
     val avsenderMottaker: Avsender,
     val bruker: Bruker,
     val tittel: String,
@@ -38,22 +38,22 @@ internal data class Avsender(val navn: String)
 internal data class Bruker(val id: String, val idType: String = "FNR")
 internal data class Dokument(val dokumentInfoId: String, val tittel: String)
 
-internal class JournalPostRestApi(private val url: String, private val oidcClient: OidcClient) : JournalPostApi {
+internal class JournalpostRestApi(private val url: String, private val oidcClient: OidcClient) : JournalpostApi {
     init {
         FuelManager.instance.forceMethods = true
     }
 
     companion object {
-        private val moishiInstance = Moshi.Builder()
+        private val moshiInstance = Moshi.Builder()
             .add(KotlinJsonAdapterFactory())
             .build()
 
-        fun toJsonPayload(jp: OppdaterJournalPostPayload): String =
-            moishiInstance.adapter<OppdaterJournalPostPayload>(OppdaterJournalPostPayload::class.java).toJson(jp)
+        fun toJsonPayload(jp: OppdaterJournalpostPayload): String =
+            moshiInstance.adapter<OppdaterJournalpostPayload>(OppdaterJournalpostPayload::class.java).toJson(jp)
     }
 
-    override fun oppdater(journalPostId: String, jp: OppdaterJournalPostPayload) {
-        val (_, _, result) = url.plus("/rest/journalpostapi/v1/journalpost/$journalPostId")
+    override fun oppdater(journalpostId: String, jp: OppdaterJournalpostPayload) {
+        val (_, _, result) = url.plus("/rest/journalpostapi/v1/journalpost/$journalpostId")
             .httpPut()
             .authentication()
             .bearer(oidcClient.oidcToken().access_token)
@@ -61,17 +61,17 @@ internal class JournalPostRestApi(private val url: String, private val oidcClien
             .response()
 
         result.fold(
-            { logger.info("Oppdatert journal post: $journalPostId") },
+            { logger.info("Oppdatert journalpost: $journalpostId") },
             { e ->
-                logger.error("Feilet oppdatering av journalpost: $journalPostId", e.exception)
+                logger.error("Feilet oppdatering av journalpost: $journalpostId", e.exception)
                 throw AdapterException(e.exception)
             }
         )
     }
 
-    override fun ferdigstill(journalPostId: String) {
+    override fun ferdigstill(journalpostId: String) {
         val (_, _, result) =
-            url.plus("/rest/journalpostapi/v1/journalpost/$journalPostId/ferdigstill")
+            url.plus("/rest/journalpostapi/v1/journalpost/$journalpostId/ferdigstill")
                 .httpPatch()
                 .authentication()
                 .bearer(oidcClient.oidcToken().access_token)
@@ -79,9 +79,9 @@ internal class JournalPostRestApi(private val url: String, private val oidcClien
                 .response()
 
         result.fold(
-            { logger.info("Ferdigstilt journal post: $journalPostId") },
+            { logger.info("Ferdigstilt journalpost: $journalpostId") },
             { e ->
-                logger.error("Feilet ferdigstilling av journalpost: : $journalPostId, respons fra joark ${e.response}", e.exception)
+                logger.error("Feilet ferdigstilling av journalpost: : $journalpostId, respons fra joark ${e.response}", e.exception)
                 throw AdapterException(e.exception)
             }
         )

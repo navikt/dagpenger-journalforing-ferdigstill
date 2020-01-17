@@ -9,7 +9,7 @@ internal class FeatureToggleTest {
 
     @Test
     fun `By default journalforing feature is off`() {
-        val journalFøringFerdigstill = mockk<JournalFøringFerdigstill>(relaxed = true)
+        val journalFøringFerdigstill = mockk<JournalføringFerdigstill>(relaxed = true)
         val service = Application(Configuration(), journalFøringFerdigstill)
 
         val packetWithoutToggle = Packet().apply {
@@ -29,7 +29,7 @@ internal class FeatureToggleTest {
 
     @Test
     fun `Journalforing feature is on if toggle is on`() {
-        val journalFøringFerdigstill = mockk<JournalFøringFerdigstill>(relaxed = true)
+        val journalFøringFerdigstill = mockk<JournalføringFerdigstill>(relaxed = true)
         val service = Application(Configuration(), journalFøringFerdigstill)
 
         val packetWithToggle = Packet().apply {
