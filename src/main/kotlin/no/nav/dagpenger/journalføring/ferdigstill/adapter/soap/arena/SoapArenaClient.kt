@@ -88,8 +88,8 @@ class SoapArenaClient(private val oppgaveV1: BehandleArbeidOgAktivitetOppgaveV1,
 
     private fun <T> retry(
         times: Int = 3,
-        initialDelay: Long = 1000, // 0.1 second
-        maxDelay: Long = 30000, // 1 second
+        initialDelay: Long = 1000, // 1 second
+        maxDelay: Long = 30000, // 30 second
         factor: Double = 2.0,
         block: () -> T
     ): T {
@@ -98,7 +98,7 @@ class SoapArenaClient(private val oppgaveV1: BehandleArbeidOgAktivitetOppgaveV1,
             try {
                 return block()
             } catch (e: Exception) {
-                if (e !is BestillOppgavePersonErInaktiv && e !is BestillOppgavePersonIkkeFunnet) throw e
+                if (e is BestillOppgavePersonErInaktiv || e is BestillOppgavePersonIkkeFunnet) throw e
             }
             runBlocking { delay(currentDelay) }
             currentDelay = (currentDelay * factor).toLong().coerceAtMost(maxDelay)
