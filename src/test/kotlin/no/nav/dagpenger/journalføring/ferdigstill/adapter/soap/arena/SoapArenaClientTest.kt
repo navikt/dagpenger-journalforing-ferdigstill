@@ -4,15 +4,19 @@ import io.kotlintest.shouldBe
 import io.kotlintest.shouldThrow
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSakStatus
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.BestillOppgaveArenaException
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.HentArenaSakerException
 import no.nav.dagpenger.streams.HealthStatus
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BehandleArbeidOgAktivitetOppgaveV1
+import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgaveSakIkkeOpprettet
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.meldinger.WSBestillOppgaveResponse
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSDagpengekontrakt
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse
 import org.junit.jupiter.api.Test
+import kotlin.test.assertFailsWith
 
 internal class SoapArenaClientTest {
 
@@ -59,6 +63,21 @@ internal class SoapArenaClientTest {
         shouldThrow<HentArenaSakerException> {
             client.hentArenaSaker("1234")
         }
+    }
+
+    @Test
+    fun `prøver på ny hvis det skjer en ukjent feil`() {
+        val stubbedClient = mockk<BehandleArbeidOgAktivitetOppgaveV1>()
+        every { stubbedClient.bestillOppgave(any()) } throws BestillOppgaveSakIkkeOpprettet()
+
+        val client = SoapArenaClient(stubbedClient, mockk())
+
+        assertFailsWith<BestillOppgaveArenaException> {
+            client.bestillOppgave("123456789", "abcbscb", "beskrivelse")
+        }
+
+        Thread.sleep(10000)
+        verify(exactly = 3) { stubbedClient.bestillOppgave(any()) }
     }
 
     @Test
