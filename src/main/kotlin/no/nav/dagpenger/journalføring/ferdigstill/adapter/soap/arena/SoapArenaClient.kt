@@ -1,5 +1,7 @@
 package no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.arena
 
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSak
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSakStatus
@@ -7,6 +9,8 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.BestillOppgaveArenaEx
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.HentArenaSakerException
 import no.nav.dagpenger.streams.HealthStatus
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BehandleArbeidOgAktivitetOppgaveV1
+import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonErInaktiv
+import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonIkkeFunnet
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.informasjon.WSOppgave
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.informasjon.WSOppgavetype
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.informasjon.WSPerson
@@ -46,7 +50,7 @@ class SoapArenaClient(private val oppgaveV1: BehandleArbeidOgAktivitetOppgaveV1,
         }
 
         val response: WSBestillOppgaveResponse = try {
-            oppgaveV1.bestillOppgave(soapRequest)
+            retry { oppgaveV1.bestillOppgave(soapRequest) }
         } catch (e: Exception) {
             throw BestillOppgaveArenaException(e)
             // @todo Håndtere BestillOppgaveSikkerhetsbegrensning, BestillOppgaveOrganisasjonIkkeFunnet, BestillOppgavePersonErInaktiv, BestillOppgaveSakIkkeOpprettet, BestillOppgavePersonIkkeFunnet, BestillOppgaveUgyldigInput
@@ -80,5 +84,25 @@ class SoapArenaClient(private val oppgaveV1: BehandleArbeidOgAktivitetOppgaveV1,
         } catch (e: Exception) {
             HealthStatus.DOWN
         }
+    }
+
+    private fun <T> retry(
+        times: Int = 3,
+        initialDelay: Long = 1000, // 0.1 second
+        maxDelay: Long = 30000, // 1 second
+        factor: Double = 2.0,
+        block: () -> T
+    ): T {
+        var currentDelay = initialDelay
+        repeat(times - 1) {
+            try {
+                return block()
+            } catch (e: Exception) {
+                if (e !is BestillOppgavePersonErInaktiv && e !is BestillOppgavePersonIkkeFunnet) throw e
+            }
+            runBlocking { delay(currentDelay) }
+            currentDelay = (currentDelay * factor).toLong().coerceAtMost(maxDelay)
+        }
+        return block() // last attempt
     }
 }
