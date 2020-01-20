@@ -3,15 +3,12 @@ package no.nav.dagpenger.journalføring.ferdigstill
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
-import com.github.tomakehurst.wiremock.matching.EqualToPattern
-import com.gregwoodfill.assert.shouldStrictlyEqualJson
 import io.mockk.mockk
 import no.nav.dagpenger.oidc.StsOidcClient
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertDoesNotThrow
-import java.time.LocalDate
+import kotlin.test.assertFailsWith
 
 internal class JournalpostRestApiTest {
 
@@ -33,56 +30,43 @@ internal class JournalpostRestApiTest {
     }
 
     @Test
-    fun `Opprett gosys-oppgave json payload`() {
-        val gosysOppgave = GosysOppgave(
-            journalpostId = "12345",
-            aktoerId = "12345678910",
-            aktivDato = LocalDate.of(2019, 12, 11),
-            fristFerdigstillelse = LocalDate.of(2019, 12, 12),
-            tildeltEnhetsnr = "9999"
+    fun `Forsøker på ny hvis noe er feil`() {
+        val journalpostId = "12345"
 
+        WireMock.stubFor(
+            WireMock.put(WireMock.urlEqualTo("/rest/journalpostapi/v1/journalpost/$journalpostId"))
+                .willReturn(
+                    WireMock.aResponse().withStatus(500)
+                )
         )
 
-        val json = GosysOppgaveClient.toOpprettGosysOppgaveJsonPayload(gosysOppgave)
-
-        json shouldStrictlyEqualJson """
-            {
-                "journalpostId": "12345",
-                "aktoerId": "12345678910",
-                "tildeltEnhetsnr": "4450",
-                "opprettetAvEnhetsnr": "9999",
-                "beskrivelse": "Kunne ikke automatisk journalføres",
-                "tema": "DAG",
-                "oppgavetype": "JFR",
-                "aktivDato": "2019-12-11",
-                "fristFerdigstillelse": "2019-12-12",
-                "prioritet": "NORM",
-                "tildeltEnhetsnr": "9999"
-            }
-        """.trimIndent()
-    }
-
-    @Test
-    fun `Opprett gosys-oppgave contract test`() {
         WireMock.stubFor(
-            WireMock.post(WireMock.urlEqualTo("/api/v1/oppgaver"))
-                .withHeader("X-Correlation-ID", EqualToPattern("12345"))
+            WireMock.patch(WireMock.urlEqualTo("/rest/journalpostapi/v1/journalpost/$journalpostId/ferdigstill"))
                 .willReturn(
-                    WireMock.aResponse().withStatus(201)
+                    WireMock.aResponse().withStatus(500)
                 )
         )
 
         val stsOidcClient: StsOidcClient = mockk(relaxed = true)
 
-        val client: ManuellJournalføringsOppgaveClient = GosysOppgaveClient(server.baseUrl(), stsOidcClient)
+        val client = JournalpostRestApi(server.baseUrl(), stsOidcClient)
 
-        assertDoesNotThrow {
-            client.opprettOppgave(
-                journalPostId = "12345",
-                aktørId = "12345678910",
-                søknadstittel = "tittel1",
-                tildeltEnhetsnr = "9999"
-            )
+        assertFailsWith<AdapterException> {
+            client.oppdater(journalpostId, OppdaterJournalpostPayload(
+                avsenderMottaker = Avsender("navn"),
+                bruker = Bruker("bruker"),
+                tittel = "tittel",
+                sak = Sak(SaksType.FAGSAK, "fagsakId", "AO01"),
+                dokumenter = listOf(Dokument("dokumentId", "tittel"))
+            ))
         }
+
+        WireMock.verify(3, WireMock.putRequestedFor(WireMock.urlEqualTo("/rest/journalpostapi/v1/journalpost/$journalpostId")))
+
+        assertFailsWith<AdapterException> {
+            client.ferdigstill(journalpostId)
+        }
+
+        WireMock.verify(3, WireMock.patchRequestedFor(WireMock.urlEqualTo("/rest/journalpostapi/v1/journalpost/$journalpostId/ferdigstill")))
     }
 }
