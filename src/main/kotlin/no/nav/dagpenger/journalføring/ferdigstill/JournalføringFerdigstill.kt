@@ -217,9 +217,9 @@ fun <T : Any> retryFuel(
         val res = fuelFunction()
         val (_, _, result) = res
 
-        when {
-            result is Result.Success -> return res
-            result is Result.Failure -> logger.warn { result.getException() }
+        when (result) {
+            is Result.Success -> return res
+            is Result.Failure -> logger.warn { result.getException() }
         }
 
         runBlocking { delay(currentDelay) }

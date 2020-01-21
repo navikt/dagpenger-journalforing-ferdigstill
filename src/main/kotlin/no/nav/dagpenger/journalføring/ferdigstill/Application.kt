@@ -28,7 +28,14 @@ internal class Application(
     override fun filterPredicates() = listOf(erIkkeFerdigBehandletJournalpost, featureToggleOn)
 
     override fun onPacket(packet: Packet): Packet {
-        logger.info { "Processing: $packet" }.also { return journalføringFerdigstill.handlePacket(packet) }
+        logger.info { "Processing: $packet" }
+
+        if (packet.getReadCount() >= 10) {
+            logger.error { "Read count >= 10 for packet with journalpostid ${packet.getStringValue(PacketKeys.JOURNALPOST_ID)}" }
+            throw ReadCountException()
+        }
+
+        return journalføringFerdigstill.handlePacket(packet)
     }
 
     override fun getConfig(): Properties {
@@ -75,3 +82,5 @@ fun main() {
 
     Application(configuration, journalFøringFerdigstill).start()
 }
+
+class ReadCountException : RuntimeException()

@@ -2,6 +2,7 @@ package no.nav.dagpenger.journalføring.ferdigstill
 
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldNotBe
+import io.kotlintest.shouldThrow
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -90,6 +91,35 @@ class KafkaFeilhåndteringTest {
         }
 
         verify(exactly = 1) { arenaClient.bestillOppgave(naturligIdent, behandlendeEnhet, any()) }
+    }
+
+    @Test
+    fun `skal feile hvis pakken er lest mer enn 10 ganger`() {
+        val application = Application(configuration, mockk())
+
+        val journalPostId = "journalPostId"
+        val naturligIdent = "12345678910"
+        val behandlendeEnhet = "9999"
+        val aktørId = "987654321"
+
+        val packet = Packet("{\"system_read_count\": 9}").apply {
+            this.putValue(PacketKeys.JOURNALPOST_ID, journalPostId)
+            this.putValue(PacketKeys.TOGGLE_BEHANDLE_NY_SØKNAD, true)
+            this.putValue(PacketKeys.NATURLIG_IDENT, naturligIdent)
+            this.putValue(PacketKeys.BEHANDLENDE_ENHET, behandlendeEnhet)
+            this.putValue(PacketKeys.DATO_REGISTRERT, "2020-01-01")
+            this.putValue(PacketKeys.AKTØR_ID, aktørId)
+            this.putValue(PacketKeys.AVSENDER_NAVN, "Donald")
+            PacketToJoarkPayloadMapper.dokumentJsonAdapter.toJsonValue(listOf(Dokument("id1", "tittel1")))?.let {
+                this.putValue(
+                    PacketKeys.DOKUMENTER, it
+                )
+            }
+        }
+
+        shouldThrow<ReadCountException> {
+            application.onPacket(packet)
+        }
     }
 
     private fun readOutput(topologyTestDriver: TopologyTestDriver): ProducerRecord<String, Packet>? {
