@@ -76,7 +76,6 @@ internal class SoapArenaClientTest {
             client.bestillOppgave("123456789", "abcbscb", "beskrivelse")
         }
 
-
         verify(exactly = 3) { stubbedClient.bestillOppgave(any()) }
     }
 

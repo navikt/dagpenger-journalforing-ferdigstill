@@ -215,7 +215,7 @@ fun <T : Any> retryFuel(
     repeat(times - 1) {
 
         val res = fuelFunction()
-        val (_, response, result) = res
+        val (_, _, result) = res
 
         when {
             result is Result.Success -> return res
