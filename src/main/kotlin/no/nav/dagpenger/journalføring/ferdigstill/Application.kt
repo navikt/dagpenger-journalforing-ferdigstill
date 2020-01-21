@@ -2,8 +2,6 @@ package no.nav.dagpenger.journalføring.ferdigstill
 
 import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
-import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.JOURNALPOST_ID
-import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.TOGGLE_BEHANDLE_NY_SØKNAD
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.STS_SAML_POLICY_NO_TRANSPORT_BINDING
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.SoapPort
@@ -11,33 +9,33 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.arena.SoapArenaC
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.configureFor
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.stsClient
 import no.nav.dagpenger.oidc.StsOidcClient
-import no.nav.dagpenger.streams.Pond
+import no.nav.dagpenger.streams.River
 import no.nav.dagpenger.streams.streamConfig
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3
 import org.apache.kafka.streams.StreamsConfig
 import java.util.Properties
 
 private val logger = KotlinLogging.logger {}
-internal const val JOURNALFØRING_FEATURE_TOGGLE_NAME = "dp-journalforing.ferdigstill.isEnabled"
 
 internal class Application(
     private val configuration: Configuration,
-    private val journalFøringFerdigstill: JournalFøringFerdigstill
-) : Pond(configuration.kafka.dagpengerJournalpostTopic) {
+    private val journalføringFerdigstill: JournalføringFerdigstill
+) : River(configuration.kafka.dagpengerJournalpostTopic) {
 
     override val SERVICE_APP_ID = configuration.application.name
     override val HTTP_PORT: Int = configuration.application.httpPort
 
-    private fun isEnabled(packet: Packet): Boolean = packet.hasField(TOGGLE_BEHANDLE_NY_SØKNAD) && packet.getBoolean(TOGGLE_BEHANDLE_NY_SØKNAD)
+    override fun filterPredicates() = listOf(erIkkeFerdigBehandletJournalpost, featureToggleOn)
 
-    override fun filterPredicates() = listOf(erJournalpost)
+    override fun onPacket(packet: Packet): Packet {
+        logger.info { "Processing: $packet" }
 
-    override fun onPacket(packet: Packet) {
-        if (isEnabled(packet)) {
-            logger.info { "Processing: $packet" }.also { journalFøringFerdigstill.handlePacket(packet) }
-        } else {
-            logger.info { "Skipping(due to feature toggle) : ${packet.getStringValue(JOURNALPOST_ID)}" }
+        if (packet.getReadCount() >= 10) {
+            logger.error { "Read count >= 10 for packet with journalpostid ${packet.getStringValue(PacketKeys.JOURNALPOST_ID)}" }
+            throw ReadCountException()
         }
+
+        return journalføringFerdigstill.handlePacket(packet)
     }
 
     override fun getConfig(): Properties {
@@ -76,10 +74,13 @@ fun main() {
         soapStsClient.configureFor(ytelseskontraktV3)
     }
 
-    val journalFøringFerdigstill = JournalFøringFerdigstill(
-        JournalPostRestApi(configuration.journalPostApiUrl, stsOidcClient),
+    val journalFøringFerdigstill = JournalføringFerdigstill(
+        JournalpostRestApi(configuration.journalPostApiUrl, stsOidcClient),
         GosysOppgaveClient(configuration.gosysApiUrl, stsOidcClient),
-        arenaClient)
+        arenaClient
+    )
 
     Application(configuration, journalFøringFerdigstill).start()
 }
+
+class ReadCountException : RuntimeException()

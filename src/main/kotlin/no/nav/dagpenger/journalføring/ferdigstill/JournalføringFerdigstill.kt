@@ -1,8 +1,14 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
+import com.github.kittinunf.fuel.core.FuelError
+import com.github.kittinunf.fuel.core.Request
+import com.github.kittinunf.fuel.core.Response
+import com.github.kittinunf.result.Result
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.events.moshiInstance
@@ -10,14 +16,11 @@ import no.nav.dagpenger.journalføring.ferdigstill.Metrics.aktiveDagpengeSakTell
 import no.nav.dagpenger.journalføring.ferdigstill.Metrics.automatiskJournalførtNeiTeller
 import no.nav.dagpenger.journalføring.ferdigstill.Metrics.avsluttetDagpengeSakTeller
 import no.nav.dagpenger.journalføring.ferdigstill.Metrics.inaktivDagpengeSakTeller
-import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.AKTØR_ID
-import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.BEHANDLENDE_ENHET
-import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.NATURLIG_IDENT
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.brukerFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.dokumentTitlerFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.hasNaturligIdent
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.journalPostFrom
-import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.journalPostIdFrom
+import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.journalpostIdFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.nullableAktørFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.registrertDatoFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.tildeltEnhetsNrFrom
@@ -33,8 +36,13 @@ import org.apache.kafka.streams.kstream.Predicate
 
 private val logger = KotlinLogging.logger {}
 
-internal val erJournalpost = Predicate<String, Packet> { _, packet ->
-    packet.hasField(PacketKeys.JOURNALPOST_ID)
+internal val erIkkeFerdigBehandletJournalpost = Predicate<String, Packet> { _, packet ->
+    packet.hasField(PacketKeys.JOURNALPOST_ID) &&
+        !packet.hasField(PacketKeys.FERDIG_BEHANDLET)
+}
+
+internal val featureToggleOn = Predicate<String, Packet> { _, packet ->
+    packet.hasField(PacketKeys.TOGGLE_BEHANDLE_NY_SØKNAD) && packet.getBoolean(PacketKeys.TOGGLE_BEHANDLE_NY_SØKNAD)
 }
 
 internal val dokumentAdapter = moshiInstance.adapter<List<Dokument>>(
@@ -54,14 +62,14 @@ internal object PacketToJoarkPayloadMapper {
             )
         ).lenient()
 
-    fun journalPostIdFrom(packet: Packet) = packet.getStringValue(PacketKeys.JOURNALPOST_ID)
+    fun journalpostIdFrom(packet: Packet) = packet.getStringValue(PacketKeys.JOURNALPOST_ID)
     fun avsenderFrom(packet: Packet) = Avsender(packet.getStringValue(PacketKeys.AVSENDER_NAVN))
-    fun brukerFrom(packet: Packet) = Bruker(packet.getStringValue(NATURLIG_IDENT))
-    fun hasNaturligIdent(packet: Packet) = packet.hasField(NATURLIG_IDENT)
+    fun brukerFrom(packet: Packet) = Bruker(packet.getStringValue(PacketKeys.NATURLIG_IDENT))
+    fun hasNaturligIdent(packet: Packet) = packet.hasField(PacketKeys.NATURLIG_IDENT)
     fun nullableAktørFrom(packet: Packet) =
-        if (packet.hasField(AKTØR_ID)) Bruker(packet.getStringValue(AKTØR_ID), "AKTØR") else null
+        if (packet.hasField(PacketKeys.AKTØR_ID)) Bruker(packet.getStringValue(PacketKeys.AKTØR_ID), "AKTØR") else null
 
-    fun tildeltEnhetsNrFrom(packet: Packet) = packet.getStringValue(BEHANDLENDE_ENHET)
+    fun tildeltEnhetsNrFrom(packet: Packet) = packet.getStringValue(PacketKeys.BEHANDLENDE_ENHET)
     fun dokumenterFrom(packet: Packet) = packet.getObjectValue(PacketKeys.DOKUMENTER) {
         dokumentJsonAdapter.fromJsonValue(it)!!
     }
@@ -78,8 +86,8 @@ internal object PacketToJoarkPayloadMapper {
         fagsakId = fagsakId
     ) else Sak(SaksType.GENERELL_SAK, null, null)
 
-    fun journalPostFrom(packet: Packet, fagsakId: String?): OppdaterJournalPostPayload {
-        return OppdaterJournalPostPayload(
+    fun journalPostFrom(packet: Packet, fagsakId: String?): OppdaterJournalpostPayload {
+        return OppdaterJournalpostPayload(
             avsenderMottaker = avsenderFrom(packet),
             bruker = brukerFrom(packet),
             tittel = tittelFrom(packet),
@@ -89,28 +97,37 @@ internal object PacketToJoarkPayloadMapper {
     }
 }
 
-internal class JournalFøringFerdigstill(
-    private val journalPostApi: JournalPostApi,
+internal class JournalføringFerdigstill(
+    private val journalPostApi: JournalpostApi,
     private val manuellJournalføringsOppgaveClient: ManuellJournalføringsOppgaveClient,
     private val arenaClient: ArenaClient
 ) {
 
-    fun handlePacket(packet: Packet) {
+    fun handlePacket(packet: Packet): Packet {
+        try {
+            if (kanBestilleFagsak(packet)) {
+                val fagsakId = packet.getNullableStringValue(PacketKeys.FAGSAK_ID) ?: bestillFagsak(packet)
 
-        if (kanBestilleFagsak(packet)) {
-            val fagsakId = bestillFagsak(packet)
-            if (fagsakId != null) {
-                journalførAutomatisk(packet, fagsakId)
+                if (fagsakId != null) {
+                    if (!packet.hasField(PacketKeys.FAGSAK_ID)) packet.putValue(PacketKeys.FAGSAK_ID, fagsakId)
+                    journalførAutomatisk(packet, fagsakId)
+                    packet.putValue(PacketKeys.FERDIG_BEHANDLET, true)
+                } else {
+                    journalførManuelt(packet)
+                    packet.putValue(PacketKeys.FERDIG_BEHANDLET, true)
+                }
             } else {
                 journalførManuelt(packet)
+                packet.putValue(PacketKeys.FERDIG_BEHANDLET, true)
             }
-        } else {
-            journalførManuelt(packet)
+        } catch (e: AdapterException) {
         }
+
+        return packet
     }
 
     private fun journalførAutomatisk(packet: Packet, fagsakId: String) {
-        val journalpostId = journalPostIdFrom(packet)
+        val journalpostId = journalpostIdFrom(packet)
         journalPostApi.oppdater(journalpostId, journalPostFrom(packet, fagsakId))
         journalPostApi.ferdigstill(journalpostId)
         Metrics.jpFerdigStillInc(SaksType.FAGSAK)
@@ -118,7 +135,7 @@ internal class JournalFøringFerdigstill(
     }
 
     private fun journalførManuelt(packet: Packet) {
-        val journalpostId = journalPostIdFrom(packet)
+        val journalpostId = journalpostIdFrom(packet)
 
         nullableAktørFrom(packet)?.let { journalPostApi.oppdater(journalpostId, journalPostFrom(packet, null)) }
 
@@ -142,7 +159,7 @@ internal class JournalFøringFerdigstill(
         val saker = arenaClient.hentArenaSaker(brukerFrom(packet).id).also {
             registrerMetrikker(it)
             logger.info {
-                "Innsender av journalpost ${journalPostIdFrom(packet)} har ${it.filter { it.status == ArenaSakStatus.Aktiv }.size} aktive saker av ${it.size} dagpengesaker totalt"
+                "Innsender av journalpost ${journalpostIdFrom(packet)} har ${it.filter { it.status == ArenaSakStatus.Aktiv }.size} aktive saker av ${it.size} dagpengesaker totalt"
             }
         }
 
@@ -161,7 +178,7 @@ internal class JournalFøringFerdigstill(
     }
 
     private fun bestillFagsak(packet: Packet): String? {
-        val journalpostId = journalPostIdFrom(packet)
+        val journalpostId = journalpostIdFrom(packet)
         val tilleggsinformasjon =
             createArenaTilleggsinformasjon(dokumentTitlerFrom(packet), registrertDatoFrom(packet))
         return try {
@@ -180,11 +197,35 @@ internal class JournalFøringFerdigstill(
                 }
                 else -> {
                     logger.warn { "Kan ikke bestille oppgave for journalpost $journalpostId. Ukjent feil. " }
-                    throw e
+                    throw AdapterException(e)
                 }
             }
         }
     }
 }
 
-class MåManueltBehandlesException : RuntimeException()
+fun <T : Any> retryFuel(
+    times: Int = 3,
+    initialDelay: Long = 1000,
+    maxDelay: Long = 4000,
+    factor: Double = 2.0,
+    fuelFunction: () -> Triple<Request, Response, Result<T, FuelError>>
+): Triple<Request, Response, Result<T, FuelError>> {
+    var currentDelay = initialDelay
+    repeat(times - 1) {
+
+        val res = fuelFunction()
+        val (_, _, result) = res
+
+        when (result) {
+            is Result.Success -> return res
+            is Result.Failure -> logger.warn { result.getException() }
+        }
+
+        runBlocking { delay(currentDelay) }
+        currentDelay = (currentDelay * factor).toLong().coerceAtMost(maxDelay)
+    }
+    return fuelFunction() // last attempt
+}
+
+class AdapterException(val exception: Throwable) : RuntimeException(exception)

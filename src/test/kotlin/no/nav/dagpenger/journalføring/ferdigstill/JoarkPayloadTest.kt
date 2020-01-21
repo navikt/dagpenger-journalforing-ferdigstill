@@ -8,7 +8,7 @@ internal class JoarkPayloadTest {
     @Test
     fun `Json serialiation of OppdaterJournalPostPayload with FAGSAK`() {
 
-        val json = JournalPostRestApi.toJsonPayload(OppdaterJournalPostPayload(
+        val json = JournalpostRestApi.toJsonPayload(OppdaterJournalpostPayload(
             avsenderMottaker = Avsender("navn"),
             bruker = Bruker("bruker"),
             tittel = "tittel",
@@ -47,7 +47,7 @@ internal class JoarkPayloadTest {
     @Test
     fun `Json serialiation of OppdaterJournalPostPayload with GENERELL_SAK`() {
 
-        val json = JournalPostRestApi.toJsonPayload(OppdaterJournalPostPayload(
+        val json = JournalpostRestApi.toJsonPayload(OppdaterJournalpostPayload(
             avsenderMottaker = Avsender("navn"),
             bruker = Bruker("bruker"),
             tittel = "tittel",

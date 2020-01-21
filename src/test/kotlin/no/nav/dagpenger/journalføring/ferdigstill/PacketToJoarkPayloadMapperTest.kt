@@ -9,7 +9,7 @@ internal class PacketToJoarkPayloadMapperTest {
 
     @Test
     fun `Exctract journal post id from packet`() {
-        PacketToJoarkPayloadMapper.journalPostIdFrom(Packet().apply {
+        PacketToJoarkPayloadMapper.journalpostIdFrom(Packet().apply {
             this.putValue(PacketKeys.JOURNALPOST_ID, "journalPostId")
         }) shouldBe "journalPostId"
     }

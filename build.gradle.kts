@@ -82,6 +82,7 @@ dependencies {
     testImplementation(mockk)
     testImplementation("com.gregwoodfill.assert:kotlin-json-assert:0.1.0")
     testImplementation(KafkaEmbedded.env)
+    testImplementation(Kafka.streamTestUtils)
     testImplementation(Wiremock.standalone)
 
     testRuntimeOnly(Junit5.engine)

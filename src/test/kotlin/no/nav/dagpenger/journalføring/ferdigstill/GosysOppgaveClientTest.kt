@@ -2,6 +2,7 @@ package no.nav.dagpenger.journalføring.ferdigstill
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
 import com.gregwoodfill.assert.shouldStrictlyEqualJson
@@ -12,8 +13,9 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import java.time.LocalDate
+import kotlin.test.assertFailsWith
 
-internal class JournalPostRestApiTest {
+internal class GosysOppgaveClientTest {
 
     companion object {
         val server: WireMockServer = WireMockServer(WireMockConfiguration.options().dynamicPort())
@@ -84,5 +86,31 @@ internal class JournalPostRestApiTest {
                 tildeltEnhetsnr = "9999"
             )
         }
+    }
+
+    @Test
+    fun `Forsøker på ny hvis noe er feil`() {
+        WireMock.stubFor(
+            WireMock.post(urlEqualTo("/api/v1/oppgaver"))
+                .withHeader("X-Correlation-ID", EqualToPattern("12345"))
+                .willReturn(
+                    WireMock.aResponse().withStatus(500)
+                )
+        )
+
+        val stsOidcClient: StsOidcClient = mockk(relaxed = true)
+
+        val client: ManuellJournalføringsOppgaveClient = GosysOppgaveClient(server.baseUrl(), stsOidcClient)
+
+        assertFailsWith<AdapterException> {
+            client.opprettOppgave(
+                journalPostId = "12345",
+                aktørId = "12345678910",
+                søknadstittel = "tittel1",
+                tildeltEnhetsnr = "9999"
+            )
+        }
+
+        WireMock.verify(3, WireMock.postRequestedFor(urlEqualTo("/api/v1/oppgaver")))
     }
 }

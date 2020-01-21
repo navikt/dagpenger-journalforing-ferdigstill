@@ -23,7 +23,7 @@ import no.nav.common.JAASCredential
 import no.nav.common.KafkaEnvironment
 import no.nav.common.embeddedutils.getAvailablePort
 import no.nav.dagpenger.events.Packet
-import no.nav.dagpenger.journalføring.ferdigstill.JournalPostRestApi.Companion.toJsonPayload
+import no.nav.dagpenger.journalføring.ferdigstill.JournalpostRestApi.Companion.toJsonPayload
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.dokumentJsonAdapter
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.journalPostFrom
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
@@ -78,8 +78,8 @@ internal class JournalforingFerdigstillComponentTest {
         val arenaClientMock: ArenaClient = mockk(relaxed = true)
 
         val stsOidcClient = StsOidcClient(configuration.sts.baseUrl, configuration.sts.username, configuration.sts.password)
-        val journalFøringFerdigstill = JournalFøringFerdigstill(
-            JournalPostRestApi(configuration.journalPostApiUrl, stsOidcClient),
+        val journalFøringFerdigstill = JournalføringFerdigstill(
+            JournalpostRestApi(configuration.journalPostApiUrl, stsOidcClient),
             manuellJournalføringsOppgaveClient = mockk(),
             arenaClient = arenaClientMock)
 

@@ -9,4 +9,6 @@ internal object PacketKeys {
     const val TOGGLE_BEHANDLE_NY_SØKNAD: String = "toggleBehandleNySøknad"
     const val BEHANDLENDE_ENHET: String = "behandlendeEnhet"
     const val DATO_REGISTRERT: String = "datoRegistrert"
+    const val FAGSAK_ID: String = "fagsakId"
+    const val FERDIG_BEHANDLET: String = "ferdigBehandlet"
 }
