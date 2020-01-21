@@ -206,8 +206,8 @@ internal class JournalføringFerdigstill(
 
 fun <T : Any> retryFuel(
     times: Int = 3,
-    initialDelay: Long = 500,
-    maxDelay: Long = 2000,
+    initialDelay: Long = 1000,
+    maxDelay: Long = 4000,
     factor: Double = 2.0,
     fuelFunction: () -> Triple<Request, Response, Result<T, FuelError>>
 ): Triple<Request, Response, Result<T, FuelError>> {
