@@ -13,6 +13,7 @@ import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.events.moshiInstance
 import no.nav.dagpenger.journalføring.ferdigstill.Metrics.aktiveDagpengeSakTeller
+import no.nav.dagpenger.journalføring.ferdigstill.Metrics.automatiskJournalførtJaTeller
 import no.nav.dagpenger.journalføring.ferdigstill.Metrics.automatiskJournalførtNeiTeller
 import no.nav.dagpenger.journalføring.ferdigstill.Metrics.avsluttetDagpengeSakTeller
 import no.nav.dagpenger.journalføring.ferdigstill.Metrics.inaktivDagpengeSakTeller
@@ -131,6 +132,7 @@ internal class JournalføringFerdigstill(
         journalPostApi.oppdater(journalpostId, journalPostFrom(packet, fagsakId))
         journalPostApi.ferdigstill(journalpostId)
         Metrics.jpFerdigStillInc(SaksType.FAGSAK)
+        automatiskJournalførtJaTeller.inc()
         logger.info { "Automatisk journalført $journalpostId" }
     }
 
