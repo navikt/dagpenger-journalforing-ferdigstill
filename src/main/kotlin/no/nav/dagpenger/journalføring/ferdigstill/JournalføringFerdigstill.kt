@@ -163,12 +163,8 @@ internal class JournalføringFerdigstill(
             }
         }
 
-        if (saker.any { it.status == ArenaSakStatus.Aktiv }) {
-            automatiskJournalførtNeiTeller("aktiv_sak")
-            return false
-        }
-
-        return true
+        return saker.none { it.status == ArenaSakStatus.Aktiv }
+            .also { if (!it) automatiskJournalførtNeiTeller("aktiv_sak") }
     }
 
     private fun registrerMetrikker(saker: List<ArenaSak>) {
