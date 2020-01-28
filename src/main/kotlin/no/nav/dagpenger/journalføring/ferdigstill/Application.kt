@@ -47,6 +47,11 @@ internal class Application(
         properties[StreamsConfig.PROCESSING_GUARANTEE_CONFIG] = configuration.kafka.processingGuarantee
         return properties
     }
+
+    override fun onFailure(packet: Packet, error: Throwable?): Packet {
+        logger.error(error) { "Feilet ved håntering av journalpost: ${packet.getStringValue(PacketKeys.JOURNALPOST_ID)}. Pakke $packet" }
+        throw error ?: RuntimeException("Feilet ved håndtering av pakke, ukjent grunn")
+    }
 }
 
 fun main() {
