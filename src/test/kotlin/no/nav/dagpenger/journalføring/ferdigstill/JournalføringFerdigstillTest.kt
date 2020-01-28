@@ -45,7 +45,7 @@ internal class JournalføringFerdigstillTest {
     }
 
     @Test
-    fun `Metrikker blir oppdatert når journal poster blir ferdigstilt`() {
+    fun `Metrikker blir oppdatert når journalposter blir ferdigstilt`() {
 
         every {
             arenaClient.hentArenaSaker("fnr")
@@ -95,6 +95,34 @@ internal class JournalføringFerdigstillTest {
 
     @Test
     fun `Opprett fagsak og oppgave, og ferdigstill, når bruker ikke har aktiv fagsak`() {
+        val journalFøringFerdigstill = JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient)
+        val journalPostId = "journalPostId"
+        val naturligIdent = "12345678910"
+        val behandlendeEnhet = "9999"
+
+        every { arenaClient.hentArenaSaker(naturligIdent) } returns emptyList()
+
+        val packet = Packet().apply {
+            this.putValue(JOURNALPOST_ID, journalPostId)
+            this.putValue(NATURLIG_IDENT, naturligIdent)
+            this.putValue(BEHANDLENDE_ENHET, behandlendeEnhet)
+            this.putValue(DATO_REGISTRERT, "2020-01-01")
+            this.putValue(AKTØR_ID, "987654321")
+            this.putValue(AVSENDER_NAVN, "Donald")
+            dokumentJsonAdapter.toJsonValue(listOf(Dokument("id1", "tittel1")))?.let { this.putValue(DOKUMENTER, it) }
+        }
+
+        journalFøringFerdigstill.handlePacket(packet)
+
+        verify {
+            arenaClient.bestillOppgave(naturligIdent, behandlendeEnhet, any())
+            journalPostApi.oppdater(journalPostId, any())
+            journalPostApi.ferdigstill(journalPostId)
+        }
+    }
+
+    @Test
+    fun `Opprett oppgave, og ferdigstill, når brevkode er gjenopptak`() {
         val journalFøringFerdigstill = JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient)
         val journalPostId = "journalPostId"
         val naturligIdent = "12345678910"
