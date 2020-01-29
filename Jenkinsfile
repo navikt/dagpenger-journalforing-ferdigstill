@@ -106,7 +106,7 @@ pipeline {
 
               steps {
                 sh label: 'User Acceptance Tests', script: """
-                  ./scripts/test/uat || true
+                  ./scripts/test/uat
                 """
               }
             }
