@@ -12,6 +12,7 @@ import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.AVSENDER_NAVN
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.BEHANDLENDE_ENHET
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.DATO_REGISTRERT
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.DOKUMENTER
+import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.HENVENDELSESTYPE
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.JOURNALPOST_ID
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.NATURLIG_IDENT
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.dokumentJsonAdapter
@@ -56,6 +57,7 @@ internal class JournalføringFerdigstillTest {
                 this.putValue(JOURNALPOST_ID, "journalPostId")
                 this.putValue(AVSENDER_NAVN, "et navn")
                 this.putValue(BEHANDLENDE_ENHET, "9999")
+                this.putValue(HENVENDELSESTYPE, "NY_SØKNAD")
                 dokumentJsonAdapter.toJsonValue(listOf(Dokument("id1", "tittel1")))?.let { this.putValue(DOKUMENTER, it) }
             }
             this.handlePacket(generellPacket)
@@ -67,6 +69,7 @@ internal class JournalføringFerdigstillTest {
                 this.putValue(AVSENDER_NAVN, "et navn")
                 this.putValue(BEHANDLENDE_ENHET, "9999")
                 this.putValue(DATO_REGISTRERT, "2020-01-01")
+                this.putValue(HENVENDELSESTYPE, "NY_SØKNAD")
                 dokumentJsonAdapter.toJsonValue(listOf(Dokument("id1", "tittel1")))?.let { this.putValue(DOKUMENTER, it) }
             }
             this.handlePacket(fagsakPacket)
@@ -84,6 +87,7 @@ internal class JournalføringFerdigstillTest {
         val packet = Packet().apply {
             this.putValue(JOURNALPOST_ID, journalPostId)
             this.putValue(BEHANDLENDE_ENHET, "4450")
+            this.putValue(HENVENDELSESTYPE, "NY_SØKNAD")
             dokumentJsonAdapter.toJsonValue(listOf(Dokument("id1", "tittel1")))?.let { this.putValue(DOKUMENTER, it) }
         }
 
@@ -109,6 +113,7 @@ internal class JournalføringFerdigstillTest {
             this.putValue(DATO_REGISTRERT, "2020-01-01")
             this.putValue(AKTØR_ID, "987654321")
             this.putValue(AVSENDER_NAVN, "Donald")
+            this.putValue(HENVENDELSESTYPE, "NY_SØKNAD")
             dokumentJsonAdapter.toJsonValue(listOf(Dokument("id1", "tittel1")))?.let { this.putValue(DOKUMENTER, it) }
         }
 
@@ -137,6 +142,7 @@ internal class JournalføringFerdigstillTest {
             this.putValue(DATO_REGISTRERT, "2020-01-01")
             this.putValue(AKTØR_ID, "987654321")
             this.putValue(AVSENDER_NAVN, "Donald")
+            this.putValue(HENVENDELSESTYPE, "NY_SØKNAD")
             dokumentJsonAdapter.toJsonValue(listOf(Dokument("id1", "tittel1")))?.let { this.putValue(DOKUMENTER, it) }
         }
 
@@ -166,6 +172,7 @@ internal class JournalføringFerdigstillTest {
             this.putValue(DATO_REGISTRERT, "2020-01-01")
             this.putValue(AKTØR_ID, aktørId)
             this.putValue(AVSENDER_NAVN, "Donald")
+            this.putValue(HENVENDELSESTYPE, "NY_SØKNAD")
             dokumentJsonAdapter.toJsonValue(listOf(Dokument("id1", "tittel1")))?.let { this.putValue(DOKUMENTER, it) }
         }
 
@@ -190,6 +197,7 @@ internal class JournalføringFerdigstillTest {
             this.putValue(DATO_REGISTRERT, "2020-01-01")
             this.putValue(AKTØR_ID, aktørId)
             this.putValue(AVSENDER_NAVN, "Donald")
+            this.putValue(HENVENDELSESTYPE, "NY_SØKNAD")
             dokumentJsonAdapter.toJsonValue(listOf(Dokument("id1", "tittel1")))?.let { this.putValue(DOKUMENTER, it) }
         }
 

@@ -11,4 +11,5 @@ internal object PacketKeys {
     const val DATO_REGISTRERT: String = "datoRegistrert"
     const val FAGSAK_ID: String = "fagsakId"
     const val FERDIG_BEHANDLET: String = "ferdigBehandlet"
+    const val HENVENDELSESTYPE: String = "henvendelsestype"
 }

@@ -18,7 +18,6 @@ import io.kotlintest.matchers.string.shouldContain
 import io.kotlintest.shouldBe
 import io.mockk.every
 import io.mockk.mockk
-import no.finn.unleash.FakeUnleash
 import no.nav.common.JAASCredential
 import no.nav.common.KafkaEnvironment
 import no.nav.common.embeddedutils.getAvailablePort
@@ -82,10 +81,6 @@ internal class JournalforingFerdigstillComponentTest {
             JournalpostRestApi(configuration.journalPostApiUrl, stsOidcClient),
             manuellJournalføringsOppgaveClient = mockk(),
             arenaClient = arenaClientMock)
-
-        val unleash = FakeUnleash().apply {
-            this.enableAll()
-        }
 
         private val app = Application(configuration, journalFøringFerdigstill)
         @BeforeAll
@@ -167,6 +162,7 @@ internal class JournalforingFerdigstillComponentTest {
             this.putValue(PacketKeys.TOGGLE_BEHANDLE_NY_SØKNAD, true)
             this.putValue(PacketKeys.BEHANDLENDE_ENHET, "9999")
             this.putValue(PacketKeys.DATO_REGISTRERT, "2020-01-01")
+            this.putValue(PacketKeys.HENVENDELSESTYPE, "NY_SØKNAD")
             dokumentJsonAdapter.toJsonValue(listOf(Dokument("id1", "tittel1"), Dokument("id1", "tittel1")))?.let { this.putValue(PacketKeys.DOKUMENTER, it) }
         }
 

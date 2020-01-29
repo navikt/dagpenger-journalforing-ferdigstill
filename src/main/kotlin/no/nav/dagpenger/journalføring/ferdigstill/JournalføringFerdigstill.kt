@@ -42,10 +42,6 @@ internal val erIkkeFerdigBehandletJournalpost = Predicate<String, Packet> { _, p
         !packet.hasField(PacketKeys.FERDIG_BEHANDLET)
 }
 
-internal val featureToggleOn = Predicate<String, Packet> { _, packet ->
-    packet.hasField(PacketKeys.TOGGLE_BEHANDLE_NY_SØKNAD) && packet.getBoolean(PacketKeys.TOGGLE_BEHANDLE_NY_SØKNAD)
-}
-
 internal val dokumentAdapter = moshiInstance.adapter<List<Dokument>>(
     Types.newParameterizedType(
         List::class.java,
@@ -104,7 +100,18 @@ internal class JournalføringFerdigstill(
     private val arenaClient: ArenaClient
 ) {
 
-    fun handlePacket(packet: Packet): Packet {
+    fun handlePacket(packet: Packet): Packet =
+        when (packet.getStringValue("henvendelsestype")) {
+            "NY_SØKNAD" -> behandleNySøknad(packet)
+            "GJENOPPTAK" -> behandleGjennoptak(packet)
+            else -> throw NotImplementedError()
+        }
+
+    private fun behandleGjennoptak(packet: Packet): Packet {
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+    }
+
+    fun behandleNySøknad(packet: Packet): Packet {
         try {
             if (kanBestilleFagsak(packet)) {
                 val fagsakId = packet.getNullableStringValue(PacketKeys.FAGSAK_ID) ?: bestillFagsak(packet)
@@ -126,7 +133,6 @@ internal class JournalføringFerdigstill(
 
         return packet
     }
-
     private fun journalførAutomatisk(packet: Packet, fagsakId: String) {
         val journalpostId = journalpostIdFrom(packet)
         journalPostApi.oppdater(journalpostId, journalPostFrom(packet, fagsakId))
