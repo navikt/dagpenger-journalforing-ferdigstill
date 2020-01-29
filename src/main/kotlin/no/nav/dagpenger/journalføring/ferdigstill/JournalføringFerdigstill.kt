@@ -100,14 +100,28 @@ internal class JournalføringFerdigstill(
     private val arenaClient: ArenaClient
 ) {
 
-    fun handlePacket(packet: Packet): Packet =
-        when (packet.getStringValue("henvendelsestype")) {
+    fun handlePacket(packet: Packet): Packet {
+
+        if (!hasNaturligIdent(packet)) {
+            automatiskJournalførtNeiTeller("ukjent_bruker")
+            journalførManuelt(packet)
+            packet.putValue(PacketKeys.FERDIG_BEHANDLET, true)
+            return packet
+        }
+
+        return when (packet.getStringValue("henvendelsestype")) {
             "NY_SØKNAD" -> behandleNySøknad(packet)
             "GJENOPPTAK" -> behandleGjennoptak(packet)
             else -> throw NotImplementedError()
         }
+    }
 
     private fun behandleGjennoptak(packet: Packet): Packet {
+        try {
+        } catch (e: AdapterException) {
+        }
+
+        return packet
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
@@ -159,11 +173,6 @@ internal class JournalføringFerdigstill(
     }
 
     private fun kanBestilleFagsak(packet: Packet): Boolean {
-        if (!hasNaturligIdent(packet)) {
-            automatiskJournalførtNeiTeller("ukjent_bruker")
-            return false
-        }
-
         val saker = arenaClient.hentArenaSaker(brukerFrom(packet).id).also {
             registrerMetrikker(it)
             logger.info {
