@@ -195,7 +195,6 @@ internal class JournalføringFerdigstill(
 
     private fun kanBestilleFagsak(packet: Packet): Boolean {
         val saker = arenaClient.hentArenaSaker(brukerFrom(packet).id).also {
-            registrerMetrikker(it)
             logger.info {
                 "Innsender av journalpost ${journalpostIdFrom(packet)} har ${it.filter { it.status == ArenaSakStatus.Aktiv }.size} aktive saker av ${it.size} dagpengesaker totalt"
             }
@@ -228,6 +227,5 @@ internal class JournalføringFerdigstill(
         }
     }
 }
-
 
 class AdapterException(val exception: Throwable) : RuntimeException(exception)
