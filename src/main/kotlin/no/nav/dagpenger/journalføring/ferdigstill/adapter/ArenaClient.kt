@@ -10,5 +10,5 @@ interface ArenaClient : HealthCheck {
 
 sealed class OppgaveCommand(val naturligIdent: String, val behandlendeEnhet: String, val informasjon: String)
 
-class LagOppgaveOgSakCommand(naturligIdent: String, behandlendeEnhetId: String, tilleggsinformasjon: String) : OppgaveCommand(naturligIdent, behandlendeEnhetId, tilleggsinformasjon)
-class LagOppgaveCommand(naturligIdent: String, behandlendeEnhetId: String, tilleggsinformasjon: String) : OppgaveCommand(naturligIdent, behandlendeEnhetId, tilleggsinformasjon)
+class StartVedtakCommand(naturligIdent: String, behandlendeEnhetId: String, tilleggsinformasjon: String) : OppgaveCommand(naturligIdent, behandlendeEnhetId, tilleggsinformasjon)
+class VurderGjenopptakCommand(naturligIdent: String, behandlendeEnhetId: String, tilleggsinformasjon: String) : OppgaveCommand(naturligIdent, behandlendeEnhetId, tilleggsinformasjon)

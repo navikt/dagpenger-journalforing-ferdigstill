@@ -8,8 +8,8 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSak
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSakStatus
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.BestillOppgaveArenaException
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.HentArenaSakerException
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.LagOppgaveCommand
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.LagOppgaveOgSakCommand
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderGjenopptakCommand
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.OppgaveCommand
 import no.nav.dagpenger.streams.HealthStatus
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BehandleArbeidOgAktivitetOppgaveV1
@@ -44,7 +44,7 @@ class SoapArenaClient(private val oppgaveV1: BehandleArbeidOgAktivitetOppgaveV1,
             // @todo Håndtere BestillOppgaveSikkerhetsbegrensning, BestillOppgaveOrganisasjonIkkeFunnet, BestillOppgavePersonErInaktiv, BestillOppgaveSakIkkeOpprettet, BestillOppgavePersonIkkeFunnet, BestillOppgaveUgyldigInput
         }
 
-        return FagsakId(response.arenaSakId)
+        return response.arenaSakId?.let { FagsakId(it) }
     }
 
     fun OppgaveCommand.toWSBestillOppgaveRequest(): WSBestillOppgaveRequest {
@@ -52,14 +52,14 @@ class SoapArenaClient(private val oppgaveV1: BehandleArbeidOgAktivitetOppgaveV1,
         val today = ZonedDateTime.now().toInstant().atZone(ZoneId.of("Europe/Oslo"))
 
         soapRequest.oppgave = when (this) {
-            is LagOppgaveOgSakCommand -> {
+            is StartVedtakCommand -> {
                 soapRequest.oppgavetype = WSOppgavetype().apply { value = "STARTVEDTAK" }
                 WSOppgave().apply {
                     sakInfo = WSSakInfo().withTvingNySak(true)
                     beskrivelse = "Start Vedtaksbehandling - automatisk journalført.\n"
                 }
             }
-            is LagOppgaveCommand -> {
+            is VurderGjenopptakCommand -> {
                 soapRequest.oppgavetype = WSOppgavetype().apply { value = "BEHENVPERSON" }
                 WSOppgave().apply {
                     sakInfo = WSSakInfo().withTvingNySak(false)

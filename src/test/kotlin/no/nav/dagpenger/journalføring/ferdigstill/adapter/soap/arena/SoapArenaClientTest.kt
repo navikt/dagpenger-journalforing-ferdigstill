@@ -9,8 +9,8 @@ import no.nav.dagpenger.journalføring.ferdigstill.FagsakId
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSakStatus
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.BestillOppgaveArenaException
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.HentArenaSakerException
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.LagOppgaveCommand
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.LagOppgaveOgSakCommand
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderGjenopptakCommand
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
 import no.nav.dagpenger.streams.HealthStatus
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BehandleArbeidOgAktivitetOppgaveV1
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgaveSakIkkeOpprettet
@@ -30,7 +30,7 @@ internal class SoapArenaClientTest {
 
         val client = SoapArenaClient(stubbedClient, mockk())
 
-        val actual = client.bestillOppgave(LagOppgaveOgSakCommand("123", "abc", ""))
+        val actual = client.bestillOppgave(StartVedtakCommand("123", "abc", ""))
 
         actual shouldBe FagsakId("123")
     }
@@ -69,13 +69,13 @@ internal class SoapArenaClientTest {
     }
 
     @Test
-    fun `bestillOppgave bestiller oppgave`() {
+    fun `bestillOppgave skal kunne bestille oppgave uten saksreferanse`() {
         val stubbedClient = mockk<BehandleArbeidOgAktivitetOppgaveV1>()
         every { stubbedClient.bestillOppgave(any()) } returns WSBestillOppgaveResponse()
 
         val client = SoapArenaClient(stubbedClient, mockk())
 
-        val actual = client.bestillOppgave(LagOppgaveCommand("123456789", "abcbscb", "beskrivelse"))
+        client.bestillOppgave(VurderGjenopptakCommand("123456789", "abcbscb", "beskrivelse"))
     }
 
     @Test
@@ -86,7 +86,7 @@ internal class SoapArenaClientTest {
         val client = SoapArenaClient(stubbedClient, mockk())
 
         assertFailsWith<BestillOppgaveArenaException> {
-            client.bestillOppgave(LagOppgaveOgSakCommand("123456789", "abcbscb", "beskrivelse"))
+            client.bestillOppgave(StartVedtakCommand("123456789", "abcbscb", "beskrivelse"))
         }
 
         verify(exactly = 3) { stubbedClient.bestillOppgave(any()) }

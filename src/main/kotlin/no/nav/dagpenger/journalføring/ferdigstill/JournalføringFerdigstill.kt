@@ -30,7 +30,8 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSak
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSakStatus
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.BestillOppgaveArenaException
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.LagOppgaveOgSakCommand
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderGjenopptakCommand
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.OppgaveCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.createArenaTilleggsinformasjon
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonErInaktiv
@@ -120,8 +121,16 @@ internal class JournalføringFerdigstill(
 
     private fun behandleGjennoptak(packet: Packet): Packet {
         try {
-            // bestillOppgave(packet)
-            // journalførAutomatisk(packet)
+            val tilleggsinformasjon =
+                createArenaTilleggsinformasjon(dokumentTitlerFrom(packet), registrertDatoFrom(packet))
+
+            bestillOppgave(VurderGjenopptakCommand(
+                naturligIdent = brukerFrom(packet).id,
+                behandlendeEnhetId = tildeltEnhetsNrFrom(packet),
+                tilleggsinformasjon = tilleggsinformasjon
+            ), journalpostIdFrom(packet))
+
+            journalførAutomatisk(packet)
         } catch (e: AdapterException) {
         }
 
@@ -137,7 +146,7 @@ internal class JournalføringFerdigstill(
                 val fagsakId =
                     packet.getNullableStringValue(PacketKeys.FAGSAK_ID)?.let { FagsakId(it) }
                         ?: bestillOppgave(
-                            LagOppgaveOgSakCommand(
+                            StartVedtakCommand(
                                 naturligIdent = brukerFrom(packet).id,
                                 behandlendeEnhetId = tildeltEnhetsNrFrom(packet),
                                 tilleggsinformasjon = tilleggsinformasjon
@@ -163,7 +172,7 @@ internal class JournalføringFerdigstill(
         return packet
     }
 
-    private fun journalførAutomatisk(packet: Packet, fagsakId: FagsakId) {
+    private fun journalførAutomatisk(packet: Packet, fagsakId: FagsakId? = null) {
         val journalpostId = journalpostIdFrom(packet)
         journalPostApi.oppdater(journalpostId, journalPostFrom(packet, fagsakId))
         journalPostApi.ferdigstill(journalpostId)
