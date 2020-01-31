@@ -18,7 +18,6 @@ import io.kotlintest.matchers.string.shouldContain
 import io.kotlintest.shouldBe
 import io.mockk.every
 import io.mockk.mockk
-import no.finn.unleash.FakeUnleash
 import no.nav.common.JAASCredential
 import no.nav.common.KafkaEnvironment
 import no.nav.common.embeddedutils.getAvailablePort
@@ -82,10 +81,6 @@ internal class JournalforingFerdigstillComponentTest {
             JournalpostRestApi(configuration.journalPostApiUrl, stsOidcClient),
             manuellJournalføringsOppgaveClient = mockk(),
             arenaClient = arenaClientMock)
-
-        val unleash = FakeUnleash().apply {
-            this.enableAll()
-        }
 
         private val app = Application(configuration, journalFøringFerdigstill)
         @BeforeAll
@@ -154,8 +149,8 @@ internal class JournalforingFerdigstillComponentTest {
         )
 
         every {
-            arenaClientMock.bestillOppgave(naturligIdent = "fnr", behandlendeEnhetId = "9999", tilleggsinformasjon = any())
-        } returns "arenaSakId"
+            arenaClientMock.bestillOppgave(any())
+        } returns FagsakId("arenaSakId")
 
         val expectedFerdigstillJson = """{ "journalfoerendeEnhet" : "9999"}"""
 
@@ -167,10 +162,11 @@ internal class JournalforingFerdigstillComponentTest {
             this.putValue(PacketKeys.TOGGLE_BEHANDLE_NY_SØKNAD, true)
             this.putValue(PacketKeys.BEHANDLENDE_ENHET, "9999")
             this.putValue(PacketKeys.DATO_REGISTRERT, "2020-01-01")
+            this.putValue(PacketKeys.HENVENDELSESTYPE, "NY_SØKNAD")
             dokumentJsonAdapter.toJsonValue(listOf(Dokument("id1", "tittel1"), Dokument("id1", "tittel1")))?.let { this.putValue(PacketKeys.DOKUMENTER, it) }
         }
 
-        val json = journalPostFrom(packet, "arenaSakId").let { toJsonPayload(it) }
+        val json = journalPostFrom(packet, FagsakId("arenaSakId")).let { toJsonPayload(it) }
 
         behovProducer(configuration).run {
             this.send(ProducerRecord(configuration.kafka.dagpengerJournalpostTopic.name, packet)).get()

@@ -2,11 +2,15 @@ package no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.arena
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import no.nav.dagpenger.journalføring.ferdigstill.FagsakId
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSak
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSakStatus
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.BestillOppgaveArenaException
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.HentArenaSakerException
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.OppgaveCommand
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderGjenopptakCommand
 import no.nav.dagpenger.streams.HealthStatus
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BehandleArbeidOgAktivitetOppgaveV1
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonErInaktiv
@@ -29,25 +33,9 @@ import javax.xml.datatype.DatatypeFactory
 class SoapArenaClient(private val oppgaveV1: BehandleArbeidOgAktivitetOppgaveV1, private val ytelseskontraktV3: YtelseskontraktV3) :
     ArenaClient {
 
-    override fun bestillOppgave(naturligIdent: String, behandlendeEnhetId: String, tilleggsinformasjon: String): String {
-        val soapRequest = WSBestillOppgaveRequest()
+    override fun bestillOppgave(command: OppgaveCommand): FagsakId? {
 
-        soapRequest.oppgavetype = WSOppgavetype().apply { value = "STARTVEDTAK" }
-
-        val today = ZonedDateTime.now().toInstant().atZone(ZoneId.of("Europe/Oslo"))
-
-        soapRequest.oppgave = WSOppgave().apply {
-            tema = WSTema().apply { value = "DAG" }
-            bruker = WSPerson().apply { ident = naturligIdent }
-            this.behandlendeEnhetId = behandlendeEnhetId
-            prioritet = WSPrioritet().apply {
-                this.value = "HOY"
-            }
-            frist = DatatypeFactory.newInstance().newXMLGregorianCalendar(GregorianCalendar.from(today))
-            sakInfo = WSSakInfo().withTvingNySak(true)
-            beskrivelse = "Start Vedtaksbehandling - automatisk journalført.\n"
-            this.tilleggsinformasjon = tilleggsinformasjon
-        }
+        val soapRequest = command.toWSBestillOppgaveRequest()
 
         val response: WSBestillOppgaveResponse = try {
             retry { oppgaveV1.bestillOppgave(soapRequest) }
@@ -56,7 +44,42 @@ class SoapArenaClient(private val oppgaveV1: BehandleArbeidOgAktivitetOppgaveV1,
             // @todo Håndtere BestillOppgaveSikkerhetsbegrensning, BestillOppgaveOrganisasjonIkkeFunnet, BestillOppgavePersonErInaktiv, BestillOppgaveSakIkkeOpprettet, BestillOppgavePersonIkkeFunnet, BestillOppgaveUgyldigInput
         }
 
-        return response.arenaSakId
+        return response.arenaSakId?.let { FagsakId(it) }
+    }
+
+    fun OppgaveCommand.toWSBestillOppgaveRequest(): WSBestillOppgaveRequest {
+        val soapRequest = WSBestillOppgaveRequest()
+        val today = ZonedDateTime.now().toInstant().atZone(ZoneId.of("Europe/Oslo"))
+
+        soapRequest.oppgave = when (this) {
+            is StartVedtakCommand -> {
+                soapRequest.oppgavetype = WSOppgavetype().apply { value = "STARTVEDTAK" }
+                WSOppgave().apply {
+                    sakInfo = WSSakInfo().withTvingNySak(true)
+                    beskrivelse = "Start Vedtaksbehandling - automatisk journalført.\n"
+                }
+            }
+            is VurderGjenopptakCommand -> {
+                soapRequest.oppgavetype = WSOppgavetype().apply { value = "BEHENVPERSON" }
+                WSOppgave().apply {
+                    sakInfo = WSSakInfo().withTvingNySak(false)
+                    beskrivelse = "Behandle henvendelse - automatisk journalført.\n" // TODO: endre
+                }
+            }
+        }
+
+        soapRequest.oppgave.apply {
+            tema = WSTema().apply { value = "DAG" }
+            bruker = WSPerson().apply { ident = naturligIdent }
+            behandlendeEnhetId = this@toWSBestillOppgaveRequest.behandlendeEnhetId
+            prioritet = WSPrioritet().apply {
+                this.value = "HOY"
+            }
+            frist = DatatypeFactory.newInstance().newXMLGregorianCalendar(GregorianCalendar.from(today))
+            this.tilleggsinformasjon = this@toWSBestillOppgaveRequest.tilleggsinformasjon
+        }
+
+        return soapRequest
     }
 
     override fun hentArenaSaker(naturligIdent: String): List<ArenaSak> {

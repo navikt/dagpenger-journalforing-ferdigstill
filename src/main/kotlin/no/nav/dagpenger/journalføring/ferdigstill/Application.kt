@@ -25,7 +25,7 @@ internal class Application(
     override val SERVICE_APP_ID = configuration.application.name
     override val HTTP_PORT: Int = configuration.application.httpPort
 
-    override fun filterPredicates() = listOf(erIkkeFerdigBehandletJournalpost, featureToggleOn)
+    override fun filterPredicates() = listOf(erIkkeFerdigBehandletJournalpost)
 
     override fun onPacket(packet: Packet): Packet {
         logger.info { "Processing: $packet" }

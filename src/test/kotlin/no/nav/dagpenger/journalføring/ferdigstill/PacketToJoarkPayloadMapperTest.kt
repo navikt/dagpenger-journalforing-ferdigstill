@@ -58,7 +58,7 @@ internal class PacketToJoarkPayloadMapperTest {
                 dokumentJsonAdapter.toJsonValue(listOf(Dokument("dokumentId", "tittel")))
                     ?.let { this.putValue(PacketKeys.DOKUMENTER, it) }
             },
-            "bla"
+            FagsakId("bla")
         )
 
         jp.avsenderMottaker.navn shouldBe "navn"
