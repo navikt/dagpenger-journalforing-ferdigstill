@@ -132,6 +132,7 @@ internal class JournalføringFerdigstill(
 
             journalførAutomatisk(packet)
             packet.putValue(PacketKeys.FERDIG_BEHANDLET, true)
+
         } catch (e: AdapterException) {
         }
 
