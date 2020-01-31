@@ -8,6 +8,8 @@ import io.mockk.verify
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSakStatus
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.BestillOppgaveArenaException
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.HentArenaSakerException
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.LagOppgaveCommand
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.LagOppgaveOgSakCommand
 import no.nav.dagpenger.streams.HealthStatus
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BehandleArbeidOgAktivitetOppgaveV1
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgaveSakIkkeOpprettet
@@ -21,15 +23,15 @@ import kotlin.test.assertFailsWith
 internal class SoapArenaClientTest {
 
     @Test
-    fun `suksessfull bestillOppgave gir arenaSakId `() {
+    fun `suksessfull bestilling av vedtaksbehandling gir arenaSakId `() {
         val stubbedClient = mockk<BehandleArbeidOgAktivitetOppgaveV1>()
         every { stubbedClient.bestillOppgave(any()) } returns WSBestillOppgaveResponse().withArenaSakId("123")
 
         val client = SoapArenaClient(stubbedClient, mockk())
 
-        val actual = client.bestillOppgave("123456789", "abcbscb", "beskrivelse")
+        val actual = client.bestillOppgave(LagOppgaveOgSakCommand("123", "abc", ""))
 
-        actual shouldBe "123"
+        actual shouldBe FagsakId("123")
     }
 
     @Test
@@ -66,6 +68,16 @@ internal class SoapArenaClientTest {
     }
 
     @Test
+    fun `bestillOppgave bestiller oppgave`() {
+        val stubbedClient = mockk<BehandleArbeidOgAktivitetOppgaveV1>()
+        every { stubbedClient.bestillOppgave(any()) } returns WSBestillOppgaveResponse()
+
+        val client = SoapArenaClient(stubbedClient, mockk())
+
+        val actual = client.bestillOppgave(LagOppgaveCommand("123456789", "abcbscb", "beskrivelse"))
+    }
+
+    @Test
     fun `prøver på ny hvis det skjer en ukjent feil`() {
         val stubbedClient = mockk<BehandleArbeidOgAktivitetOppgaveV1>()
         every { stubbedClient.bestillOppgave(any()) } throws BestillOppgaveSakIkkeOpprettet()
@@ -73,7 +85,7 @@ internal class SoapArenaClientTest {
         val client = SoapArenaClient(stubbedClient, mockk())
 
         assertFailsWith<BestillOppgaveArenaException> {
-            client.bestillOppgave("123456789", "abcbscb", "beskrivelse")
+            client.bestillOppgave(LagOppgaveOgSakCommand("123456789", "abcbscb", "beskrivelse"))
         }
 
         verify(exactly = 3) { stubbedClient.bestillOppgave(any()) }

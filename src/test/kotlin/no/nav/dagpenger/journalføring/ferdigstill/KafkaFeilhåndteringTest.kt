@@ -43,7 +43,7 @@ class KafkaFeilhåndteringTest {
 
     private val journalpostApi = mockk<JournalpostApi>(relaxed = true)
     private val manuellJournalføringsOppgaveClient = mockk<ManuellJournalføringsOppgaveClient>(relaxed = true)
-    private val arenaClient = mockk<ArenaClient>(relaxed = true)
+    private val arenaClient = mockk<ArenaClient>()
 
     @Test
     fun `skal fortsette der den slapp når noe feiler`() {
@@ -57,7 +57,7 @@ class KafkaFeilhåndteringTest {
         val aktørId = "987654321"
 
         every { arenaClient.hentArenaSaker(naturligIdent) } returns listOf(ArenaSak(123, ArenaSakStatus.Inaktiv))
-        every { arenaClient.bestillOppgave(naturligIdent, behandlendeEnhet, any()) } returns "abc"
+        every { arenaClient.bestillOppgave(any()) } returns FagsakId("abc")
         every { journalpostApi.oppdater(any(), any()) } throws AdapterException(RuntimeException()) andThen { Unit }
 
         val packet = Packet().apply {
@@ -91,7 +91,7 @@ class KafkaFeilhåndteringTest {
             utFerdigstilt?.value()?.hasField("ferdigBehandlet")
         }
 
-        verify(exactly = 1) { arenaClient.bestillOppgave(naturligIdent, behandlendeEnhet, any()) }
+        verify(exactly = 1) { arenaClient.bestillOppgave(any()) }
     }
 
     @Test

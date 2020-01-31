@@ -149,8 +149,8 @@ internal class JournalforingFerdigstillComponentTest {
         )
 
         every {
-            arenaClientMock.bestillOppgave(naturligIdent = "fnr", behandlendeEnhetId = "9999", tilleggsinformasjon = any())
-        } returns "arenaSakId"
+            arenaClientMock.bestillOppgave(any())
+        } returns FagsakId("arenaSakId")
 
         val expectedFerdigstillJson = """{ "journalfoerendeEnhet" : "9999"}"""
 
@@ -166,7 +166,7 @@ internal class JournalforingFerdigstillComponentTest {
             dokumentJsonAdapter.toJsonValue(listOf(Dokument("id1", "tittel1"), Dokument("id1", "tittel1")))?.let { this.putValue(PacketKeys.DOKUMENTER, it) }
         }
 
-        val json = journalPostFrom(packet, "arenaSakId").let { toJsonPayload(it) }
+        val json = journalPostFrom(packet, FagsakId("arenaSakId")).let { toJsonPayload(it) }
 
         behovProducer(configuration).run {
             this.send(ProducerRecord(configuration.kafka.dagpengerJournalpostTopic.name, packet)).get()

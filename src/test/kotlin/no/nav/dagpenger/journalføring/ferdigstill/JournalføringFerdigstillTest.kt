@@ -4,6 +4,7 @@ import io.kotlintest.matchers.doubles.shouldBeGreaterThan
 import io.kotlintest.shouldBe
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.verify
 import io.prometheus.client.CollectorRegistry
 import no.nav.dagpenger.events.Packet
@@ -20,6 +21,9 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSak
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSakStatus
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.BestillOppgaveArenaException
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.LagOppgaveCommand
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.LagOppgaveOgSakCommand
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.OppgaveCommand
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonErInaktiv
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonIkkeFunnet
 import org.junit.jupiter.api.Test
@@ -104,7 +108,10 @@ internal class JournalføringFerdigstillTest {
         val naturligIdent = "12345678910"
         val behandlendeEnhet = "9999"
 
+        val slot = slot<OppgaveCommand>()
+
         every { arenaClient.hentArenaSaker(naturligIdent) } returns emptyList()
+        every { arenaClient.bestillOppgave(command = capture(slot)) } returns FagsakId("123")
 
         val packet = Packet().apply {
             this.putValue(JOURNALPOST_ID, journalPostId)
@@ -120,10 +127,14 @@ internal class JournalføringFerdigstillTest {
         journalFøringFerdigstill.handlePacket(packet)
 
         verify {
-            arenaClient.bestillOppgave(naturligIdent, behandlendeEnhet, any())
+            arenaClient.bestillOppgave(any())
             journalPostApi.oppdater(journalPostId, any())
             journalPostApi.ferdigstill(journalPostId)
         }
+
+        assert(slot.captured is LagOppgaveOgSakCommand)
+        slot.captured.behandlendeEnhet shouldBe behandlendeEnhet
+        slot.captured.naturligIdent shouldBe naturligIdent
     }
 
     @Test
@@ -149,7 +160,7 @@ internal class JournalføringFerdigstillTest {
         journalFøringFerdigstill.handlePacket(packet)
 
         verify {
-            arenaClient.bestillOppgave(naturligIdent, behandlendeEnhet, any())
+            arenaClient.bestillOppgave(LagOppgaveCommand(naturligIdent, behandlendeEnhet, any()))
             journalPostApi.oppdater(journalPostId, any())
             journalPostApi.ferdigstill(journalPostId)
         }
@@ -205,7 +216,7 @@ internal class JournalføringFerdigstillTest {
 
         // Person er ikke arbeidssøker
         every {
-            arenaClient.bestillOppgave(naturligIdent, behandlendeEnhet, any())
+            arenaClient.bestillOppgave(any())
         } throws BestillOppgaveArenaException(BestillOppgavePersonErInaktiv())
 
         journalFøringFerdigstill.handlePacket(packetPersonInaktiv)
@@ -215,7 +226,7 @@ internal class JournalføringFerdigstillTest {
 
         // Person er ikke funnet i arena
         every {
-            arenaClient.bestillOppgave(naturligIdent, behandlendeEnhet, any())
+            arenaClient.bestillOppgave(any())
         } throws BestillOppgaveArenaException(BestillOppgavePersonIkkeFunnet())
 
         journalFøringFerdigstill.handlePacket(packetPersonIkkeFunnet)

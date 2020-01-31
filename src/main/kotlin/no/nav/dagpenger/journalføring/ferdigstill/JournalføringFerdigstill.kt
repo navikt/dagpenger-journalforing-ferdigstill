@@ -30,6 +30,8 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSak
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSakStatus
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.BestillOppgaveArenaException
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.LagOppgaveOgSakCommand
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.OppgaveCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.createArenaTilleggsinformasjon
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonErInaktiv
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonIkkeFunnet
@@ -77,13 +79,13 @@ internal object PacketToJoarkPayloadMapper {
 
     fun tittelFrom(packet: Packet) = dokumenterFrom(packet).first().tittel
 
-    fun sakFrom(fagsakId: String?) = if (fagsakId != null) Sak(
+    fun sakFrom(fagsakId: FagsakId?) = if (fagsakId != null) Sak(
         saksType = SaksType.FAGSAK,
         fagsaksystem = "AO01",
-        fagsakId = fagsakId
+        fagsakId = fagsakId.value
     ) else Sak(SaksType.GENERELL_SAK, null, null)
 
-    fun journalPostFrom(packet: Packet, fagsakId: String?): OppdaterJournalpostPayload {
+    fun journalPostFrom(packet: Packet, fagsakId: FagsakId?): OppdaterJournalpostPayload {
         return OppdaterJournalpostPayload(
             avsenderMottaker = avsenderFrom(packet),
             bruker = brukerFrom(packet),
@@ -118,20 +120,33 @@ internal class JournalføringFerdigstill(
 
     private fun behandleGjennoptak(packet: Packet): Packet {
         try {
+            // bestillOppgave(packet)
+            // journalførAutomatisk(packet)
         } catch (e: AdapterException) {
         }
 
         return packet
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     fun behandleNySøknad(packet: Packet): Packet {
         try {
             if (kanBestilleFagsak(packet)) {
-                val fagsakId = packet.getNullableStringValue(PacketKeys.FAGSAK_ID) ?: bestillFagsak(packet)
+                val tilleggsinformasjon =
+                    createArenaTilleggsinformasjon(dokumentTitlerFrom(packet), registrertDatoFrom(packet))
+
+                val fagsakId =
+                    packet.getNullableStringValue(PacketKeys.FAGSAK_ID)?.let { FagsakId(it) }
+                        ?: bestillOppgave(
+                            LagOppgaveOgSakCommand(
+                                naturligIdent = brukerFrom(packet).id,
+                                behandlendeEnhetId = tildeltEnhetsNrFrom(packet),
+                                tilleggsinformasjon = tilleggsinformasjon
+                            ),
+                            journalpostIdFrom(packet)
+                        )
 
                 if (fagsakId != null) {
-                    if (!packet.hasField(PacketKeys.FAGSAK_ID)) packet.putValue(PacketKeys.FAGSAK_ID, fagsakId)
+                    if (!packet.hasField(PacketKeys.FAGSAK_ID)) packet.putValue(PacketKeys.FAGSAK_ID, fagsakId.value)
                     journalførAutomatisk(packet, fagsakId)
                     packet.putValue(PacketKeys.FERDIG_BEHANDLET, true)
                 } else {
@@ -147,7 +162,8 @@ internal class JournalføringFerdigstill(
 
         return packet
     }
-    private fun journalførAutomatisk(packet: Packet, fagsakId: String) {
+
+    private fun journalførAutomatisk(packet: Packet, fagsakId: FagsakId) {
         val journalpostId = journalpostIdFrom(packet)
         journalPostApi.oppdater(journalpostId, journalPostFrom(packet, fagsakId))
         journalPostApi.ferdigstill(journalpostId)
@@ -190,12 +206,9 @@ internal class JournalføringFerdigstill(
         saker.filter { it.status == ArenaSakStatus.Inaktiv }.also { inaktivDagpengeSakTeller.inc(it.size.toDouble()) }
     }
 
-    private fun bestillFagsak(packet: Packet): String? {
-        val journalpostId = journalpostIdFrom(packet)
-        val tilleggsinformasjon =
-            createArenaTilleggsinformasjon(dokumentTitlerFrom(packet), registrertDatoFrom(packet))
+    private fun bestillOppgave(command: OppgaveCommand, journalpostId: String): FagsakId? {
         return try {
-            arenaClient.bestillOppgave(brukerFrom(packet).id, tildeltEnhetsNrFrom(packet), tilleggsinformasjon)
+            arenaClient.bestillOppgave(command)
         } catch (e: BestillOppgaveArenaException) {
             automatiskJournalførtNeiTeller(e.cause?.javaClass?.simpleName ?: "ukjent")
 
