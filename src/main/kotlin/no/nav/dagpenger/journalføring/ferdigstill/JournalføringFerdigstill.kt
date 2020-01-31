@@ -1,22 +1,10 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
-import com.github.kittinunf.fuel.core.FuelError
-import com.github.kittinunf.fuel.core.Request
-import com.github.kittinunf.fuel.core.Response
-import com.github.kittinunf.result.Result
-import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.events.moshiInstance
-import no.nav.dagpenger.journalføring.ferdigstill.Metrics.aktiveDagpengeSakTeller
-import no.nav.dagpenger.journalføring.ferdigstill.Metrics.automatiskJournalførtJaTeller
-import no.nav.dagpenger.journalføring.ferdigstill.Metrics.automatiskJournalførtNeiTeller
-import no.nav.dagpenger.journalføring.ferdigstill.Metrics.avsluttetDagpengeSakTeller
-import no.nav.dagpenger.journalføring.ferdigstill.Metrics.inaktivDagpengeSakTeller
+import no.nav.dagpenger.journalføring.ferdigstill.Metrics.automatiskJournalførtNeiTellerInc
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.brukerFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.dokumentTitlerFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.hasNaturligIdent
@@ -27,10 +15,17 @@ import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.re
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.tildeltEnhetsNrFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.tittelFrom
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSak
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSakStatus
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.Avsender
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.BestillOppgaveArenaException
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.Bruker
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.Dokument
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.JournalpostApi
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.ManuellJournalføringsOppgaveClient
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.OppdaterJournalpostPayload
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.OppgaveCommand
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.Sak
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.SaksType
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderGjenopptakCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.createArenaTilleggsinformasjon
@@ -45,17 +40,8 @@ internal val erIkkeFerdigBehandletJournalpost = Predicate<String, Packet> { _, p
         !packet.hasField(PacketKeys.FERDIG_BEHANDLET)
 }
 
-internal val dokumentAdapter = moshiInstance.adapter<List<Dokument>>(
-    Types.newParameterizedType(
-        List::class.java,
-        Dokument::class.java
-    )
-)
-
 internal object PacketToJoarkPayloadMapper {
-    val dokumentJsonAdapter = Moshi.Builder()
-        .add(KotlinJsonAdapterFactory())
-        .build().adapter<List<Dokument>>(
+    val dokumentJsonAdapter = moshiInstance.adapter<List<Dokument>>(
             Types.newParameterizedType(
                 List::class.java,
                 Dokument::class.java
@@ -63,11 +49,16 @@ internal object PacketToJoarkPayloadMapper {
         ).lenient()
 
     fun journalpostIdFrom(packet: Packet) = packet.getStringValue(PacketKeys.JOURNALPOST_ID)
-    fun avsenderFrom(packet: Packet) = Avsender(packet.getStringValue(PacketKeys.AVSENDER_NAVN))
-    fun brukerFrom(packet: Packet) = Bruker(packet.getStringValue(PacketKeys.NATURLIG_IDENT))
+    fun avsenderFrom(packet: Packet) =
+        Avsender(packet.getStringValue(PacketKeys.AVSENDER_NAVN))
+    fun brukerFrom(packet: Packet) =
+        Bruker(packet.getStringValue(PacketKeys.NATURLIG_IDENT))
     fun hasNaturligIdent(packet: Packet) = packet.hasField(PacketKeys.NATURLIG_IDENT)
     fun nullableAktørFrom(packet: Packet) =
-        if (packet.hasField(PacketKeys.AKTØR_ID)) Bruker(packet.getStringValue(PacketKeys.AKTØR_ID), "AKTØR") else null
+        if (packet.hasField(PacketKeys.AKTØR_ID)) Bruker(
+            packet.getStringValue(PacketKeys.AKTØR_ID),
+            "AKTØR"
+        ) else null
 
     fun tildeltEnhetsNrFrom(packet: Packet) = packet.getStringValue(PacketKeys.BEHANDLENDE_ENHET)
     fun dokumenterFrom(packet: Packet) = packet.getObjectValue(PacketKeys.DOKUMENTER) {
@@ -76,7 +67,7 @@ internal object PacketToJoarkPayloadMapper {
 
     fun registrertDatoFrom(packet: Packet) = packet.getStringValue(PacketKeys.DATO_REGISTRERT)
     fun dokumentTitlerFrom(packet: Packet) =
-        packet.getObjectValue(PacketKeys.DOKUMENTER) { dokumentAdapter.fromJsonValue(it)!! }.map { it.tittel }
+        packet.getObjectValue(PacketKeys.DOKUMENTER) { dokumentJsonAdapter.fromJsonValue(it)!! }.map { it.tittel }
 
     fun tittelFrom(packet: Packet) = dokumenterFrom(packet).first().tittel
 
@@ -84,7 +75,11 @@ internal object PacketToJoarkPayloadMapper {
         saksType = SaksType.FAGSAK,
         fagsaksystem = "AO01",
         fagsakId = fagsakId.value
-    ) else Sak(SaksType.GENERELL_SAK, null, null)
+    ) else Sak(
+        SaksType.GENERELL_SAK,
+        null,
+        null
+    )
 
     fun journalPostFrom(packet: Packet, fagsakId: FagsakId?): OppdaterJournalpostPayload {
         return OppdaterJournalpostPayload(
@@ -106,7 +101,7 @@ internal class JournalføringFerdigstill(
     fun handlePacket(packet: Packet): Packet {
 
         if (!hasNaturligIdent(packet)) {
-            automatiskJournalførtNeiTeller("ukjent_bruker")
+            automatiskJournalførtNeiTellerInc("ukjent_bruker")
             journalførManuelt(packet)
             packet.putValue(PacketKeys.FERDIG_BEHANDLET, true)
             return packet
@@ -177,8 +172,8 @@ internal class JournalføringFerdigstill(
         val journalpostId = journalpostIdFrom(packet)
         journalPostApi.oppdater(journalpostId, journalPostFrom(packet, fagsakId))
         journalPostApi.ferdigstill(journalpostId)
-        Metrics.jpFerdigStillInc(SaksType.FAGSAK)
-        automatiskJournalførtJaTeller.inc()
+        Metrics.jpFerdigStillInc()
+        Metrics.automatiskJournalførtJaTellerInc()
         logger.info { "Automatisk journalført $journalpostId" }
     }
 
@@ -194,7 +189,7 @@ internal class JournalføringFerdigstill(
             tildeltEnhetsNrFrom(packet)
         )
 
-        Metrics.jpFerdigStillInc(SaksType.GENERELL_SAK)
+        Metrics.jpFerdigStillInc()
         logger.info { "Manuelt journalført $journalpostId" }
     }
 
@@ -207,20 +202,14 @@ internal class JournalføringFerdigstill(
         }
 
         return saker.none { it.status == ArenaSakStatus.Aktiv }
-            .also { if (!it) automatiskJournalførtNeiTeller("aktiv_sak") }
-    }
-
-    private fun registrerMetrikker(saker: List<ArenaSak>) {
-        saker.filter { it.status == ArenaSakStatus.Aktiv }.also { aktiveDagpengeSakTeller.inc(it.size.toDouble()) }
-        saker.filter { it.status == ArenaSakStatus.Lukket }.also { avsluttetDagpengeSakTeller.inc(it.size.toDouble()) }
-        saker.filter { it.status == ArenaSakStatus.Inaktiv }.also { inaktivDagpengeSakTeller.inc(it.size.toDouble()) }
+            .also { if (!it) automatiskJournalførtNeiTellerInc("aktiv_sak") }
     }
 
     private fun bestillOppgave(command: OppgaveCommand, journalpostId: String): FagsakId? {
         return try {
             arenaClient.bestillOppgave(command)
         } catch (e: BestillOppgaveArenaException) {
-            automatiskJournalførtNeiTeller(e.cause?.javaClass?.simpleName ?: "ukjent")
+            automatiskJournalførtNeiTellerInc(e.cause?.javaClass?.simpleName ?: "ukjent")
 
             return when (e.cause) {
                 is BestillOppgavePersonErInaktiv -> {
@@ -240,28 +229,5 @@ internal class JournalføringFerdigstill(
     }
 }
 
-fun <T : Any> retryFuel(
-    times: Int = 3,
-    initialDelay: Long = 1000,
-    maxDelay: Long = 4000,
-    factor: Double = 2.0,
-    fuelFunction: () -> Triple<Request, Response, Result<T, FuelError>>
-): Triple<Request, Response, Result<T, FuelError>> {
-    var currentDelay = initialDelay
-    repeat(times - 1) {
-
-        val res = fuelFunction()
-        val (_, _, result) = res
-
-        when (result) {
-            is Result.Success -> return res
-            is Result.Failure -> logger.warn { result.getException() }
-        }
-
-        runBlocking { delay(currentDelay) }
-        currentDelay = (currentDelay * factor).toLong().coerceAtMost(maxDelay)
-    }
-    return fuelFunction() // last attempt
-}
 
 class AdapterException(val exception: Throwable) : RuntimeException(exception)

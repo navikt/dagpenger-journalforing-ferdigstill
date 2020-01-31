@@ -3,6 +3,7 @@ package no.nav.dagpenger.journalføring.ferdigstill
 import io.kotlintest.shouldBe
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.dokumentJsonAdapter
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.Dokument
 import org.junit.jupiter.api.Test
 
 internal class PacketToJoarkPayloadMapperTest {
@@ -31,7 +32,12 @@ internal class PacketToJoarkPayloadMapperTest {
     @Test
     fun `Extract dokumenter from packet`() {
         val dokumenter = PacketToJoarkPayloadMapper.dokumenterFrom(Packet().apply {
-            dokumentJsonAdapter.toJsonValue(listOf(Dokument("id1", "tittel1"), Dokument("id2", "tittel2")))?.let {
+            dokumentJsonAdapter.toJsonValue(listOf(
+                Dokument(
+                    "id1",
+                    "tittel1"
+                ), Dokument("id2", "tittel2")
+            ))?.let {
                 this.putValue(PacketKeys.DOKUMENTER, it)
             }
         })
@@ -55,7 +61,12 @@ internal class PacketToJoarkPayloadMapperTest {
                 this.putValue(PacketKeys.JOURNALPOST_ID, "journalPostId")
                 this.putValue(PacketKeys.AVSENDER_NAVN, "navn")
                 this.putValue(PacketKeys.NATURLIG_IDENT, "fnr")
-                dokumentJsonAdapter.toJsonValue(listOf(Dokument("dokumentId", "tittel")))
+                dokumentJsonAdapter.toJsonValue(listOf(
+                    Dokument(
+                        "dokumentId",
+                        "tittel"
+                    )
+                ))
                     ?.let { this.putValue(PacketKeys.DOKUMENTER, it) }
             },
             FagsakId("bla")
@@ -65,7 +76,12 @@ internal class PacketToJoarkPayloadMapperTest {
         jp.behandlingstema shouldBe "ab0001"
         jp.bruker.id shouldBe "fnr"
         jp.bruker.idType shouldBe "FNR"
-        jp.dokumenter shouldBe listOf(Dokument("dokumentId", "tittel"))
+        jp.dokumenter shouldBe listOf(
+            Dokument(
+                "dokumentId",
+                "tittel"
+            )
+        )
         jp.journalfoerendeEnhet shouldBe "9999"
         jp.tema shouldBe "DAG"
         jp.tittel shouldBe "tittel"

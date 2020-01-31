@@ -1,4 +1,4 @@
-package no.nav.dagpenger.journalføring.ferdigstill
+package no.nav.dagpenger.journalføring.ferdigstill.adapter
 
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.extensions.authentication
@@ -8,6 +8,7 @@ import com.github.kittinunf.fuel.httpPut
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import mu.KotlinLogging
+import no.nav.dagpenger.journalføring.ferdigstill.AdapterException
 import no.nav.dagpenger.oidc.OidcClient
 
 private val logger = KotlinLogging.logger {}
@@ -28,7 +29,7 @@ internal data class OppdaterJournalpostPayload(
     val journalfoerendeEnhet: String = "9999"
 )
 
-enum class SaksType {
+internal enum class SaksType {
     GENERELL_SAK,
     FAGSAK
 }
@@ -38,7 +39,8 @@ internal data class Avsender(val navn: String)
 internal data class Bruker(val id: String, val idType: String = "FNR")
 internal data class Dokument(val dokumentInfoId: String, val tittel: String)
 
-internal class JournalpostRestApi(private val url: String, private val oidcClient: OidcClient) : JournalpostApi {
+internal class JournalpostRestApi(private val url: String, private val oidcClient: OidcClient) :
+    JournalpostApi {
     init {
         FuelManager.instance.forceMethods = true
     }
@@ -49,7 +51,8 @@ internal class JournalpostRestApi(private val url: String, private val oidcClien
             .build()
 
         fun toJsonPayload(jp: OppdaterJournalpostPayload): String =
-            moshiInstance.adapter<OppdaterJournalpostPayload>(OppdaterJournalpostPayload::class.java).toJson(jp)
+            moshiInstance.adapter<OppdaterJournalpostPayload>(
+                OppdaterJournalpostPayload::class.java).toJson(jp)
     }
 
     override fun oppdater(journalpostId: String, jp: OppdaterJournalpostPayload) {
@@ -58,7 +61,11 @@ internal class JournalpostRestApi(private val url: String, private val oidcClien
                 .httpPut()
                 .authentication()
                 .bearer(oidcClient.oidcToken().access_token)
-                .jsonBody(toJsonPayload(jp))
+                .jsonBody(
+                    toJsonPayload(
+                        jp
+                    )
+                )
                 .response()
         }
 

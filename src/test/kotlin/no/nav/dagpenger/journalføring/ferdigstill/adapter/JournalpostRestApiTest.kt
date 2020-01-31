@@ -1,9 +1,10 @@
-package no.nav.dagpenger.journalføring.ferdigstill
+package no.nav.dagpenger.journalføring.ferdigstill.adapter
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import io.mockk.mockk
+import no.nav.dagpenger.journalføring.ferdigstill.AdapterException
 import no.nav.dagpenger.oidc.StsOidcClient
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -49,16 +50,30 @@ internal class JournalpostRestApiTest {
 
         val stsOidcClient: StsOidcClient = mockk(relaxed = true)
 
-        val client = JournalpostRestApi(server.baseUrl(), stsOidcClient)
+        val client = JournalpostRestApi(
+            server.baseUrl(),
+            stsOidcClient
+        )
 
         assertFailsWith<AdapterException> {
-            client.oppdater(journalpostId, OppdaterJournalpostPayload(
-                avsenderMottaker = Avsender("navn"),
-                bruker = Bruker("bruker"),
-                tittel = "tittel",
-                sak = Sak(SaksType.FAGSAK, "fagsakId", "AO01"),
-                dokumenter = listOf(Dokument("dokumentId", "tittel"))
-            ))
+            client.oppdater(journalpostId,
+                OppdaterJournalpostPayload(
+                    avsenderMottaker = Avsender("navn"),
+                    bruker = Bruker("bruker"),
+                    tittel = "tittel",
+                    sak = Sak(
+                        SaksType.FAGSAK,
+                        "fagsakId",
+                        "AO01"
+                    ),
+                    dokumenter = listOf(
+                        Dokument(
+                            "dokumentId",
+                            "tittel"
+                        )
+                    )
+                )
+            )
         }
 
         WireMock.verify(3, WireMock.putRequestedFor(WireMock.urlEqualTo("/rest/journalpostapi/v1/journalpost/$journalpostId")))

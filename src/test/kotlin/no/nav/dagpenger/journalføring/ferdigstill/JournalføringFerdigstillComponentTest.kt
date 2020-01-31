@@ -22,10 +22,12 @@ import no.nav.common.JAASCredential
 import no.nav.common.KafkaEnvironment
 import no.nav.common.embeddedutils.getAvailablePort
 import no.nav.dagpenger.events.Packet
-import no.nav.dagpenger.journalføring.ferdigstill.JournalpostRestApi.Companion.toJsonPayload
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.JournalpostRestApi.Companion.toJsonPayload
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.dokumentJsonAdapter
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.journalPostFrom
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.Dokument
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.JournalpostRestApi
 import no.nav.dagpenger.oidc.StsOidcClient
 import no.nav.dagpenger.streams.KafkaCredential
 import org.apache.kafka.clients.CommonClientConfigs
@@ -78,7 +80,10 @@ internal class JournalforingFerdigstillComponentTest {
 
         val stsOidcClient = StsOidcClient(configuration.sts.baseUrl, configuration.sts.username, configuration.sts.password)
         val journalFøringFerdigstill = JournalføringFerdigstill(
-            JournalpostRestApi(configuration.journalPostApiUrl, stsOidcClient),
+            JournalpostRestApi(
+                configuration.journalPostApiUrl,
+                stsOidcClient
+            ),
             manuellJournalføringsOppgaveClient = mockk(),
             arenaClient = arenaClientMock)
 
@@ -163,7 +168,12 @@ internal class JournalforingFerdigstillComponentTest {
             this.putValue(PacketKeys.BEHANDLENDE_ENHET, "9999")
             this.putValue(PacketKeys.DATO_REGISTRERT, "2020-01-01")
             this.putValue(PacketKeys.HENVENDELSESTYPE, "NY_SØKNAD")
-            dokumentJsonAdapter.toJsonValue(listOf(Dokument("id1", "tittel1"), Dokument("id1", "tittel1")))?.let { this.putValue(PacketKeys.DOKUMENTER, it) }
+            dokumentJsonAdapter.toJsonValue(listOf(
+                Dokument(
+                    "id1",
+                    "tittel1"
+                ), Dokument("id1", "tittel1")
+            ))?.let { this.putValue(PacketKeys.DOKUMENTER, it) }
         }
 
         val json = journalPostFrom(packet, FagsakId("arenaSakId")).let { toJsonPayload(it) }

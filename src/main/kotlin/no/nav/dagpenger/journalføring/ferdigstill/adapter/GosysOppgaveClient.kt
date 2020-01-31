@@ -1,4 +1,4 @@
-package no.nav.dagpenger.journalføring.ferdigstill
+package no.nav.dagpenger.journalføring.ferdigstill.adapter
 
 import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.core.extensions.jsonBody
@@ -7,6 +7,8 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import mu.KotlinLogging
 import no.nav.dagpenger.events.LocalDateJsonAdapter
+import no.nav.dagpenger.journalføring.ferdigstill.AdapterException
+
 import no.nav.dagpenger.oidc.OidcClient
 import java.time.LocalDate
 
@@ -39,7 +41,8 @@ internal class GosysOppgaveClient(private val url: String, private val oidcClien
             .build()
 
         fun toOpprettGosysOppgaveJsonPayload(gosysOppgave: GosysOppgave) =
-            moishiInstance.adapter<GosysOppgave>(GosysOppgave::class.java).toJson(gosysOppgave)
+            moishiInstance.adapter<GosysOppgave>(
+                GosysOppgave::class.java).toJson(gosysOppgave)
     }
 
     override fun opprettOppgave(
@@ -48,7 +51,10 @@ internal class GosysOppgaveClient(private val url: String, private val oidcClien
         søknadstittel: String,
         tildeltEnhetsnr: String
     ) {
-        val (_, _, result) = retryFuel(initialDelay = 5000, maxDelay = 30000) {
+        val (_, _, result) = retryFuel(
+            initialDelay = 5000,
+            maxDelay = 30000
+        ) {
             url.plus("/api/v1/oppgaver")
                 .httpPost()
                 .authentication()
