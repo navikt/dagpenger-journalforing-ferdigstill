@@ -28,6 +28,11 @@ internal class Application(
     override fun filterPredicates() = listOf(erIkkeFerdigBehandletJournalpost)
 
     override fun onPacket(packet: Packet): Packet {
+        if (packet.getStringValue(PacketKeys.JOURNALPOST_ID) == "453501180" && configuration.application.profile == Profile.DEV) {
+            packet.putValue(PacketKeys.FERDIG_BEHANDLET, true)
+            return packet
+        }
+
         logger.info { "Processing: $packet" }
 
         if (packet.getReadCount() >= 10) {
