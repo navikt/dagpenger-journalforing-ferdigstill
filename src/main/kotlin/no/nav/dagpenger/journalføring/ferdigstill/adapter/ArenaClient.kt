@@ -8,7 +8,7 @@ interface ArenaClient : HealthCheck {
     fun hentArenaSaker(naturligIdent: String): List<ArenaSak>
 }
 
-sealed class OppgaveCommand(val naturligIdent: String, val behandlendeEnhet: String, val informasjon: String)
+sealed class OppgaveCommand { abstract val naturligIdent: String; abstract val behandlendeEnhetId: String; abstract val tilleggsinformasjon: String }
 
-class StartVedtakCommand(naturligIdent: String, behandlendeEnhetId: String, tilleggsinformasjon: String) : OppgaveCommand(naturligIdent, behandlendeEnhetId, tilleggsinformasjon)
-class VurderGjenopptakCommand(naturligIdent: String, behandlendeEnhetId: String, tilleggsinformasjon: String) : OppgaveCommand(naturligIdent, behandlendeEnhetId, tilleggsinformasjon)
+class StartVedtakCommand(override val naturligIdent: String, override val behandlendeEnhetId: String, override val tilleggsinformasjon: String) : OppgaveCommand()
+class VurderGjenopptakCommand(override val naturligIdent: String, override val behandlendeEnhetId: String, override val tilleggsinformasjon: String) : OppgaveCommand()

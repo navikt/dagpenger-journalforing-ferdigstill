@@ -8,9 +8,9 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSak
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSakStatus
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.BestillOppgaveArenaException
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.HentArenaSakerException
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderGjenopptakCommand
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.OppgaveCommand
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderGjenopptakCommand
 import no.nav.dagpenger.streams.HealthStatus
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BehandleArbeidOgAktivitetOppgaveV1
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonErInaktiv
@@ -71,12 +71,12 @@ class SoapArenaClient(private val oppgaveV1: BehandleArbeidOgAktivitetOppgaveV1,
         soapRequest.oppgave.apply {
             tema = WSTema().apply { value = "DAG" }
             bruker = WSPerson().apply { ident = naturligIdent }
-            behandlendeEnhetId = behandlendeEnhet
+            behandlendeEnhetId = this@toWSBestillOppgaveRequest.behandlendeEnhetId
             prioritet = WSPrioritet().apply {
                 this.value = "HOY"
             }
             frist = DatatypeFactory.newInstance().newXMLGregorianCalendar(GregorianCalendar.from(today))
-            this.tilleggsinformasjon = informasjon
+            this.tilleggsinformasjon = this@toWSBestillOppgaveRequest.tilleggsinformasjon
         }
 
         return soapRequest

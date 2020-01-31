@@ -22,9 +22,9 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSak
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSakStatus
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.BestillOppgaveArenaException
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderGjenopptakCommand
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.OppgaveCommand
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderGjenopptakCommand
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonErInaktiv
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonIkkeFunnet
 import org.junit.jupiter.api.Test
@@ -134,7 +134,7 @@ internal class JournalføringFerdigstillTest {
         }
 
         slot.captured.shouldBeTypeOf<StartVedtakCommand>()
-        slot.captured.behandlendeEnhet shouldBe behandlendeEnhet
+        slot.captured.behandlendeEnhetId shouldBe behandlendeEnhet
         slot.captured.naturligIdent shouldBe naturligIdent
     }
 
@@ -170,7 +170,7 @@ internal class JournalføringFerdigstillTest {
         }
 
         slot.captured.shouldBeTypeOf<VurderGjenopptakCommand>()
-        slot.captured.behandlendeEnhet shouldBe behandlendeEnhet
+        slot.captured.behandlendeEnhetId shouldBe behandlendeEnhet
         slot.captured.naturligIdent shouldBe naturligIdent
     }
 
