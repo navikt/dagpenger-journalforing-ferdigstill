@@ -2,6 +2,7 @@ package no.nav.dagpenger.journalføring.ferdigstill
 
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldNotBe
+import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.dokumentJsonAdapter
 import org.junit.jupiter.api.Test
 
 class DokumentAdapterTest {
@@ -10,7 +11,7 @@ class DokumentAdapterTest {
 
         val json = """[{"tittel": "en", "brevkode": "123", "dokumentInfoId": "hallo"}, {"tittel": "to", "dokumentInfoId": "hei"}]""".trimIndent()
 
-        val konverterteDokumenter = dokumentAdapter.fromJson(json)
+        val konverterteDokumenter = dokumentJsonAdapter.fromJson(json)
 
         konverterteDokumenter shouldNotBe null
         konverterteDokumenter?.first()?.tittel shouldBe "en"

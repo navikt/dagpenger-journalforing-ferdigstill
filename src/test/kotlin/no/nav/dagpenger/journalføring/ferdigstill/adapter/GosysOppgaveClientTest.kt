@@ -1,4 +1,4 @@
-package no.nav.dagpenger.journalføring.ferdigstill
+package no.nav.dagpenger.journalføring.ferdigstill.adapter
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
@@ -7,6 +7,7 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
 import com.gregwoodfill.assert.shouldStrictlyEqualJson
 import io.mockk.mockk
+import no.nav.dagpenger.journalføring.ferdigstill.AdapterException
 import no.nav.dagpenger.oidc.StsOidcClient
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -76,7 +77,11 @@ internal class GosysOppgaveClientTest {
 
         val stsOidcClient: StsOidcClient = mockk(relaxed = true)
 
-        val client: ManuellJournalføringsOppgaveClient = GosysOppgaveClient(server.baseUrl(), stsOidcClient)
+        val client: ManuellJournalføringsOppgaveClient =
+            GosysOppgaveClient(
+                server.baseUrl(),
+                stsOidcClient
+            )
 
         assertDoesNotThrow {
             client.opprettOppgave(
@@ -100,7 +105,11 @@ internal class GosysOppgaveClientTest {
 
         val stsOidcClient: StsOidcClient = mockk(relaxed = true)
 
-        val client: ManuellJournalføringsOppgaveClient = GosysOppgaveClient(server.baseUrl(), stsOidcClient)
+        val client: ManuellJournalføringsOppgaveClient =
+            GosysOppgaveClient(
+                server.baseUrl(),
+                stsOidcClient
+            )
 
         assertFailsWith<AdapterException> {
             client.opprettOppgave(

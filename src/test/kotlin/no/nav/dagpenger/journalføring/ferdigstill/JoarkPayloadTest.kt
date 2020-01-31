@@ -1,6 +1,13 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
 import com.gregwoodfill.assert.shouldStrictlyEqualJson
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.Avsender
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.Bruker
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.Dokument
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.JournalpostRestApi
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.OppdaterJournalpostPayload
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.Sak
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.SaksType
 import org.junit.jupiter.api.Test
 
 internal class JoarkPayloadTest {
@@ -8,13 +15,24 @@ internal class JoarkPayloadTest {
     @Test
     fun `Json serialiation of OppdaterJournalPostPayload with FAGSAK`() {
 
-        val json = JournalpostRestApi.toJsonPayload(OppdaterJournalpostPayload(
-            avsenderMottaker = Avsender("navn"),
-            bruker = Bruker("bruker"),
-            tittel = "tittel",
-            sak = Sak(SaksType.FAGSAK, "fagsakId", "AO01"),
-            dokumenter = listOf(Dokument("dokumentId", "tittel"))
-        ))
+        val json = JournalpostRestApi.toJsonPayload(
+            OppdaterJournalpostPayload(
+                avsenderMottaker = Avsender("navn"),
+                bruker = Bruker("bruker"),
+                tittel = "tittel",
+                sak = Sak(
+                    SaksType.FAGSAK,
+                    "fagsakId",
+                    "AO01"
+                ),
+                dokumenter = listOf(
+                    Dokument(
+                        "dokumentId",
+                        "tittel"
+                    )
+                )
+            )
+        )
 
         json shouldStrictlyEqualJson """
             {
@@ -47,13 +65,24 @@ internal class JoarkPayloadTest {
     @Test
     fun `Json serialiation of OppdaterJournalPostPayload with GENERELL_SAK`() {
 
-        val json = JournalpostRestApi.toJsonPayload(OppdaterJournalpostPayload(
-            avsenderMottaker = Avsender("navn"),
-            bruker = Bruker("bruker"),
-            tittel = "tittel",
-            sak = Sak(SaksType.GENERELL_SAK, null, null),
-            dokumenter = listOf(Dokument("dokumentId", "tittel"))
-        ))
+        val json = JournalpostRestApi.toJsonPayload(
+            OppdaterJournalpostPayload(
+                avsenderMottaker = Avsender("navn"),
+                bruker = Bruker("bruker"),
+                tittel = "tittel",
+                sak = Sak(
+                    SaksType.GENERELL_SAK,
+                    null,
+                    null
+                ),
+                dokumenter = listOf(
+                    Dokument(
+                        "dokumentId",
+                        "tittel"
+                    )
+                )
+            )
+        )
 
         json shouldStrictlyEqualJson """
             {

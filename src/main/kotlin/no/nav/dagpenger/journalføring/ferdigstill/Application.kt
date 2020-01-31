@@ -3,6 +3,8 @@ package no.nav.dagpenger.journalføring.ferdigstill
 import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.GosysOppgaveClient
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.JournalpostRestApi
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.STS_SAML_POLICY_NO_TRANSPORT_BINDING
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.SoapPort
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.arena.SoapArenaClient
@@ -80,8 +82,14 @@ fun main() {
     }
 
     val journalFøringFerdigstill = JournalføringFerdigstill(
-        JournalpostRestApi(configuration.journalPostApiUrl, stsOidcClient),
-        GosysOppgaveClient(configuration.gosysApiUrl, stsOidcClient),
+        JournalpostRestApi(
+            configuration.journalPostApiUrl,
+            stsOidcClient
+        ),
+        GosysOppgaveClient(
+            configuration.gosysApiUrl,
+            stsOidcClient
+        ),
         arenaClient
     )
 

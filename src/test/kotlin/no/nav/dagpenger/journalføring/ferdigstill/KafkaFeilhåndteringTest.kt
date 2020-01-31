@@ -10,6 +10,9 @@ import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSak
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSakStatus
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.Dokument
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.JournalpostApi
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.ManuellJournalføringsOppgaveClient
 import no.nav.dagpenger.streams.PacketDeserializer
 import no.nav.dagpenger.streams.PacketSerializer
 import no.nav.dagpenger.streams.Topic
@@ -69,7 +72,12 @@ class KafkaFeilhåndteringTest {
             this.putValue(PacketKeys.AKTØR_ID, aktørId)
             this.putValue(PacketKeys.AVSENDER_NAVN, "Donald")
             this.putValue(PacketKeys.HENVENDELSESTYPE, "NY_SØKNAD")
-            PacketToJoarkPayloadMapper.dokumentJsonAdapter.toJsonValue(listOf(Dokument("id1", "tittel1")))?.let {
+            PacketToJoarkPayloadMapper.dokumentJsonAdapter.toJsonValue(listOf(
+                Dokument(
+                    "id1",
+                    "tittel1"
+                )
+            ))?.let {
                 this.putValue(
                     PacketKeys.DOKUMENTER, it
                 )
@@ -112,7 +120,12 @@ class KafkaFeilhåndteringTest {
             this.putValue(PacketKeys.AKTØR_ID, aktørId)
             this.putValue(PacketKeys.AVSENDER_NAVN, "Donald")
             this.putValue(PacketKeys.HENVENDELSESTYPE, "NY_SØKNAD")
-            PacketToJoarkPayloadMapper.dokumentJsonAdapter.toJsonValue(listOf(Dokument("id1", "tittel1")))?.let {
+            PacketToJoarkPayloadMapper.dokumentJsonAdapter.toJsonValue(listOf(
+                Dokument(
+                    "id1",
+                    "tittel1"
+                )
+            ))?.let {
                 this.putValue(
                     PacketKeys.DOKUMENTER, it
                 )
