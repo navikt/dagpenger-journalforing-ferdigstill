@@ -161,7 +161,7 @@ internal class JournalføringFerdigstillTest {
             dokumentJsonAdapter.toJsonValue(listOf(Dokument("id1", "tittel1")))?.let { this.putValue(DOKUMENTER, it) }
         }
 
-        journalFøringFerdigstill.handlePacket(packet)
+        val finishedPacket = journalFøringFerdigstill.handlePacket(packet)
 
         verify {
             arenaClient.bestillOppgave(any())
@@ -172,6 +172,8 @@ internal class JournalføringFerdigstillTest {
         slot.captured.shouldBeTypeOf<VurderGjenopptakCommand>()
         slot.captured.behandlendeEnhetId shouldBe behandlendeEnhet
         slot.captured.naturligIdent shouldBe naturligIdent
+
+        finishedPacket.getBoolean("ferdigBehandlet") shouldBe true
     }
 
     @Test
