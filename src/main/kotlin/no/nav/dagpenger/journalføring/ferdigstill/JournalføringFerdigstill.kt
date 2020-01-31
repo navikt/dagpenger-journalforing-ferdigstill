@@ -114,12 +114,12 @@ internal class JournalføringFerdigstill(
 
         return when (packet.getStringValue("henvendelsestype")) {
             "NY_SØKNAD" -> behandleNySøknad(packet)
-            "GJENOPPTAK" -> behandleGjennoptak(packet)
+            "GJENOPPTAK" -> behandleGjenopptak(packet)
             else -> throw NotImplementedError()
         }
     }
 
-    private fun behandleGjennoptak(packet: Packet): Packet {
+    private fun behandleGjenopptak(packet: Packet): Packet {
         try {
             val tilleggsinformasjon =
                 createArenaTilleggsinformasjon(dokumentTitlerFrom(packet), registrertDatoFrom(packet))
