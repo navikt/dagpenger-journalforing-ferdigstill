@@ -42,17 +42,19 @@ internal val erIkkeFerdigBehandletJournalpost = Predicate<String, Packet> { _, p
 
 internal object PacketToJoarkPayloadMapper {
     val dokumentJsonAdapter = moshiInstance.adapter<List<Dokument>>(
-            Types.newParameterizedType(
-                List::class.java,
-                Dokument::class.java
-            )
-        ).lenient()
+        Types.newParameterizedType(
+            List::class.java,
+            Dokument::class.java
+        )
+    ).lenient()
 
     fun journalpostIdFrom(packet: Packet) = packet.getStringValue(PacketKeys.JOURNALPOST_ID)
     fun avsenderFrom(packet: Packet) =
         Avsender(packet.getStringValue(PacketKeys.AVSENDER_NAVN))
+
     fun brukerFrom(packet: Packet) =
         Bruker(packet.getStringValue(PacketKeys.NATURLIG_IDENT))
+
     fun hasNaturligIdent(packet: Packet) = packet.hasField(PacketKeys.NATURLIG_IDENT)
     fun nullableAktørFrom(packet: Packet) =
         if (packet.hasField(PacketKeys.AKTØR_ID)) Bruker(
@@ -114,16 +116,22 @@ internal class JournalføringFerdigstill(
         }
     }
 
-    private fun behandleGjenopptak(packet: Packet): Packet {
+    fun behandleGjenopptak(packet: Packet): Packet {
         try {
             val tilleggsinformasjon =
                 createArenaTilleggsinformasjon(dokumentTitlerFrom(packet), registrertDatoFrom(packet))
 
-            bestillOppgave(VurderGjenopptakCommand(
-                naturligIdent = brukerFrom(packet).id,
-                behandlendeEnhetId = tildeltEnhetsNrFrom(packet),
-                tilleggsinformasjon = tilleggsinformasjon
-            ), journalpostIdFrom(packet))
+            if (packet.getNullableBoolean(PacketKeys.FERDIGSTILT_ARENA) != true) {
+
+                bestillOppgave(
+                    VurderGjenopptakCommand(
+                        naturligIdent = brukerFrom(packet).id,
+                        behandlendeEnhetId = tildeltEnhetsNrFrom(packet),
+                        tilleggsinformasjon = tilleggsinformasjon
+                    ), journalpostIdFrom(packet)
+                )
+                packet.putValue(PacketKeys.FERDIGSTILT_ARENA, true)
+            }
 
             journalførAutomatisk(packet)
             packet.putValue(PacketKeys.FERDIG_BEHANDLET, true)

@@ -43,14 +43,30 @@ internal class JournalføringFerdigstillTest {
 
         val application = Application(Configuration(), mockk())
 
-        application.filterPredicates().all { it.test("", Packet().apply {
-            this.putValue(JOURNALPOST_ID, "journalPostId")
-            this.putValue("toggleBehandleNySøknad", true)
-        }) } shouldBe true
+        application.filterPredicates().all {
+            it.test("", Packet().apply {
+                this.putValue(JOURNALPOST_ID, "journalPostId")
+                this.putValue("toggleBehandleNySøknad", true)
+            })
+        } shouldBe true
 
-        application.filterPredicates().all { it.test("", Packet().apply {
-            this.putValue("noe annet", "blabla")
-        }) } shouldBe false
+        application.filterPredicates().all {
+            it.test("", Packet().apply {
+                this.putValue("noe annet", "blabla")
+            })
+        } shouldBe false
+    }
+
+    @Test
+    fun `skal ikke behandle pakker som er ferdig behandlet`() {
+        val application = Application(Configuration(), mockk())
+
+        application.filterPredicates().all {
+            it.test("", Packet().apply {
+                this.putValue(JOURNALPOST_ID, "journalPostId")
+                this.putValue(PacketKeys.FERDIG_BEHANDLET, true)
+            })
+        } shouldBe false
     }
 
     @Test
@@ -66,12 +82,14 @@ internal class JournalføringFerdigstillTest {
                 this.putValue(AVSENDER_NAVN, "et navn")
                 this.putValue(BEHANDLENDE_ENHET, "9999")
                 this.putValue(HENVENDELSESTYPE, "NY_SØKNAD")
-                dokumentJsonAdapter.toJsonValue(listOf(
-                    Dokument(
-                        "id1",
-                        "tittel1"
+                dokumentJsonAdapter.toJsonValue(
+                    listOf(
+                        Dokument(
+                            "id1",
+                            "tittel1"
+                        )
                     )
-                ))?.let { this.putValue(DOKUMENTER, it) }
+                )?.let { this.putValue(DOKUMENTER, it) }
             }
             this.handlePacket(generellPacket)
 
@@ -83,12 +101,14 @@ internal class JournalføringFerdigstillTest {
                 this.putValue(BEHANDLENDE_ENHET, "9999")
                 this.putValue(DATO_REGISTRERT, "2020-01-01")
                 this.putValue(HENVENDELSESTYPE, "NY_SØKNAD")
-                dokumentJsonAdapter.toJsonValue(listOf(
-                    Dokument(
-                        "id1",
-                        "tittel1"
+                dokumentJsonAdapter.toJsonValue(
+                    listOf(
+                        Dokument(
+                            "id1",
+                            "tittel1"
+                        )
                     )
-                ))?.let { this.putValue(DOKUMENTER, it) }
+                )?.let { this.putValue(DOKUMENTER, it) }
             }
             this.handlePacket(fagsakPacket)
         }
@@ -98,19 +118,22 @@ internal class JournalføringFerdigstillTest {
 
     @Test
     fun `Opprett manuell journalføringsoppgave når bruker er ukjent`() {
-        val journalFøringFerdigstill = JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient)
+        val journalFøringFerdigstill =
+            JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient)
         val journalPostId = "journalPostId"
 
         val packet = Packet().apply {
             this.putValue(JOURNALPOST_ID, journalPostId)
             this.putValue(BEHANDLENDE_ENHET, "4450")
             this.putValue(HENVENDELSESTYPE, "NY_SØKNAD")
-            dokumentJsonAdapter.toJsonValue(listOf(
-                Dokument(
-                    "id1",
-                    "tittel1"
+            dokumentJsonAdapter.toJsonValue(
+                listOf(
+                    Dokument(
+                        "id1",
+                        "tittel1"
+                    )
                 )
-            ))?.let { this.putValue(DOKUMENTER, it) }
+            )?.let { this.putValue(DOKUMENTER, it) }
         }
 
         journalFøringFerdigstill.handlePacket(packet)
@@ -121,7 +144,8 @@ internal class JournalføringFerdigstillTest {
 
     @Test
     fun `Opprett fagsak og oppgave, og ferdigstill, når bruker ikke har aktiv fagsak`() {
-        val journalFøringFerdigstill = JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient)
+        val journalFøringFerdigstill =
+            JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient)
         val journalPostId = "journalPostId"
         val naturligIdent = "12345678910"
         val behandlendeEnhet = "9999"
@@ -139,12 +163,14 @@ internal class JournalføringFerdigstillTest {
             this.putValue(AKTØR_ID, "987654321")
             this.putValue(AVSENDER_NAVN, "Donald")
             this.putValue(HENVENDELSESTYPE, "NY_SØKNAD")
-            dokumentJsonAdapter.toJsonValue(listOf(
-                Dokument(
-                    "id1",
-                    "tittel1"
+            dokumentJsonAdapter.toJsonValue(
+                listOf(
+                    Dokument(
+                        "id1",
+                        "tittel1"
+                    )
                 )
-            ))?.let { this.putValue(DOKUMENTER, it) }
+            )?.let { this.putValue(DOKUMENTER, it) }
         }
 
         journalFøringFerdigstill.handlePacket(packet)
@@ -161,8 +187,31 @@ internal class JournalføringFerdigstillTest {
     }
 
     @Test
+    fun `kun journalføring blir gjort når oppgave er bestilt`() {
+
+        val packet = lagPacket("journalPostId", "12345678910", "9999").apply {
+            this.putValue(PacketKeys.FERDIGSTILT_ARENA, true)
+        }
+
+        val journalFøringFerdigstill =
+            JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient)
+
+
+        journalFøringFerdigstill.behandleGjenopptak(packet)
+
+        verify(exactly = 0) {
+            arenaClient.bestillOppgave(any())
+        }
+        verify(exactly = 1) {
+            journalPostApi.oppdater(any(), any())
+            journalPostApi.ferdigstill(any())
+        }
+    }
+
+    @Test
     fun `Opprett oppgave, og ferdigstill, når brevkode er gjenopptak`() {
-        val journalFøringFerdigstill = JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient)
+        val journalFøringFerdigstill =
+            JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient)
         val journalPostId = "journalPostId"
         val naturligIdent = "12345678910"
         val behandlendeEnhet = "9999"
@@ -172,21 +221,7 @@ internal class JournalføringFerdigstillTest {
         every { arenaClient.bestillOppgave(command = capture(slot)) } returns null
         every { arenaClient.hentArenaSaker(naturligIdent) } returns emptyList()
 
-        val packet = Packet().apply {
-            this.putValue(JOURNALPOST_ID, journalPostId)
-            this.putValue(NATURLIG_IDENT, naturligIdent)
-            this.putValue(BEHANDLENDE_ENHET, behandlendeEnhet)
-            this.putValue(DATO_REGISTRERT, "2020-01-01")
-            this.putValue(AKTØR_ID, "987654321")
-            this.putValue(AVSENDER_NAVN, "Donald")
-            this.putValue(HENVENDELSESTYPE, "GJENOPPTAK")
-            dokumentJsonAdapter.toJsonValue(listOf(
-                Dokument(
-                    "id1",
-                    "tittel1"
-                )
-            ))?.let { this.putValue(DOKUMENTER, it) }
-        }
+        val packet = lagPacket(journalPostId, naturligIdent, behandlendeEnhet)
 
         val finishedPacket = journalFøringFerdigstill.handlePacket(packet)
 
@@ -203,9 +238,29 @@ internal class JournalføringFerdigstillTest {
         finishedPacket.getBoolean("ferdigBehandlet") shouldBe true
     }
 
+    private fun lagPacket(journalPostId: String, naturligIdent: String, behandlendeEnhet: String) =
+        Packet().apply {
+            this.putValue(JOURNALPOST_ID, journalPostId)
+            this.putValue(NATURLIG_IDENT, naturligIdent)
+            this.putValue(BEHANDLENDE_ENHET, behandlendeEnhet)
+            this.putValue(DATO_REGISTRERT, "2020-01-01")
+            this.putValue(AKTØR_ID, "987654321")
+            this.putValue(AVSENDER_NAVN, "Donald")
+            this.putValue(HENVENDELSESTYPE, "GJENOPPTAK")
+            dokumentJsonAdapter.toJsonValue(
+                listOf(
+                    Dokument(
+                        "id1",
+                        "tittel1"
+                    )
+                )
+            )?.let { this.putValue(DOKUMENTER, it) }
+        }
+
     @Test
     fun `Opprett manuell journalføringsoppgave når bruker har aktiv fagsak`() {
-        val journalFøringFerdigstill = JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient)
+        val journalFøringFerdigstill =
+            JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient)
         val journalPostId = "journalPostId"
         val naturligIdent = "12345678910"
         val behandlendeEnhet = "9999"
@@ -221,12 +276,14 @@ internal class JournalføringFerdigstillTest {
             this.putValue(AKTØR_ID, aktørId)
             this.putValue(AVSENDER_NAVN, "Donald")
             this.putValue(HENVENDELSESTYPE, "NY_SØKNAD")
-            dokumentJsonAdapter.toJsonValue(listOf(
-                Dokument(
-                    "id1",
-                    "tittel1"
+            dokumentJsonAdapter.toJsonValue(
+                listOf(
+                    Dokument(
+                        "id1",
+                        "tittel1"
+                    )
                 )
-            ))?.let { this.putValue(DOKUMENTER, it) }
+            )?.let { this.putValue(DOKUMENTER, it) }
         }
 
         journalFøringFerdigstill.handlePacket(packet)
@@ -237,7 +294,8 @@ internal class JournalføringFerdigstillTest {
 
     @Test
     fun `Opprett manuell journalføringsoppgave når bestilling av arena-oppgave feiler`() {
-        val journalFøringFerdigstill = JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient)
+        val journalFøringFerdigstill =
+            JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient)
         val journalPostId = "journalPostId"
         val naturligIdent = "12345678910"
         val behandlendeEnhet = "9999"
@@ -251,12 +309,14 @@ internal class JournalføringFerdigstillTest {
             this.putValue(AKTØR_ID, aktørId)
             this.putValue(AVSENDER_NAVN, "Donald")
             this.putValue(HENVENDELSESTYPE, "NY_SØKNAD")
-            dokumentJsonAdapter.toJsonValue(listOf(
-                Dokument(
-                    "id1",
-                    "tittel1"
+            dokumentJsonAdapter.toJsonValue(
+                listOf(
+                    Dokument(
+                        "id1",
+                        "tittel1"
+                    )
                 )
-            ))?.let { this.putValue(DOKUMENTER, it) }
+            )?.let { this.putValue(DOKUMENTER, it) }
         }
 
         val packetPersonIkkeFunnet = Packet(packetPersonInaktiv.toJson()!!)
@@ -268,7 +328,14 @@ internal class JournalføringFerdigstillTest {
 
         journalFøringFerdigstill.handlePacket(packetPersonInaktiv)
 
-        verify(exactly = 1) { manuellJournalføringsOppgaveClient.opprettOppgave(journalPostId, aktørId, "tittel1", "9999") }
+        verify(exactly = 1) {
+            manuellJournalføringsOppgaveClient.opprettOppgave(
+                journalPostId,
+                aktørId,
+                "tittel1",
+                "9999"
+            )
+        }
         verify(exactly = 0) { journalPostApi.ferdigstill(any()) }
 
         // Person er ikke funnet i arena
@@ -278,7 +345,14 @@ internal class JournalføringFerdigstillTest {
 
         journalFøringFerdigstill.handlePacket(packetPersonIkkeFunnet)
 
-        verify(exactly = 2) { manuellJournalføringsOppgaveClient.opprettOppgave(journalPostId, aktørId, "tittel1", "9999") }
+        verify(exactly = 2) {
+            manuellJournalføringsOppgaveClient.opprettOppgave(
+                journalPostId,
+                aktørId,
+                "tittel1",
+                "9999"
+            )
+        }
         verify(exactly = 0) { journalPostApi.ferdigstill(any()) }
     }
 }
