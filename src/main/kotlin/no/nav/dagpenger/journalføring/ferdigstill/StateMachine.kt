@@ -1,24 +1,26 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
 import no.nav.dagpenger.events.Packet
-import java.lang.Exception
 
 sealed class BehandlingStatus {
     object Mottatt : BehandlingStatus()
-    object HarBestiltOppgave : BehandlingStatus()
-    object FerdigStilt : BehandlingStatus()
+    object BehandlingStartet : BehandlingStatus()
+    object ManueltBehandlet : BehandlingStatus()
+    object AutomatiskBehandlet : BehandlingStatus()
+    object Ferdig : BehandlingStatus()
 }
 
 sealed class Action {
     abstract val packet: Packet
+
     data class BestillOppgave(override val packet: Packet) : Action()
     data class Ferdigstill(override val packet: Packet) : Action()
-    data class Manuell(override val packet: Packet) : Action()
+    data class BehandleManuelt(override val packet: Packet) : Action()
 }
 
 sealed class Event {
-    object Success : Event()
-    object Fail : Event()
+    object Suksess : Event()
+    data class Feilet(val grunn: String) : Event()
 }
 
 data class Transition(val toState: BehandlingStatus, val transitionActions: List<Action>) {
@@ -35,18 +37,36 @@ object StateMachine {
 
         return when (behandlingStatus) {
             is BehandlingStatus.Mottatt ->
+
                 return when (event) {
-                    is Event.Success -> Transition.to(BehandlingStatus.HarBestiltOppgave).actions(Action.BestillOppgave(packet))
-                    is Event.Fail -> Transition.to(BehandlingStatus.HarBestiltOppgave).actions(Action.Manuell(packet))
+                    is Event.Suksess -> Transition.to(BehandlingStatus.BehandlingStartet).actions(
+                        Action.BestillOppgave(
+                            packet
+                        )
+                    )
+                    is Event.Feilet -> Transition.to(BehandlingStatus.ManueltBehandlet).actions(
+                        Action.BehandleManuelt(
+                            packet
+                        )
+                    )
                 }
 
-            is BehandlingStatus.HarBestiltOppgave ->
+            is BehandlingStatus.BehandlingStartet ->
                 return when (event) {
-                    is Event.Success -> Transition.to(BehandlingStatus.FerdigStilt).actions(Action.Ferdigstill(packet))
-                    is Event.Fail -> throw Exception("")
+                    is Event.Suksess -> Transition.to(BehandlingStatus.AutomatiskBehandlet).actions(
+                        Action.Ferdigstill(
+                            packet
+                        )
+                    )
+                    is Event.Feilet -> Transition.to(BehandlingStatus.AutomatiskBehandlet).actions(
+                        Action.Ferdigstill(
+                            packet
+                        )
+                    )
                 }
-
-            is BehandlingStatus.FerdigStilt -> Transition.to(BehandlingStatus.FerdigStilt)
+            is BehandlingStatus.ManueltBehandlet -> Transition.to(BehandlingStatus.Ferdig)
+            is BehandlingStatus.AutomatiskBehandlet -> Transition.to(BehandlingStatus.Ferdig)
+            is BehandlingStatus.Ferdig -> Transition.to(BehandlingStatus.Ferdig)
         }
     }
 }
