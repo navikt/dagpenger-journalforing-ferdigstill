@@ -9,8 +9,8 @@ import no.nav.dagpenger.journalføring.ferdigstill.FagsakId
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSakStatus
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.BestillOppgaveArenaException
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.HentArenaSakerException
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderGjenopptakCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderHenvendelseAngåendeEksisterendeSaksforholdCommand
 import no.nav.dagpenger.streams.HealthStatus
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BehandleArbeidOgAktivitetOppgaveV1
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgaveSakIkkeOpprettet
@@ -75,7 +75,7 @@ internal class SoapArenaClientTest {
 
         val client = SoapArenaClient(stubbedClient, mockk())
 
-        client.bestillOppgave(VurderGjenopptakCommand("123456789", "abcbscb", "beskrivelse"))
+        client.bestillOppgave(VurderHenvendelseAngåendeEksisterendeSaksforholdCommand("123456789", "abcbscb", "beskrivelse", ""))
     }
 
     @Test

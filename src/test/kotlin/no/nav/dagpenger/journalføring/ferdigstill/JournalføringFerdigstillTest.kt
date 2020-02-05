@@ -27,7 +27,7 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.JournalpostApi
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ManuellJournalføringsOppgaveClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.OppgaveCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderGjenopptakCommand
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderHenvendelseAngåendeEksisterendeSaksforholdCommand
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonErInaktiv
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonIkkeFunnet
 import org.junit.jupiter.api.Test
@@ -196,8 +196,7 @@ internal class JournalføringFerdigstillTest {
         val journalFøringFerdigstill =
             JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient)
 
-
-        journalFøringFerdigstill.behandleGjenopptak(packet)
+        journalFøringFerdigstill.behandleHenvendelseAngåendeEksisterendeSaksforhold(packet, VurderHenvendelseAngåendeEksisterendeSaksforholdCommand("", "", "", ""))
 
         verify(exactly = 0) {
             arenaClient.bestillOppgave(any())
@@ -215,13 +214,14 @@ internal class JournalføringFerdigstillTest {
         val journalPostId = "journalPostId"
         val naturligIdent = "12345678910"
         val behandlendeEnhet = "9999"
+        val henvendelsestype = "GJENOPPTAK"
 
         val slot = slot<OppgaveCommand>()
 
         every { arenaClient.bestillOppgave(command = capture(slot)) } returns null
         every { arenaClient.hentArenaSaker(naturligIdent) } returns emptyList()
 
-        val packet = lagPacket(journalPostId, naturligIdent, behandlendeEnhet)
+        val packet = lagPacket(journalPostId, naturligIdent, behandlendeEnhet, henvendelsestype)
 
         val finishedPacket = journalFøringFerdigstill.handlePacket(packet)
 
@@ -231,14 +231,45 @@ internal class JournalføringFerdigstillTest {
             journalPostApi.ferdigstill(journalPostId)
         }
 
-        slot.captured.shouldBeTypeOf<VurderGjenopptakCommand>()
+        slot.captured.shouldBeTypeOf<VurderHenvendelseAngåendeEksisterendeSaksforholdCommand>()
         slot.captured.behandlendeEnhetId shouldBe behandlendeEnhet
         slot.captured.naturligIdent shouldBe naturligIdent
 
         finishedPacket.getBoolean("ferdigBehandlet") shouldBe true
     }
 
-    private fun lagPacket(journalPostId: String, naturligIdent: String, behandlendeEnhet: String) =
+    @Test
+    fun `Opprett oppgave, og ferdigstill, når henvendelsestype er utdanning`() {
+        val journalFøringFerdigstill =
+            JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient)
+        val journalPostId = "journalPostId"
+        val naturligIdent = "12345678910"
+        val behandlendeEnhet = "9999"
+        val henvendelsestype = "UTDANNING"
+
+        val slot = slot<OppgaveCommand>()
+
+        every { arenaClient.bestillOppgave(command = capture(slot)) } returns null
+        every { arenaClient.hentArenaSaker(naturligIdent) } returns emptyList()
+
+        val packet = lagPacket(journalPostId, naturligIdent, behandlendeEnhet, henvendelsestype)
+
+        val finishedPacket = journalFøringFerdigstill.handlePacket(packet)
+
+        verify {
+            arenaClient.bestillOppgave(any())
+            journalPostApi.oppdater(journalPostId, any())
+            journalPostApi.ferdigstill(journalPostId)
+        }
+
+        slot.captured.shouldBeTypeOf<VurderHenvendelseAngåendeEksisterendeSaksforholdCommand>()
+        slot.captured.behandlendeEnhetId shouldBe behandlendeEnhet
+        slot.captured.naturligIdent shouldBe naturligIdent
+
+        finishedPacket.getBoolean("ferdigBehandlet") shouldBe true
+    }
+
+    private fun lagPacket(journalPostId: String, naturligIdent: String, behandlendeEnhet: String, henvendelsestype: String = "NY_SØKNAD") =
         Packet().apply {
             this.putValue(JOURNALPOST_ID, journalPostId)
             this.putValue(NATURLIG_IDENT, naturligIdent)
@@ -246,7 +277,7 @@ internal class JournalføringFerdigstillTest {
             this.putValue(DATO_REGISTRERT, "2020-01-01")
             this.putValue(AKTØR_ID, "987654321")
             this.putValue(AVSENDER_NAVN, "Donald")
-            this.putValue(HENVENDELSESTYPE, "GJENOPPTAK")
+            this.putValue(HENVENDELSESTYPE, henvendelsestype)
             dokumentJsonAdapter.toJsonValue(
                 listOf(
                     Dokument(

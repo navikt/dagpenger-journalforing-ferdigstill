@@ -27,7 +27,7 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.OppgaveCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Sak
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.SaksType
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderGjenopptakCommand
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderHenvendelseAngåendeEksisterendeSaksforholdCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.createArenaTilleggsinformasjon
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonErInaktiv
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonIkkeFunnet
@@ -109,27 +109,46 @@ internal class JournalføringFerdigstill(
             return packet
         }
 
-        return when (packet.getStringValue("henvendelsestype")) {
+        val henvendelsestyperAngåendeEksisterendeSaksforhold =
+            listOf("GJENOPPTAK", "UTDANNING", "ETABLERING", "KLAGE_ANKE")
+
+        val henvendelsestype = packet.getStringValue("henvendelsestype")
+
+        return when (henvendelsestype) {
             "NY_SØKNAD" -> behandleNySøknad(packet)
-            "GJENOPPTAK" -> behandleGjenopptak(packet)
+            in henvendelsestyperAngåendeEksisterendeSaksforhold -> {
+                val oppgavebeskrivelse = velgOppgavebeskrivelse(henvendelsestype)
+
+                val tilleggsinformasjon =
+                    createArenaTilleggsinformasjon(dokumentTitlerFrom(packet), registrertDatoFrom(packet))
+
+                behandleHenvendelseAngåendeEksisterendeSaksforhold(
+                    packet, VurderHenvendelseAngåendeEksisterendeSaksforholdCommand(
+                        naturligIdent = brukerFrom(packet).id,
+                        behandlendeEnhetId = tildeltEnhetsNrFrom(packet),
+                        tilleggsinformasjon = tilleggsinformasjon,
+                        oppgavebeskrivelse = oppgavebeskrivelse
+                    )
+                )
+            }
             else -> throw NotImplementedError()
         }
     }
 
-    fun behandleGjenopptak(packet: Packet): Packet {
+    private fun velgOppgavebeskrivelse(henvendelsestype: String): String {
+        return when (henvendelsestype) {
+            "GJENOPPTAK" -> "Behandle henvendelse - automatisk journalført.\n"
+            "UTDANNING" -> "Behandle henvendelse - automatisk journalført.\n"
+            "ETABLERING" -> "Behandle henvendelse - automatisk journalført.\n"
+            "KLAGE_ANKE" -> "Behandle henvendelse - automatisk journalført.\n"
+            else -> throw NotImplementedError()
+        }
+    }
+
+    fun behandleHenvendelseAngåendeEksisterendeSaksforhold(packet: Packet, oppgaveCommand: OppgaveCommand): Packet {
         try {
-            val tilleggsinformasjon =
-                createArenaTilleggsinformasjon(dokumentTitlerFrom(packet), registrertDatoFrom(packet))
-
             if (packet.getNullableBoolean(PacketKeys.FERDIGSTILT_ARENA) != true) {
-
-                bestillOppgave(
-                    VurderGjenopptakCommand(
-                        naturligIdent = brukerFrom(packet).id,
-                        behandlendeEnhetId = tildeltEnhetsNrFrom(packet),
-                        tilleggsinformasjon = tilleggsinformasjon
-                    ), journalpostIdFrom(packet)
-                )
+                bestillOppgave(oppgaveCommand, journalpostIdFrom(packet))
                 packet.putValue(PacketKeys.FERDIGSTILT_ARENA, true)
             }
 
