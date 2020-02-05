@@ -209,43 +209,30 @@ internal class JournalføringFerdigstillTest {
 
     @Test
     fun `Opprett oppgave, og ferdigstill, når brevkode er gjenopptak`() {
-        val journalFøringFerdigstill =
-            JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient)
-        val journalPostId = "journalPostId"
-        val naturligIdent = "12345678910"
-        val behandlendeEnhet = "9999"
-        val henvendelsestype = "GJENOPPTAK"
-
-        val slot = slot<OppgaveCommand>()
-
-        every { arenaClient.bestillOppgave(command = capture(slot)) } returns null
-        every { arenaClient.hentArenaSaker(naturligIdent) } returns emptyList()
-
-        val packet = lagPacket(journalPostId, naturligIdent, behandlendeEnhet, henvendelsestype)
-
-        val finishedPacket = journalFøringFerdigstill.handlePacket(packet)
-
-        verify {
-            arenaClient.bestillOppgave(any())
-            journalPostApi.oppdater(journalPostId, any())
-            journalPostApi.ferdigstill(journalPostId)
-        }
-
-        slot.captured.shouldBeTypeOf<VurderHenvendelseAngåendeEksisterendeSaksforholdCommand>()
-        slot.captured.behandlendeEnhetId shouldBe behandlendeEnhet
-        slot.captured.naturligIdent shouldBe naturligIdent
-
-        finishedPacket.getBoolean("ferdigBehandlet") shouldBe true
+        testHenvendelseAngåendeEksisterendeSaksforhold("GJENOPPTAK")
     }
 
     @Test
     fun `Opprett oppgave, og ferdigstill, når henvendelsestype er utdanning`() {
+        testHenvendelseAngåendeEksisterendeSaksforhold("UTDANNING")
+    }
+
+    @Test
+    fun `Opprett oppgave, og ferdigstill, når henvendelsestype er etablering`() {
+        testHenvendelseAngåendeEksisterendeSaksforhold("ETABLERING")
+    }
+
+    @Test
+    fun `Opprett oppgave, og ferdigstill, når henvendelsestype er klage_anke`() {
+        testHenvendelseAngåendeEksisterendeSaksforhold("KLAGE_ANKE")
+    }
+
+    private fun testHenvendelseAngåendeEksisterendeSaksforhold(henvendelsestype: String) {
         val journalFøringFerdigstill =
             JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient)
         val journalPostId = "journalPostId"
         val naturligIdent = "12345678910"
         val behandlendeEnhet = "9999"
-        val henvendelsestype = "UTDANNING"
 
         val slot = slot<OppgaveCommand>()
 
