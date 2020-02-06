@@ -109,18 +109,11 @@ internal class JournalføringFerdigstill(
             return packet
         }
 
-        val henvendelsestyperAngåendeEksisterendeSaksforhold = listOf(
-            Henvendelse.GJENOPPTAK,
-            Henvendelse.ETABLERING,
-            Henvendelse.UTDANNING,
-            Henvendelse.KLAGE_ANKE
-        )
-
-        val henvendelse = Henvendelse.valueOf(packet.getStringValue("henvendelsestype"))
+        val henvendelse = Henvendelse.fra(packet.getStringValue(PacketKeys.HENVENDELSESTYPE))
 
         return when (henvendelse) {
-            Henvendelse.NY_SØKNAD -> behandleNySøknad(packet)
-            in henvendelsestyperAngåendeEksisterendeSaksforhold -> {
+            is Henvendelse.OmNySaksrelasjon -> behandleNySøknad(packet)
+            is Henvendelse.OmEksisterendeSaksrelasjon -> {
                 val oppgavebeskrivelse = velgOppgavebeskrivelse(henvendelse)
 
                 val tilleggsinformasjon =
@@ -135,19 +128,16 @@ internal class JournalføringFerdigstill(
                     )
                 )
             }
-            else -> throw NotImplementedError()
         }
     }
 
-    private fun velgOppgavebeskrivelse(henvendelsestype: Henvendelse): String {
-        return when (henvendelsestype) {
-            Henvendelse.GJENOPPTAK -> "Gjenopptak\n"
-            Henvendelse.UTDANNING -> "Utdanning\n"
-            Henvendelse.ETABLERING -> "Etablering\n"
-            Henvendelse.KLAGE_ANKE -> "Klage\n"
-            else -> throw NotImplementedError()
+    private fun velgOppgavebeskrivelse(henvendelsestype: Henvendelse.OmEksisterendeSaksrelasjon) =
+        when (henvendelsestype) {
+            Henvendelse.OmEksisterendeSaksrelasjon.Gjenopptak -> "Gjenopptak\n"
+            Henvendelse.OmEksisterendeSaksrelasjon.Utdanning -> "Utdanning\n"
+            Henvendelse.OmEksisterendeSaksrelasjon.Etablering -> "Etablering\n"
+            Henvendelse.OmEksisterendeSaksrelasjon.KlageAnke -> "Klage\n"
         }
-    }
 
     fun behandleHenvendelseAngåendeEksisterendeSaksforhold(packet: Packet, oppgaveCommand: OppgaveCommand): Packet {
         try {
@@ -257,10 +247,6 @@ internal class JournalføringFerdigstill(
             }
         }
     }
-}
-
-enum class Henvendelse {
-    NY_SØKNAD, ETABLERING, UTDANNING, GJENOPPTAK, KLAGE_ANKE
 }
 
 class AdapterException(val exception: Throwable) : RuntimeException(exception)
