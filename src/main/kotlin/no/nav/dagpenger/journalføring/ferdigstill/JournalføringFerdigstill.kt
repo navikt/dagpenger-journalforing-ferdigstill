@@ -137,10 +137,10 @@ internal class JournalføringFerdigstill(
 
     private fun velgOppgavebeskrivelse(henvendelsestype: String): String {
         return when (henvendelsestype) {
-            "GJENOPPTAK" -> "Behandle henvendelse - automatisk journalført.\n"
-            "UTDANNING" -> "Behandle henvendelse - automatisk journalført.\n"
-            "ETABLERING" -> "Behandle henvendelse - automatisk journalført.\n"
-            "KLAGE_ANKE" -> "Behandle henvendelse - automatisk journalført.\n"
+            "GJENOPPTAK" -> "Gjenopptak\n"
+            "UTDANNING" -> "Utdanning\n"
+            "ETABLERING" -> "Etablering\n"
+            "KLAGE_ANKE" -> "Klage\n"
             else -> throw NotImplementedError()
         }
     }
