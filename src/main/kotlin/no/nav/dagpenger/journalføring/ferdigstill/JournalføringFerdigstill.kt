@@ -109,15 +109,19 @@ internal class JournalføringFerdigstill(
             return packet
         }
 
-        val henvendelsestyperAngåendeEksisterendeSaksforhold =
-            listOf("GJENOPPTAK", "UTDANNING", "ETABLERING", "KLAGE_ANKE")
+        val henvendelsestyperAngåendeEksisterendeSaksforhold = listOf(
+            Henvendelse.GJENOPPTAK,
+            Henvendelse.ETABLERING,
+            Henvendelse.UTDANNING,
+            Henvendelse.KLAGE_ANKE
+        )
 
-        val henvendelsestype = packet.getStringValue("henvendelsestype")
+        val henvendelse = Henvendelse.valueOf(packet.getStringValue("henvendelsestype"))
 
-        return when (henvendelsestype) {
-            "NY_SØKNAD" -> behandleNySøknad(packet)
+        return when (henvendelse) {
+            Henvendelse.NY_SØKNAD -> behandleNySøknad(packet)
             in henvendelsestyperAngåendeEksisterendeSaksforhold -> {
-                val oppgavebeskrivelse = velgOppgavebeskrivelse(henvendelsestype)
+                val oppgavebeskrivelse = velgOppgavebeskrivelse(henvendelse)
 
                 val tilleggsinformasjon =
                     createArenaTilleggsinformasjon(dokumentTitlerFrom(packet), registrertDatoFrom(packet))
@@ -135,12 +139,12 @@ internal class JournalføringFerdigstill(
         }
     }
 
-    private fun velgOppgavebeskrivelse(henvendelsestype: String): String {
+    private fun velgOppgavebeskrivelse(henvendelsestype: Henvendelse): String {
         return when (henvendelsestype) {
-            "GJENOPPTAK" -> "Gjenopptak\n"
-            "UTDANNING" -> "Utdanning\n"
-            "ETABLERING" -> "Etablering\n"
-            "KLAGE_ANKE" -> "Klage\n"
+            Henvendelse.GJENOPPTAK -> "Gjenopptak\n"
+            Henvendelse.UTDANNING -> "Utdanning\n"
+            Henvendelse.ETABLERING -> "Etablering\n"
+            Henvendelse.KLAGE_ANKE -> "Klage\n"
             else -> throw NotImplementedError()
         }
     }
@@ -253,6 +257,10 @@ internal class JournalføringFerdigstill(
             }
         }
     }
+}
+
+enum class Henvendelse {
+    NY_SØKNAD, ETABLERING, UTDANNING, GJENOPPTAK, KLAGE_ANKE
 }
 
 class AdapterException(val exception: Throwable) : RuntimeException(exception)
