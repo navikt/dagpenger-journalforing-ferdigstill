@@ -112,10 +112,8 @@ internal class JournalføringFerdigstill(
         val henvendelse = Henvendelse.fra(packet.getStringValue(PacketKeys.HENVENDELSESTYPE))
 
         return when (henvendelse) {
-            is Henvendelse.OmNySaksrelasjon -> behandleNySøknad(packet)
-            is Henvendelse.OmEksisterendeSaksrelasjon -> {
-                val oppgavebeskrivelse = velgOppgavebeskrivelse(henvendelse)
-
+            is NyttSaksforhold -> behandleNySøknad(packet)
+            is EksisterendeSaksforhold -> {
                 val tilleggsinformasjon =
                     createArenaTilleggsinformasjon(dokumentTitlerFrom(packet), registrertDatoFrom(packet))
 
@@ -124,20 +122,12 @@ internal class JournalføringFerdigstill(
                         naturligIdent = brukerFrom(packet).id,
                         behandlendeEnhetId = tildeltEnhetsNrFrom(packet),
                         tilleggsinformasjon = tilleggsinformasjon,
-                        oppgavebeskrivelse = oppgavebeskrivelse
+                        oppgavebeskrivelse = henvendelse.oppgavebeskrivelse
                     )
                 )
             }
         }
     }
-
-    private fun velgOppgavebeskrivelse(henvendelsestype: Henvendelse.OmEksisterendeSaksrelasjon) =
-        when (henvendelsestype) {
-            Henvendelse.OmEksisterendeSaksrelasjon.Gjenopptak -> "Gjenopptak\n"
-            Henvendelse.OmEksisterendeSaksrelasjon.Utdanning -> "Utdanning\n"
-            Henvendelse.OmEksisterendeSaksrelasjon.Etablering -> "Etablering\n"
-            Henvendelse.OmEksisterendeSaksrelasjon.KlageAnke -> "Klage\n"
-        }
 
     fun behandleHenvendelseAngåendeEksisterendeSaksforhold(packet: Packet, oppgaveCommand: OppgaveCommand): Packet {
         try {
