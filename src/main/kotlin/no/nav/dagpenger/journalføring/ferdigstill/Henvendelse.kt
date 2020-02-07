@@ -21,6 +21,6 @@ sealed class EksisterendeSaksforhold(val oppgavebeskrivelse: String) : Henvendel
 object Etablering : EksisterendeSaksforhold("Etablering\n")
 object Utdanning : EksisterendeSaksforhold("Utdanning\n")
 object Gjenopptak : EksisterendeSaksforhold("Gjenopptak\n")
-object KlageAnke : EksisterendeSaksforhold("KlageAnke\n")
+object KlageAnke : EksisterendeSaksforhold("Klage og anke\n")
 
 class UgyldigHenvendelseException(val henvendelsesnavn: String) : RuntimeException()
