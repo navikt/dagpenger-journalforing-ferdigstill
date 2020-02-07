@@ -10,7 +10,7 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.BestillOppgaveArenaEx
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.HentArenaSakerException
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.OppgaveCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderGjenopptakCommand
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderHenvendelseAngåendeEksisterendeSaksforholdCommand
 import no.nav.dagpenger.streams.HealthStatus
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BehandleArbeidOgAktivitetOppgaveV1
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonErInaktiv
@@ -59,11 +59,11 @@ class SoapArenaClient(private val oppgaveV1: BehandleArbeidOgAktivitetOppgaveV1,
                     beskrivelse = "Start Vedtaksbehandling - automatisk journalført.\n"
                 }
             }
-            is VurderGjenopptakCommand -> {
+            is VurderHenvendelseAngåendeEksisterendeSaksforholdCommand -> {
                 soapRequest.oppgavetype = WSOppgavetype().apply { value = "BEHENVPERSON" }
                 WSOppgave().apply {
                     sakInfo = WSSakInfo().withTvingNySak(false)
-                    beskrivelse = "Behandle henvendelse - automatisk journalført.\n" // TODO: endre
+                    beskrivelse = oppgavebeskrivelse
                 }
             }
         }

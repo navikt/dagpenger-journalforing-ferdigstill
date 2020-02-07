@@ -27,7 +27,7 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.OppgaveCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Sak
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.SaksType
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderGjenopptakCommand
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderHenvendelseAngåendeEksisterendeSaksforholdCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.createArenaTilleggsinformasjon
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonErInaktiv
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonIkkeFunnet
@@ -109,27 +109,30 @@ internal class JournalføringFerdigstill(
             return packet
         }
 
-        return when (packet.getStringValue("henvendelsestype")) {
-            "NY_SØKNAD" -> behandleNySøknad(packet)
-            "GJENOPPTAK" -> behandleGjenopptak(packet)
-            else -> throw NotImplementedError()
+        val henvendelse = Henvendelse.fra(packet.getStringValue(PacketKeys.HENVENDELSESTYPE))
+
+        return when (henvendelse) {
+            is NyttSaksforhold -> behandleNySøknad(packet)
+            is EksisterendeSaksforhold -> {
+                val tilleggsinformasjon =
+                    createArenaTilleggsinformasjon(dokumentTitlerFrom(packet), registrertDatoFrom(packet))
+
+                behandleHenvendelseAngåendeEksisterendeSaksforhold(
+                    packet, VurderHenvendelseAngåendeEksisterendeSaksforholdCommand(
+                        naturligIdent = brukerFrom(packet).id,
+                        behandlendeEnhetId = tildeltEnhetsNrFrom(packet),
+                        tilleggsinformasjon = tilleggsinformasjon,
+                        oppgavebeskrivelse = henvendelse.oppgavebeskrivelse
+                    )
+                )
+            }
         }
     }
 
-    fun behandleGjenopptak(packet: Packet): Packet {
+    fun behandleHenvendelseAngåendeEksisterendeSaksforhold(packet: Packet, oppgaveCommand: OppgaveCommand): Packet {
         try {
-            val tilleggsinformasjon =
-                createArenaTilleggsinformasjon(dokumentTitlerFrom(packet), registrertDatoFrom(packet))
-
             if (packet.getNullableBoolean(PacketKeys.FERDIGSTILT_ARENA) != true) {
-
-                bestillOppgave(
-                    VurderGjenopptakCommand(
-                        naturligIdent = brukerFrom(packet).id,
-                        behandlendeEnhetId = tildeltEnhetsNrFrom(packet),
-                        tilleggsinformasjon = tilleggsinformasjon
-                    ), journalpostIdFrom(packet)
-                )
+                bestillOppgave(oppgaveCommand, journalpostIdFrom(packet))
                 packet.putValue(PacketKeys.FERDIGSTILT_ARENA, true)
             }
 

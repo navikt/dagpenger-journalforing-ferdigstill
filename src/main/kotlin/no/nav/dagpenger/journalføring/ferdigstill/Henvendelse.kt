@@ -1,0 +1,26 @@
+package no.nav.dagpenger.journalføring.ferdigstill
+
+sealed class Henvendelse {
+    companion object {
+        fun fra(henvendelsesnavn: String): Henvendelse {
+            return when (henvendelsesnavn) {
+                "NY_SØKNAD" -> NyttSaksforhold
+                "ETABLERING" -> Etablering
+                "UTDANNING" -> Utdanning
+                "GJENOPPTAK" -> Gjenopptak
+                "KLAGE_ANKE" -> KlageAnke
+                else -> throw UgyldigHenvendelseException(henvendelsesnavn)
+            }
+        }
+    }
+}
+object NyttSaksforhold : Henvendelse()
+
+sealed class EksisterendeSaksforhold(val oppgavebeskrivelse: String) : Henvendelse()
+
+object Etablering : EksisterendeSaksforhold("Etablering\n")
+object Utdanning : EksisterendeSaksforhold("Utdanning\n")
+object Gjenopptak : EksisterendeSaksforhold("Gjenopptak\n")
+object KlageAnke : EksisterendeSaksforhold("KlageAnke\n")
+
+class UgyldigHenvendelseException(val henvendelsesnavn: String) : RuntimeException()
