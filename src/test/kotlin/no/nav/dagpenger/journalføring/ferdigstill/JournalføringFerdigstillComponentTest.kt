@@ -166,7 +166,7 @@ internal class JournalforingFerdigstillComponentTest {
             this.putValue(PacketKeys.AVSENDER_NAVN, "et navn")
             this.putValue(PacketKeys.TOGGLE_BEHANDLE_NY_SØKNAD, true)
             this.putValue(PacketKeys.BEHANDLENDE_ENHET, "9999")
-            this.putValue(PacketKeys.DATO_REGISTRERT, "2020-01-01")
+            this.putValue(PacketKeys.DATO_REGISTRERT, "2020-01-01T01:01:01")
             this.putValue(PacketKeys.HENVENDELSESTYPE, "NY_SØKNAD")
             dokumentJsonAdapter.toJsonValue(listOf(
                 Dokument(

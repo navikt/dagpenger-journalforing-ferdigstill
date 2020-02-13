@@ -31,6 +31,9 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderHenvendelseAng�
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonErInaktiv
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonIkkeFunnet
 import org.junit.jupiter.api.Test
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 internal class JournalføringFerdigstillTest {
 
@@ -82,6 +85,8 @@ internal class JournalføringFerdigstillTest {
                 this.putValue(AVSENDER_NAVN, "et navn")
                 this.putValue(BEHANDLENDE_ENHET, "9999")
                 this.putValue(HENVENDELSESTYPE, "NY_SØKNAD")
+                this.putValue(DATO_REGISTRERT, "2020-01-01T01:01:01")
+
                 dokumentJsonAdapter.toJsonValue(
                     listOf(
                         Dokument(
@@ -99,7 +104,7 @@ internal class JournalføringFerdigstillTest {
                 this.putValue(JOURNALPOST_ID, "journalPostId")
                 this.putValue(AVSENDER_NAVN, "et navn")
                 this.putValue(BEHANDLENDE_ENHET, "9999")
-                this.putValue(DATO_REGISTRERT, "2020-01-01")
+                this.putValue(DATO_REGISTRERT, "2020-01-01T01:01:01")
                 this.putValue(HENVENDELSESTYPE, "NY_SØKNAD")
                 dokumentJsonAdapter.toJsonValue(
                     listOf(
@@ -121,11 +126,14 @@ internal class JournalføringFerdigstillTest {
         val journalFøringFerdigstill =
             JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient)
         val journalPostId = "journalPostId"
+        val dato = "2020-01-01T01:01:01"
+        val zonedDateTime = LocalDateTime.parse(dato).atZone(ZoneId.of("Europe/Oslo"))
 
         val packet = Packet().apply {
             this.putValue(JOURNALPOST_ID, journalPostId)
             this.putValue(BEHANDLENDE_ENHET, "4450")
             this.putValue(HENVENDELSESTYPE, "NY_SØKNAD")
+            this.putValue(DATO_REGISTRERT, dato)
             dokumentJsonAdapter.toJsonValue(
                 listOf(
                     Dokument(
@@ -138,7 +146,7 @@ internal class JournalføringFerdigstillTest {
 
         journalFøringFerdigstill.handlePacket(packet)
 
-        verify { manuellJournalføringsOppgaveClient.opprettOppgave(journalPostId, null, "tittel1", "4450") }
+        verify { manuellJournalføringsOppgaveClient.opprettOppgave(journalPostId, null, "tittel1", "4450", zonedDateTime) }
         verify(exactly = 0) { journalPostApi.oppdater(any(), any()) }
     }
 
@@ -159,8 +167,8 @@ internal class JournalføringFerdigstillTest {
             this.putValue(JOURNALPOST_ID, journalPostId)
             this.putValue(NATURLIG_IDENT, naturligIdent)
             this.putValue(BEHANDLENDE_ENHET, behandlendeEnhet)
-            this.putValue(DATO_REGISTRERT, "2020-01-01")
             this.putValue(AKTØR_ID, "987654321")
+            this.putValue(DATO_REGISTRERT, "2020-01-01T01:01:01")
             this.putValue(AVSENDER_NAVN, "Donald")
             this.putValue(HENVENDELSESTYPE, "NY_SØKNAD")
             dokumentJsonAdapter.toJsonValue(
@@ -196,7 +204,7 @@ internal class JournalføringFerdigstillTest {
         val journalFøringFerdigstill =
             JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient)
 
-        journalFøringFerdigstill.behandleHenvendelseAngåendeEksisterendeSaksforhold(packet, VurderHenvendelseAngåendeEksisterendeSaksforholdCommand("", "", "", ""))
+        journalFøringFerdigstill.behandleHenvendelseAngåendeEksisterendeSaksforhold(packet, VurderHenvendelseAngåendeEksisterendeSaksforholdCommand("", "", "", ZonedDateTime.now(), ""))
 
         verify(exactly = 0) {
             arenaClient.bestillOppgave(any())
@@ -261,7 +269,7 @@ internal class JournalføringFerdigstillTest {
             this.putValue(JOURNALPOST_ID, journalPostId)
             this.putValue(NATURLIG_IDENT, naturligIdent)
             this.putValue(BEHANDLENDE_ENHET, behandlendeEnhet)
-            this.putValue(DATO_REGISTRERT, "2020-01-01")
+            this.putValue(DATO_REGISTRERT, "2020-01-01T01:01:01")
             this.putValue(AKTØR_ID, "987654321")
             this.putValue(AVSENDER_NAVN, "Donald")
             this.putValue(HENVENDELSESTYPE, henvendelsestype)
@@ -290,8 +298,8 @@ internal class JournalføringFerdigstillTest {
             this.putValue(JOURNALPOST_ID, journalPostId)
             this.putValue(NATURLIG_IDENT, naturligIdent)
             this.putValue(BEHANDLENDE_ENHET, behandlendeEnhet)
-            this.putValue(DATO_REGISTRERT, "2020-01-01")
             this.putValue(AKTØR_ID, aktørId)
+            this.putValue(DATO_REGISTRERT, "2020-01-01T01:01:01")
             this.putValue(AVSENDER_NAVN, "Donald")
             this.putValue(HENVENDELSESTYPE, "NY_SØKNAD")
             dokumentJsonAdapter.toJsonValue(
@@ -306,7 +314,7 @@ internal class JournalføringFerdigstillTest {
 
         journalFøringFerdigstill.handlePacket(packet)
 
-        verify { manuellJournalføringsOppgaveClient.opprettOppgave(journalPostId, aktørId, "tittel1", "9999") }
+        verify { manuellJournalføringsOppgaveClient.opprettOppgave(journalPostId, aktørId, "tittel1", "9999", any()) }
         verify(exactly = 0) { journalPostApi.ferdigstill(any()) }
     }
 
@@ -318,15 +326,18 @@ internal class JournalføringFerdigstillTest {
         val naturligIdent = "12345678910"
         val behandlendeEnhet = "9999"
         val aktørId = "987654321"
+        val dato = "2020-01-01T01:01:01"
+        val zonedDateTime = LocalDateTime.parse(dato).atZone(ZoneId.of("Europe/Oslo"))
 
         val packetPersonInaktiv = Packet().apply {
             this.putValue(JOURNALPOST_ID, journalPostId)
             this.putValue(NATURLIG_IDENT, naturligIdent)
             this.putValue(BEHANDLENDE_ENHET, behandlendeEnhet)
-            this.putValue(DATO_REGISTRERT, "2020-01-01")
             this.putValue(AKTØR_ID, aktørId)
+            this.putValue(DATO_REGISTRERT, dato)
             this.putValue(AVSENDER_NAVN, "Donald")
             this.putValue(HENVENDELSESTYPE, "NY_SØKNAD")
+
             dokumentJsonAdapter.toJsonValue(
                 listOf(
                     Dokument(
@@ -351,7 +362,8 @@ internal class JournalføringFerdigstillTest {
                 journalPostId,
                 aktørId,
                 "tittel1",
-                "9999"
+                "9999",
+                    zonedDateTime
             )
         }
         verify(exactly = 0) { journalPostApi.ferdigstill(any()) }
@@ -368,8 +380,8 @@ internal class JournalføringFerdigstillTest {
                 journalPostId,
                 aktørId,
                 "tittel1",
-                "9999"
-            )
+                "9999",
+                    zonedDateTime)
         }
         verify(exactly = 0) { journalPostApi.ferdigstill(any()) }
     }

@@ -68,7 +68,7 @@ class KafkaFeilhåndteringTest {
             this.putValue(PacketKeys.TOGGLE_BEHANDLE_NY_SØKNAD, true)
             this.putValue(PacketKeys.NATURLIG_IDENT, naturligIdent)
             this.putValue(PacketKeys.BEHANDLENDE_ENHET, behandlendeEnhet)
-            this.putValue(PacketKeys.DATO_REGISTRERT, "2020-01-01")
+            this.putValue(PacketKeys.DATO_REGISTRERT, "2020-01-01T01:01:01")
             this.putValue(PacketKeys.AKTØR_ID, aktørId)
             this.putValue(PacketKeys.AVSENDER_NAVN, "Donald")
             this.putValue(PacketKeys.HENVENDELSESTYPE, "NY_SØKNAD")
