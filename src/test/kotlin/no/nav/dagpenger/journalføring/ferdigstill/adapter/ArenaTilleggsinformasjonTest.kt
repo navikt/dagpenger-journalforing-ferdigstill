@@ -10,27 +10,27 @@ internal class ArenaTilleggsinformasjonTest {
     @Test
     fun `lager riktig tilleggsinformasjon når den får hoveddokument og vedlegg`() {
         val tilleggsinformasjon =
-                createArenaTilleggsinformasjon(listOf("Søknad", "Vedlegg: Arbeidsavtale"), dato)
+            createArenaTilleggsinformasjon(listOf("Søknad", "Vedlegg: Arbeidsavtale"), dato)
 
         assertEquals(
-                "Hoveddokument: Søknad\n" +
-                        "- Vedlegg: Arbeidsavtale\n" +
-                        "Registrert dato: 24.12.2019\n" +
-                        "Dokumentet er skannet inn og journalført automatisk av digitale dagpenger. " +
-                        "Gjennomfør rutinen \"Etterkontroll av automatisk journalførte dokumenter\".", tilleggsinformasjon
+            "Hoveddokument: Søknad\n" +
+                "- Vedlegg: Arbeidsavtale\n" +
+                "Registrert dato: 24.12.2019\n" +
+                "Dokumentet er skannet inn og journalført automatisk av digitale dagpenger. " +
+                "Gjennomfør rutinen \"Etterkontroll av automatisk journalførte dokumenter\".", tilleggsinformasjon
         )
     }
 
     @Test
     fun `formaterer riktig når vedlegg mangler`() {
         val tilleggsinformasjon =
-                createArenaTilleggsinformasjon(listOf("Søknad"), dato)
+            createArenaTilleggsinformasjon(listOf("Søknad"), dato)
 
         assertEquals(
-                "Hoveddokument: Søknad\n" +
-                        "Registrert dato: 24.12.2019\n" +
-                        "Dokumentet er skannet inn og journalført automatisk av digitale dagpenger. " +
-                        "Gjennomfør rutinen \"Etterkontroll av automatisk journalførte dokumenter\".", tilleggsinformasjon
+            "Hoveddokument: Søknad\n" +
+                "Registrert dato: 24.12.2019\n" +
+                "Dokumentet er skannet inn og journalført automatisk av digitale dagpenger. " +
+                "Gjennomfør rutinen \"Etterkontroll av automatisk journalførte dokumenter\".", tilleggsinformasjon
         )
     }
 }

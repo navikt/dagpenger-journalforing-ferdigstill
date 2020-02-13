@@ -39,11 +39,11 @@ internal class GosysOppgaveClientTest {
     @Test
     fun `Opprett gosys-oppgave json payload`() {
         val gosysOppgave = GosysOppgave(
-                journalpostId = "12345",
-                aktoerId = "12345678910",
-                aktivDato = LocalDate.of(2019, 12, 11),
-                fristFerdigstillelse = LocalDate.of(2019, 12, 12),
-                tildeltEnhetsnr = "9999"
+            journalpostId = "12345",
+            aktoerId = "12345678910",
+            aktivDato = LocalDate.of(2019, 12, 11),
+            fristFerdigstillelse = LocalDate.of(2019, 12, 12),
+            tildeltEnhetsnr = "9999"
 
         )
 
@@ -69,28 +69,28 @@ internal class GosysOppgaveClientTest {
     @Test
     fun `Opprett gosys-oppgave contract test`() {
         WireMock.stubFor(
-                WireMock.post(WireMock.urlEqualTo("/api/v1/oppgaver"))
-                        .withHeader("X-Correlation-ID", EqualToPattern("12345"))
-                        .willReturn(
-                                WireMock.aResponse().withStatus(201)
-                        )
+            WireMock.post(WireMock.urlEqualTo("/api/v1/oppgaver"))
+                .withHeader("X-Correlation-ID", EqualToPattern("12345"))
+                .willReturn(
+                    WireMock.aResponse().withStatus(201)
+                )
         )
 
         val stsOidcClient: StsOidcClient = mockk(relaxed = true)
 
         val client: ManuellJournalføringsOppgaveClient =
-                GosysOppgaveClient(
-                        server.baseUrl(),
-                        stsOidcClient
-                )
+            GosysOppgaveClient(
+                server.baseUrl(),
+                stsOidcClient
+            )
 
         assertDoesNotThrow {
             client.opprettOppgave(
-                    journalPostId = "12345",
-                    aktørId = "12345678910",
-                    søknadstittel = "tittel1",
-                    tildeltEnhetsnr = "9999",
-                    frist = ZonedDateTime.now()
+                journalPostId = "12345",
+                aktørId = "12345678910",
+                søknadstittel = "tittel1",
+                tildeltEnhetsnr = "9999",
+                frist = ZonedDateTime.now()
             )
         }
     }
@@ -98,28 +98,28 @@ internal class GosysOppgaveClientTest {
     @Test
     fun `Forsøker på ny hvis noe er feil`() {
         WireMock.stubFor(
-                WireMock.post(urlEqualTo("/api/v1/oppgaver"))
-                        .withHeader("X-Correlation-ID", EqualToPattern("12345"))
-                        .willReturn(
-                                WireMock.aResponse().withStatus(500)
-                        )
+            WireMock.post(urlEqualTo("/api/v1/oppgaver"))
+                .withHeader("X-Correlation-ID", EqualToPattern("12345"))
+                .willReturn(
+                    WireMock.aResponse().withStatus(500)
+                )
         )
 
         val stsOidcClient: StsOidcClient = mockk(relaxed = true)
 
         val client: ManuellJournalføringsOppgaveClient =
-                GosysOppgaveClient(
-                        server.baseUrl(),
-                        stsOidcClient
-                )
+            GosysOppgaveClient(
+                server.baseUrl(),
+                stsOidcClient
+            )
 
         assertFailsWith<AdapterException> {
             client.opprettOppgave(
-                    journalPostId = "12345",
-                    aktørId = "12345678910",
-                    søknadstittel = "tittel1",
-                    tildeltEnhetsnr = "9999",
-                    frist = ZonedDateTime.now()
+                journalPostId = "12345",
+                aktørId = "12345678910",
+                søknadstittel = "tittel1",
+                tildeltEnhetsnr = "9999",
+                frist = ZonedDateTime.now()
             )
         }
 

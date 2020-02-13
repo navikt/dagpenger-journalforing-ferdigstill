@@ -22,12 +22,12 @@ import no.nav.common.JAASCredential
 import no.nav.common.KafkaEnvironment
 import no.nav.common.embeddedutils.getAvailablePort
 import no.nav.dagpenger.events.Packet
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.JournalpostRestApi.Companion.toJsonPayload
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.dokumentJsonAdapter
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.journalPostFrom
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Dokument
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.JournalpostRestApi
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.JournalpostRestApi.Companion.toJsonPayload
 import no.nav.dagpenger.oidc.StsOidcClient
 import no.nav.dagpenger.streams.KafkaCredential
 import org.apache.kafka.clients.CommonClientConfigs
@@ -66,7 +66,8 @@ internal class JournalforingFerdigstillComponentTest {
         val configuration = Configuration().copy(
             kafka = Configuration.Kafka(
                 brokers = embeddedEnvironment.brokersURL,
-                credential = KafkaCredential(username, password)),
+                credential = KafkaCredential(username, password)
+            ),
             application = Configuration.Application(
                 httpPort = getAvailablePort()
             ),
@@ -78,14 +79,16 @@ internal class JournalforingFerdigstillComponentTest {
 
         val arenaClientMock: ArenaClient = mockk(relaxed = true)
 
-        val stsOidcClient = StsOidcClient(configuration.sts.baseUrl, configuration.sts.username, configuration.sts.password)
+        val stsOidcClient =
+            StsOidcClient(configuration.sts.baseUrl, configuration.sts.username, configuration.sts.password)
         val journalFøringFerdigstill = JournalføringFerdigstill(
             JournalpostRestApi(
                 configuration.journalPostApiUrl,
                 stsOidcClient
             ),
             manuellJournalføringsOppgaveClient = mockk(),
-            arenaClient = arenaClientMock)
+            arenaClient = arenaClientMock
+        )
 
         private val app = Application(configuration, journalFøringFerdigstill)
         @BeforeAll
@@ -127,29 +130,36 @@ internal class JournalforingFerdigstillComponentTest {
 
         wireMockServer.addStubMapping(
             get(urlEqualTo("/rest/v1/sts/token/?grant_type=client_credentials&scope=openid"))
-                .willReturn(okJson("""
+                .willReturn(
+                    okJson(
+                        """
                    {
                      "access_token": "token",
                      "token_type": "Bearer",
                      "expires_in": 3600
                     } 
                 """.trimIndent()
-                ))
+                    )
+                )
                 .build()
         )
 
         val journalPostId = "journalPostId"
         wireMockServer.addStubMapping(
             patch(urlEqualTo("/rest/journalpostapi/v1/journalpost/$journalPostId/ferdigstill"))
-                .willReturn(aResponse()
-                    .withStatus(200))
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                )
                 .build()
         )
 
         wireMockServer.addStubMapping(
             put(urlEqualTo("/rest/journalpostapi/v1/journalpost/$journalPostId"))
-                .willReturn(aResponse()
-                    .withStatus(200))
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                )
                 .build()
         )
 
@@ -168,12 +178,14 @@ internal class JournalforingFerdigstillComponentTest {
             this.putValue(PacketKeys.BEHANDLENDE_ENHET, "9999")
             this.putValue(PacketKeys.DATO_REGISTRERT, "2020-01-01T01:01:01")
             this.putValue(PacketKeys.HENVENDELSESTYPE, "NY_SØKNAD")
-            dokumentJsonAdapter.toJsonValue(listOf(
-                Dokument(
-                    "id1",
-                    "tittel1"
-                ), Dokument("id1", "tittel1")
-            ))?.let { this.putValue(PacketKeys.DOKUMENTER, it) }
+            dokumentJsonAdapter.toJsonValue(
+                listOf(
+                    Dokument(
+                        "id1",
+                        "tittel1"
+                    ), Dokument("id1", "tittel1")
+                )
+            )?.let { this.putValue(PacketKeys.DOKUMENTER, it) }
         }
 
         val json = journalPostFrom(packet, FagsakId("arenaSakId")).let { toJsonPayload(it) }
@@ -183,14 +195,24 @@ internal class JournalforingFerdigstillComponentTest {
         }
 
         retry {
-            wireMockServer.verify(1,
+            wireMockServer.verify(
+                1,
                 putRequestedFor(urlMatching("/rest/journalpostapi/v1/journalpost/$journalPostId"))
                     .withRequestBody(EqualToJsonPattern(json, true, false))
-                    .withHeader("Content-Type", equalTo("application/json")).withHeader("Authorization", equalTo("Bearer token")))
+                    .withHeader("Content-Type", equalTo("application/json")).withHeader(
+                        "Authorization",
+                        equalTo("Bearer token")
+                    )
+            )
 
-            wireMockServer.verify(1, patchRequestedFor(urlMatching("/rest/journalpostapi/v1/journalpost/$journalPostId/ferdigstill"))
-                .withRequestBody(EqualToJsonPattern(expectedFerdigstillJson, true, false))
-                .withHeader("Content-Type", equalTo("application/json")).withHeader("Authorization", equalTo("Bearer token")))
+            wireMockServer.verify(
+                1, patchRequestedFor(urlMatching("/rest/journalpostapi/v1/journalpost/$journalPostId/ferdigstill"))
+                    .withRequestBody(EqualToJsonPattern(expectedFerdigstillJson, true, false))
+                    .withHeader("Content-Type", equalTo("application/json")).withHeader(
+                        "Authorization",
+                        equalTo("Bearer token")
+                    )
+            )
         }
     }
 

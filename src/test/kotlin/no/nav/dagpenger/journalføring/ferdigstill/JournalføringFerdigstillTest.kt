@@ -146,7 +146,15 @@ internal class JournalføringFerdigstillTest {
 
         journalFøringFerdigstill.handlePacket(packet)
 
-        verify { manuellJournalføringsOppgaveClient.opprettOppgave(journalPostId, null, "tittel1", "4450", zonedDateTime) }
+        verify {
+            manuellJournalføringsOppgaveClient.opprettOppgave(
+                journalPostId,
+                null,
+                "tittel1",
+                "4450",
+                zonedDateTime
+            )
+        }
         verify(exactly = 0) { journalPostApi.oppdater(any(), any()) }
     }
 
@@ -204,7 +212,10 @@ internal class JournalføringFerdigstillTest {
         val journalFøringFerdigstill =
             JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient)
 
-        journalFøringFerdigstill.behandleHenvendelseAngåendeEksisterendeSaksforhold(packet, VurderHenvendelseAngåendeEksisterendeSaksforholdCommand("", "", "", ZonedDateTime.now(), ""))
+        journalFøringFerdigstill.behandleHenvendelseAngåendeEksisterendeSaksforhold(
+            packet,
+            VurderHenvendelseAngåendeEksisterendeSaksforholdCommand("", "", "", ZonedDateTime.now(), "")
+        )
 
         verify(exactly = 0) {
             arenaClient.bestillOppgave(any())
@@ -264,7 +275,12 @@ internal class JournalføringFerdigstillTest {
         finishedPacket.getBoolean("ferdigBehandlet") shouldBe true
     }
 
-    private fun lagPacket(journalPostId: String, naturligIdent: String, behandlendeEnhet: String, henvendelsestype: String = "NY_SØKNAD") =
+    private fun lagPacket(
+        journalPostId: String,
+        naturligIdent: String,
+        behandlendeEnhet: String,
+        henvendelsestype: String = "NY_SØKNAD"
+    ) =
         Packet().apply {
             this.putValue(JOURNALPOST_ID, journalPostId)
             this.putValue(NATURLIG_IDENT, naturligIdent)
@@ -363,7 +379,7 @@ internal class JournalføringFerdigstillTest {
                 aktørId,
                 "tittel1",
                 "9999",
-                    zonedDateTime
+                zonedDateTime
             )
         }
         verify(exactly = 0) { journalPostApi.ferdigstill(any()) }
@@ -381,7 +397,8 @@ internal class JournalføringFerdigstillTest {
                 aktørId,
                 "tittel1",
                 "9999",
-                    zonedDateTime)
+                zonedDateTime
+            )
         }
         verify(exactly = 0) { journalPostApi.ferdigstill(any()) }
     }

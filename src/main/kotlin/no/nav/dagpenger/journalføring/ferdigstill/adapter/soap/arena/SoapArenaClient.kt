@@ -28,7 +28,10 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskont
 import java.util.GregorianCalendar
 import javax.xml.datatype.DatatypeFactory
 
-class SoapArenaClient(private val oppgaveV1: BehandleArbeidOgAktivitetOppgaveV1, private val ytelseskontraktV3: YtelseskontraktV3) :
+class SoapArenaClient(
+    private val oppgaveV1: BehandleArbeidOgAktivitetOppgaveV1,
+    private val ytelseskontraktV3: YtelseskontraktV3
+) :
     ArenaClient {
 
     override fun bestillOppgave(command: OppgaveCommand): FagsakId? {

@@ -52,7 +52,8 @@ internal class JournalpostRestApi(private val url: String, private val oidcClien
 
         fun toJsonPayload(jp: OppdaterJournalpostPayload): String =
             moshiInstance.adapter<OppdaterJournalpostPayload>(
-                OppdaterJournalpostPayload::class.java).toJson(jp)
+                OppdaterJournalpostPayload::class.java
+            ).toJson(jp)
     }
 
     override fun oppdater(journalpostId: String, jp: OppdaterJournalpostPayload) {

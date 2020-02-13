@@ -9,7 +9,8 @@ class DokumentAdapterTest {
     @Test
     fun `Skal greie å konvertere dokumentInfo med flere felter til Dokument med tittel`() {
 
-        val json = """[{"tittel": "en", "brevkode": "123", "dokumentInfoId": "hallo"}, {"tittel": "to", "dokumentInfoId": "hei"}]""".trimIndent()
+        val json =
+            """[{"tittel": "en", "brevkode": "123", "dokumentInfoId": "hallo"}, {"tittel": "to", "dokumentInfoId": "hei"}]""".trimIndent()
 
         val konverterteDokumenter = dokumentJsonAdapter.fromJson(json)
 
