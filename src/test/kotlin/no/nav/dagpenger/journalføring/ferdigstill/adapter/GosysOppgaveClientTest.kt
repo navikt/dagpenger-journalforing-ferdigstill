@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import java.time.LocalDate
+import java.time.ZonedDateTime
 import kotlin.test.assertFailsWith
 
 internal class GosysOppgaveClientTest {
@@ -88,7 +89,8 @@ internal class GosysOppgaveClientTest {
                 journalPostId = "12345",
                 aktørId = "12345678910",
                 søknadstittel = "tittel1",
-                tildeltEnhetsnr = "9999"
+                tildeltEnhetsnr = "9999",
+                frist = ZonedDateTime.now()
             )
         }
     }
@@ -116,7 +118,8 @@ internal class GosysOppgaveClientTest {
                 journalPostId = "12345",
                 aktørId = "12345678910",
                 søknadstittel = "tittel1",
-                tildeltEnhetsnr = "9999"
+                tildeltEnhetsnr = "9999",
+                frist = ZonedDateTime.now()
             )
         }
 

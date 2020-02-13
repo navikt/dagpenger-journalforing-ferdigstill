@@ -32,6 +32,8 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.createArenaTilleggsin
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonErInaktiv
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonIkkeFunnet
 import org.apache.kafka.streams.kstream.Predicate
+import java.time.LocalDateTime
+import java.time.ZoneId
 
 private val logger = KotlinLogging.logger {}
 
@@ -67,7 +69,9 @@ internal object PacketToJoarkPayloadMapper {
         dokumentJsonAdapter.fromJsonValue(it)!!
     }
 
-    fun registrertDatoFrom(packet: Packet) = packet.getStringValue(PacketKeys.DATO_REGISTRERT)
+    fun registrertDatoFrom(packet: Packet) =
+        LocalDateTime.parse(packet.getStringValue(PacketKeys.DATO_REGISTRERT)).atZone(ZoneId.of("Europe/Oslo"))
+
     fun dokumentTitlerFrom(packet: Packet) =
         packet.getObjectValue(PacketKeys.DOKUMENTER) { dokumentJsonAdapter.fromJsonValue(it)!! }.map { it.tittel }
 
@@ -122,7 +126,8 @@ internal class JournalføringFerdigstill(
                         naturligIdent = brukerFrom(packet).id,
                         behandlendeEnhetId = tildeltEnhetsNrFrom(packet),
                         tilleggsinformasjon = tilleggsinformasjon,
-                        oppgavebeskrivelse = henvendelse.oppgavebeskrivelse
+                        oppgavebeskrivelse = henvendelse.oppgavebeskrivelse,
+                        registrertDato = registrertDatoFrom(packet)
                     )
                 )
             }
@@ -156,7 +161,8 @@ internal class JournalføringFerdigstill(
                             StartVedtakCommand(
                                 naturligIdent = brukerFrom(packet).id,
                                 behandlendeEnhetId = tildeltEnhetsNrFrom(packet),
-                                tilleggsinformasjon = tilleggsinformasjon
+                                tilleggsinformasjon = tilleggsinformasjon,
+                                registrertDato = registrertDatoFrom(packet)
                             ),
                             journalpostIdFrom(packet)
                         )
@@ -197,7 +203,8 @@ internal class JournalføringFerdigstill(
             journalpostId,
             nullableAktørFrom(packet)?.id,
             tittelFrom(packet),
-            tildeltEnhetsNrFrom(packet)
+            tildeltEnhetsNrFrom(packet),
+            registrertDatoFrom(packet)
         )
 
         Metrics.jpFerdigStillInc()

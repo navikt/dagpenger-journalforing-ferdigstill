@@ -14,6 +14,7 @@ sealed class Henvendelse {
         }
     }
 }
+
 object NyttSaksforhold : Henvendelse()
 
 sealed class EksisterendeSaksforhold(val oppgavebeskrivelse: String) : Henvendelse()

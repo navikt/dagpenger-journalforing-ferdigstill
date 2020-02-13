@@ -25,12 +25,13 @@ import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.meldinger.
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.meldinger.WSBestillOppgaveResponse
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest
-import java.time.ZoneId
-import java.time.ZonedDateTime
 import java.util.GregorianCalendar
 import javax.xml.datatype.DatatypeFactory
 
-class SoapArenaClient(private val oppgaveV1: BehandleArbeidOgAktivitetOppgaveV1, private val ytelseskontraktV3: YtelseskontraktV3) :
+class SoapArenaClient(
+    private val oppgaveV1: BehandleArbeidOgAktivitetOppgaveV1,
+    private val ytelseskontraktV3: YtelseskontraktV3
+) :
     ArenaClient {
 
     override fun bestillOppgave(command: OppgaveCommand): FagsakId? {
@@ -49,7 +50,6 @@ class SoapArenaClient(private val oppgaveV1: BehandleArbeidOgAktivitetOppgaveV1,
 
     fun OppgaveCommand.toWSBestillOppgaveRequest(): WSBestillOppgaveRequest {
         val soapRequest = WSBestillOppgaveRequest()
-        val today = ZonedDateTime.now().toInstant().atZone(ZoneId.of("Europe/Oslo"))
 
         soapRequest.oppgave = when (this) {
             is StartVedtakCommand -> {
@@ -75,7 +75,7 @@ class SoapArenaClient(private val oppgaveV1: BehandleArbeidOgAktivitetOppgaveV1,
             prioritet = WSPrioritet().apply {
                 this.value = "HOY"
             }
-            frist = DatatypeFactory.newInstance().newXMLGregorianCalendar(GregorianCalendar.from(today))
+            frist = DatatypeFactory.newInstance().newXMLGregorianCalendar(GregorianCalendar.from(registrertDato))
             this.tilleggsinformasjon = this@toWSBestillOppgaveRequest.tilleggsinformasjon
         }
 

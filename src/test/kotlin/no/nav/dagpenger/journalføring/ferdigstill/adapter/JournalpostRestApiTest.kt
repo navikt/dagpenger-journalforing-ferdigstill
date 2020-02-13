@@ -56,7 +56,8 @@ internal class JournalpostRestApiTest {
         )
 
         assertFailsWith<AdapterException> {
-            client.oppdater(journalpostId,
+            client.oppdater(
+                journalpostId,
                 OppdaterJournalpostPayload(
                     avsenderMottaker = Avsender("navn"),
                     bruker = Bruker("bruker"),
@@ -76,12 +77,18 @@ internal class JournalpostRestApiTest {
             )
         }
 
-        WireMock.verify(3, WireMock.putRequestedFor(WireMock.urlEqualTo("/rest/journalpostapi/v1/journalpost/$journalpostId")))
+        WireMock.verify(
+            3,
+            WireMock.putRequestedFor(WireMock.urlEqualTo("/rest/journalpostapi/v1/journalpost/$journalpostId"))
+        )
 
         assertFailsWith<AdapterException> {
             client.ferdigstill(journalpostId)
         }
 
-        WireMock.verify(3, WireMock.patchRequestedFor(WireMock.urlEqualTo("/rest/journalpostapi/v1/journalpost/$journalpostId/ferdigstill")))
+        WireMock.verify(
+            3,
+            WireMock.patchRequestedFor(WireMock.urlEqualTo("/rest/journalpostapi/v1/journalpost/$journalpostId/ferdigstill"))
+        )
     }
 }

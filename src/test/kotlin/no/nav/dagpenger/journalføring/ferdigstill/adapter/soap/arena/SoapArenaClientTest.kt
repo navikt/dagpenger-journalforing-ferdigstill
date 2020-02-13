@@ -19,6 +19,7 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSDagpengekontrakt
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse
 import org.junit.jupiter.api.Test
+import java.time.ZonedDateTime
 import kotlin.test.assertFailsWith
 
 internal class SoapArenaClientTest {
@@ -30,7 +31,7 @@ internal class SoapArenaClientTest {
 
         val client = SoapArenaClient(stubbedClient, mockk())
 
-        val actual = client.bestillOppgave(StartVedtakCommand("123", "abc", ""))
+        val actual = client.bestillOppgave(StartVedtakCommand("123", "abc", "", ZonedDateTime.now()))
 
         actual shouldBe FagsakId("123")
     }
@@ -42,7 +43,13 @@ internal class SoapArenaClientTest {
 
         every {
             ytelseskontraktV3.hentYtelseskontraktListe(any())
-        } returns WSHentYtelseskontraktListeResponse().withYtelseskontraktListe(listOf(WSDagpengekontrakt().withFagsystemSakId(123).withStatus("Inaktiv").withYtelsestype("Dagpenger")))
+        } returns WSHentYtelseskontraktListeResponse().withYtelseskontraktListe(
+            listOf(
+                WSDagpengekontrakt().withFagsystemSakId(
+                    123
+                ).withStatus("Inaktiv").withYtelsestype("Dagpenger")
+            )
+        )
 
         val client = SoapArenaClient(mockk(), ytelseskontraktV3)
         val saker = client.hentArenaSaker("1234")
@@ -59,7 +66,13 @@ internal class SoapArenaClientTest {
 
         every {
             ytelseskontraktV3.hentYtelseskontraktListe(any())
-        } returns WSHentYtelseskontraktListeResponse().withYtelseskontraktListe(listOf(WSDagpengekontrakt().withFagsystemSakId(123).withStatus("INAKT").withYtelsestype("Dagpenger")))
+        } returns WSHentYtelseskontraktListeResponse().withYtelseskontraktListe(
+            listOf(
+                WSDagpengekontrakt().withFagsystemSakId(
+                    123
+                ).withStatus("INAKT").withYtelsestype("Dagpenger")
+            )
+        )
 
         val client = SoapArenaClient(mockk(), ytelseskontraktV3)
 
@@ -75,7 +88,15 @@ internal class SoapArenaClientTest {
 
         val client = SoapArenaClient(stubbedClient, mockk())
 
-        client.bestillOppgave(VurderHenvendelseAngåendeEksisterendeSaksforholdCommand("123456789", "abcbscb", "beskrivelse", ""))
+        client.bestillOppgave(
+            VurderHenvendelseAngåendeEksisterendeSaksforholdCommand(
+                "123456789",
+                "abcbscb",
+                "beskrivelse",
+                ZonedDateTime.now(),
+                ""
+            )
+        )
     }
 
     @Test
@@ -86,7 +107,7 @@ internal class SoapArenaClientTest {
         val client = SoapArenaClient(stubbedClient, mockk())
 
         assertFailsWith<BestillOppgaveArenaException> {
-            client.bestillOppgave(StartVedtakCommand("123456789", "abcbscb", "beskrivelse"))
+            client.bestillOppgave(StartVedtakCommand("123456789", "abcbscb", "beskrivelse", ZonedDateTime.now()))
         }
 
         verify(exactly = 3) { stubbedClient.bestillOppgave(any()) }
