@@ -40,7 +40,8 @@ private val logger = KotlinLogging.logger {}
 private val skipjpids = setOf<String>(
     "469409257",
     "469408975",
-    "469409099"
+    "469409099",
+    "469409109"
 )
 
 internal val erIkkeFerdigBehandletJournalpost = Predicate<String, Packet> { _, packet ->
