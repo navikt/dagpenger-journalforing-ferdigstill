@@ -39,7 +39,7 @@ private val logger = KotlinLogging.logger {}
 
 internal val erIkkeFerdigBehandletJournalpost = Predicate<String, Packet> { _, packet ->
     packet.hasField(PacketKeys.JOURNALPOST_ID) &&
-        !packet.hasField(PacketKeys.FERDIG_BEHANDLET)
+        !packet.hasField(PacketKeys.FERDIG_BEHANDLET) && packet.getStringValue(PacketKeys.JOURNALPOST_ID) != "469408975" // fixme - ref https://nav-it.slack.com/archives/CAHJ7634G/p1581702773024000
 }
 
 internal object PacketToJoarkPayloadMapper {

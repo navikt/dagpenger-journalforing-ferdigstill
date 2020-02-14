@@ -51,7 +51,7 @@ internal class Application(
     }
 
     override fun onFailure(packet: Packet, error: Throwable?): Packet {
-        logger.error(error) { "Feilet ved håntering av journalpost: ${packet.getStringValue(PacketKeys.JOURNALPOST_ID)}. Pakke $packet" }
+        logger.error(error) { "Feilet ved håndtering av journalpost: ${packet.getStringValue(PacketKeys.JOURNALPOST_ID)}. Pakke $packet" }
         throw error ?: RuntimeException("Feilet ved håndtering av pakke, ukjent grunn")
     }
 }
