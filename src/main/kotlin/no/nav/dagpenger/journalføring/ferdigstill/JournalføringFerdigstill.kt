@@ -45,7 +45,7 @@ private val skipjpids = setOf<String>(
 
 internal val erIkkeFerdigBehandletJournalpost = Predicate<String, Packet> { _, packet ->
     packet.hasField(PacketKeys.JOURNALPOST_ID) &&
-        !packet.hasField(PacketKeys.FERDIG_BEHANDLET) && !skipjpids.contains(packet.getStringValue(PacketKeys.JOURNALPOST_ID))// fixme - ref https://nav-it.slack.com/archives/CAHJ7634G/p1581702773024000
+        !packet.hasField(PacketKeys.FERDIG_BEHANDLET) && !skipjpids.contains(packet.getStringValue(PacketKeys.JOURNALPOST_ID)) // fixme - ref https://nav-it.slack.com/archives/CAHJ7634G/p1581702773024000
 }
 
 internal object PacketToJoarkPayloadMapper {
