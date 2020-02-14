@@ -37,9 +37,15 @@ import java.time.ZoneId
 
 private val logger = KotlinLogging.logger {}
 
+private val skipjpids = setOf<String>(
+    "469409257",
+    "469408975",
+    "469409099"
+)
+
 internal val erIkkeFerdigBehandletJournalpost = Predicate<String, Packet> { _, packet ->
     packet.hasField(PacketKeys.JOURNALPOST_ID) &&
-        !packet.hasField(PacketKeys.FERDIG_BEHANDLET) && packet.getStringValue(PacketKeys.JOURNALPOST_ID) != "469408975" // fixme - ref https://nav-it.slack.com/archives/CAHJ7634G/p1581702773024000
+        !packet.hasField(PacketKeys.FERDIG_BEHANDLET) && !skipjpids.contains(packet.getStringValue(PacketKeys.JOURNALPOST_ID))// fixme - ref https://nav-it.slack.com/archives/CAHJ7634G/p1581702773024000
 }
 
 internal object PacketToJoarkPayloadMapper {

@@ -73,6 +73,35 @@ internal class JournalføringFerdigstillTest {
     }
 
     @Test
+    fun `skal ikke behandle pakker med jp id  469409257 469408975 469409099`() {
+        val application = Application(Configuration(), mockk())
+
+        application.filterPredicates().all {
+            it.test("", Packet().apply {
+                this.putValue(JOURNALPOST_ID, "469409257")
+            })
+        } shouldBe false
+
+        application.filterPredicates().all {
+            it.test("", Packet().apply {
+                this.putValue(JOURNALPOST_ID, "469408975")
+            })
+        } shouldBe false
+
+        application.filterPredicates().all {
+            it.test("", Packet().apply {
+                this.putValue(JOURNALPOST_ID, "469409099")
+            })
+        } shouldBe false
+
+        application.filterPredicates().all {
+            it.test("", Packet().apply {
+                this.putValue(JOURNALPOST_ID, "133713371")
+            })
+        } shouldBe true
+    }
+
+    @Test
     fun `Metrikker blir oppdatert når journalposter blir ferdigstilt`() {
 
         every {
