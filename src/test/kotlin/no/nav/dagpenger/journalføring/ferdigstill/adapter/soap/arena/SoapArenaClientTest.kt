@@ -1,14 +1,12 @@
 package no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.arena
 
 import io.kotlintest.shouldBe
-import io.kotlintest.shouldThrow
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import no.nav.dagpenger.journalføring.ferdigstill.AdapterException
 import no.nav.dagpenger.journalføring.ferdigstill.FagsakId
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSakStatus
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Bruker
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.HentArenaSakerException
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderHenvendelseAngåendeEksisterendeSaksforholdCommand
 import no.nav.dagpenger.streams.HealthStatus
@@ -82,7 +80,7 @@ internal class SoapArenaClientTest {
 
         val client = SoapArenaClient(stubbedClient, mockk())
 
-        assertFailsWith<RuntimeException> {
+        assertFailsWith<AdapterException> {
             client.bestillOppgave(StartVedtakCommand("123456789", "abcbscb", "beskrivelse", ZonedDateTime.now(), ""))
         }
 

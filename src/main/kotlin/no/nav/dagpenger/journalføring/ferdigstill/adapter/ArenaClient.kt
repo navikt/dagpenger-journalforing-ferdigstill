@@ -1,15 +1,8 @@
 package no.nav.dagpenger.journalføring.ferdigstill.adapter
 
-import mu.KotlinLogging
-import no.nav.dagpenger.journalføring.ferdigstill.AdapterException
 import no.nav.dagpenger.journalføring.ferdigstill.FagsakId
-import no.nav.dagpenger.journalføring.ferdigstill.Metrics
 import no.nav.dagpenger.streams.HealthCheck
-import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonErInaktiv
-import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonIkkeFunnet
 import java.time.ZonedDateTime
-
-
 
 interface ArenaClient : HealthCheck {
     fun bestillOppgave(command: OppgaveCommand): FagsakId?

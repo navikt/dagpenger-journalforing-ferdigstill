@@ -11,6 +11,8 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderHenvendelseAngåendeEksisterendeSaksforholdCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.createArenaTilleggsinformasjon
 
+private val logger = KotlinLogging.logger {}
+
 // GoF pattern - Chain of responsibility (https://en.wikipedia.org/wiki/Chain-of-responsibility_pattern)
 abstract class Behandlingslenke(protected val neste: Behandlingslenke? = null) {
     abstract fun håndter(packet: Packet): Packet
@@ -19,7 +21,6 @@ abstract class Behandlingslenke(protected val neste: Behandlingslenke? = null) {
 
 internal class NyttSaksforholdBehandlingslenke(private val arena: ArenaClient, neste: Behandlingslenke?) :
     Behandlingslenke(neste) {
-    private val logger = KotlinLogging.logger {}
 
     override fun kanBehandle(packet: Packet): Boolean =
         PacketMapper.hasNaturligIdent(packet) &&
@@ -130,6 +131,7 @@ internal class FerdigstillJournalpostBehandlingslenke(
     override fun håndter(packet: Packet): Packet {
         if (kanBehandle(packet)) {
             journalpostApi.ferdigstill(packet.getStringValue(PacketKeys.JOURNALPOST_ID))
+            logger.info { "Automatisk journalført" }
             Metrics.automatiskJournalførtJaTellerInc()
         }
         return neste?.håndter(packet) ?: packet
@@ -152,6 +154,7 @@ internal class ManuellJournalføringsBehandlingslenke(
                 PacketMapper.tildeltEnhetsNrFrom(packet),
                 PacketMapper.registrertDatoFrom(packet)
             )
+            logger.info { "Manuelt journalført" }
         }
         return neste?.håndter(packet) ?: packet
     }

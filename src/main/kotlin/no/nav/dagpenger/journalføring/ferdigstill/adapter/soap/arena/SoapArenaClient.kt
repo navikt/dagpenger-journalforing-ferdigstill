@@ -45,9 +45,8 @@ class SoapArenaClient(
         val response: WSBestillOppgaveResponse = try {
             retry { oppgaveV1.bestillOppgave(soapRequest) }
         } catch (e: Exception) {
+            Metrics.automatiskJournalførtNeiTellerInc(e.javaClass.simpleName)
             return when (e) {
-                Metrics.automatiskJournalførtNeiTellerInc(e.javaClass.simpleName)
-
                 is BestillOppgavePersonErInaktiv -> {
                     logger.warn { "Kan ikke bestille oppgave for journalpost. Person ikke arbeidssøker " }
                     null
@@ -104,7 +103,6 @@ class SoapArenaClient(
         return saker.none { it.status == ArenaSakStatus.Aktiv }
             .also { if (!it) Metrics.automatiskJournalførtNeiTellerInc("aktiv_sak") }
     }
-
 
     private fun hentArenaSaker(naturligIdent: String): List<ArenaSak> {
         val request =
