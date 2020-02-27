@@ -24,7 +24,7 @@ internal class PacketToJoarkPayloadMapperTest {
 
     @Test
     fun `Exctract bruker from packet`() {
-        PacketToJoarkPayloadMapper.brukerFrom(Packet().apply {
+        PacketToJoarkPayloadMapper.bruker(Packet().apply {
             this.putValue(PacketKeys.NATURLIG_IDENT, "fnr")
         }).id shouldBe "fnr"
     }

@@ -1,7 +1,10 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
+import no.nav.dagpenger.events.Packet
+
 sealed class Henvendelse {
     companion object {
+
         fun fra(henvendelsesnavn: String): Henvendelse {
             return when (henvendelsesnavn) {
                 "NY_SØKNAD" -> NyttSaksforhold

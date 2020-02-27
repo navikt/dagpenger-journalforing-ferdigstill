@@ -5,7 +5,7 @@ import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.events.moshiInstance
 import no.nav.dagpenger.journalføring.ferdigstill.Metrics.automatiskJournalførtNeiTellerInc
-import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.brukerFrom
+import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.bruker
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.dokumentTitlerFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.hasNaturligIdent
 import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.journalPostFrom
@@ -37,16 +37,10 @@ import java.time.ZoneId
 
 private val logger = KotlinLogging.logger {}
 
-private val skipjpids = setOf<String>(
-    "469409257",
-    "469408975",
-    "469409099",
-    "469409109"
-)
 
 internal val erIkkeFerdigBehandletJournalpost = Predicate<String, Packet> { _, packet ->
     packet.hasField(PacketKeys.JOURNALPOST_ID) &&
-        !packet.hasField(PacketKeys.FERDIG_BEHANDLET) && !skipjpids.contains(packet.getStringValue(PacketKeys.JOURNALPOST_ID)) // fixme - ref https://nav-it.slack.com/archives/CAHJ7634G/p1581702773024000
+        !packet.hasField(PacketKeys.FERDIG_BEHANDLET)
 }
 
 internal object PacketToJoarkPayloadMapper {
@@ -61,7 +55,7 @@ internal object PacketToJoarkPayloadMapper {
     fun avsenderFrom(packet: Packet) =
         Avsender(packet.getStringValue(PacketKeys.AVSENDER_NAVN))
 
-    fun brukerFrom(packet: Packet) =
+    fun bruker(packet: Packet) =
         Bruker(packet.getStringValue(PacketKeys.NATURLIG_IDENT))
 
     fun hasNaturligIdent(packet: Packet) = packet.hasField(PacketKeys.NATURLIG_IDENT)
@@ -70,6 +64,10 @@ internal object PacketToJoarkPayloadMapper {
             packet.getStringValue(PacketKeys.AKTØR_ID),
             "AKTØR"
         ) else null
+
+    fun henvendelse(packet: Packet): Henvendelse = Henvendelse.fra(packet.getStringValue(PacketKeys.HENVENDELSESTYPE))
+    fun harFagsakId(packet: Packet): Boolean = packet.hasField(PacketKeys.FAGSAK_ID)
+    fun harIkkeFagsakId(packet: Packet): Boolean = !harFagsakId(packet)
 
     fun tildeltEnhetsNrFrom(packet: Packet) = packet.getStringValue(PacketKeys.BEHANDLENDE_ENHET)
     fun dokumenterFrom(packet: Packet) = packet.getObjectValue(PacketKeys.DOKUMENTER) {
@@ -97,7 +95,7 @@ internal object PacketToJoarkPayloadMapper {
     fun journalPostFrom(packet: Packet, fagsakId: FagsakId?): OppdaterJournalpostPayload {
         return OppdaterJournalpostPayload(
             avsenderMottaker = avsenderFrom(packet),
-            bruker = brukerFrom(packet),
+            bruker = bruker(packet),
             tittel = tittelFrom(packet),
             sak = sakFrom(fagsakId),
             dokumenter = dokumenterFrom(packet)
@@ -130,7 +128,7 @@ internal class JournalføringFerdigstill(
 
                 behandleHenvendelseAngåendeEksisterendeSaksforhold(
                     packet, VurderHenvendelseAngåendeEksisterendeSaksforholdCommand(
-                        naturligIdent = brukerFrom(packet).id,
+                        naturligIdent = bruker(packet).id,
                         behandlendeEnhetId = tildeltEnhetsNrFrom(packet),
                         tilleggsinformasjon = tilleggsinformasjon,
                         oppgavebeskrivelse = henvendelse.oppgavebeskrivelse,
@@ -166,7 +164,7 @@ internal class JournalføringFerdigstill(
                     packet.getNullableStringValue(PacketKeys.FAGSAK_ID)?.let { FagsakId(it) }
                         ?: bestillOppgave(
                             StartVedtakCommand(
-                                naturligIdent = brukerFrom(packet).id,
+                                naturligIdent = bruker(packet).id,
                                 behandlendeEnhetId = tildeltEnhetsNrFrom(packet),
                                 tilleggsinformasjon = tilleggsinformasjon,
                                 registrertDato = registrertDatoFrom(packet)
@@ -219,7 +217,7 @@ internal class JournalføringFerdigstill(
     }
 
     private fun kanBestilleFagsak(packet: Packet): Boolean {
-        val saker = arenaClient.hentArenaSaker(brukerFrom(packet).id).also {
+        val saker = arenaClient.hentArenaSaker(bruker(packet).id).also {
             logger.info {
                 "Innsender av journalpost ${journalpostIdFrom(packet)} har ${it.filter { it.status == ArenaSakStatus.Aktiv }.size} aktive saker av ${it.size} dagpengesaker totalt"
             }
