@@ -5,15 +5,15 @@ import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.events.moshiInstance
 import no.nav.dagpenger.journalføring.ferdigstill.Metrics.automatiskJournalførtNeiTellerInc
-import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.bruker
-import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.dokumentTitlerFrom
-import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.hasNaturligIdent
-import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.journalPostFrom
-import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.journalpostIdFrom
-import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.nullableAktørFrom
-import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.registrertDatoFrom
-import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.tildeltEnhetsNrFrom
-import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.tittelFrom
+import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.bruker
+import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.dokumentTitlerFrom
+import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.hasNaturligIdent
+import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.journalPostFrom
+import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.journalpostIdFrom
+import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.nullableAktørFrom
+import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.registrertDatoFrom
+import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.tildeltEnhetsNrFrom
+import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.tittelFrom
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSakStatus
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Avsender
@@ -43,7 +43,7 @@ internal val erIkkeFerdigBehandletJournalpost = Predicate<String, Packet> { _, p
         !packet.hasField(PacketKeys.FERDIG_BEHANDLET)
 }
 
-internal object PacketToJoarkPayloadMapper {
+internal object PacketMapper {
     val dokumentJsonAdapter = moshiInstance.adapter<List<Dokument>>(
         Types.newParameterizedType(
             List::class.java,

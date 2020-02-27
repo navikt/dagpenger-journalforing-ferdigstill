@@ -1,8 +1,8 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
-import no.nav.dagpenger.events.Packet
 
-sealed class Henvendelse {
+sealed class Henvendelse(val oppgavebeskrivelse: String) {
+
     companion object {
 
         fun fra(henvendelsesnavn: String): Henvendelse {
@@ -18,9 +18,9 @@ sealed class Henvendelse {
     }
 }
 
-object NyttSaksforhold : Henvendelse()
+object NyttSaksforhold : Henvendelse("Start Vedtaksbehandling - automatisk journalført.\n")
 
-sealed class EksisterendeSaksforhold(val oppgavebeskrivelse: String) : Henvendelse()
+sealed class EksisterendeSaksforhold(oppgavebeskrivelse: String) : Henvendelse(oppgavebeskrivelse)
 
 object Etablering : EksisterendeSaksforhold("Etablering\n")
 object Utdanning : EksisterendeSaksforhold("Utdanning\n")

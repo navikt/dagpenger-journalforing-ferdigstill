@@ -52,13 +52,16 @@ sealed class OppgaveCommand {
     abstract val behandlendeEnhetId: String
     abstract val tilleggsinformasjon: String
     abstract val registrertDato: ZonedDateTime
+    abstract val oppgavebeskrivelse: String
 }
 
 class StartVedtakCommand(
     override val naturligIdent: String,
     override val behandlendeEnhetId: String,
     override val tilleggsinformasjon: String,
-    override val registrertDato: ZonedDateTime
+    override val registrertDato: ZonedDateTime,
+    override val oppgavebeskrivelse: String
+
 ) : OppgaveCommand()
 
 class VurderHenvendelseAngåendeEksisterendeSaksforholdCommand(
@@ -66,5 +69,5 @@ class VurderHenvendelseAngåendeEksisterendeSaksforholdCommand(
     override val behandlendeEnhetId: String,
     override val tilleggsinformasjon: String,
     override val registrertDato: ZonedDateTime,
-    val oppgavebeskrivelse: String
+    override val oppgavebeskrivelse: String
 ) : OppgaveCommand()

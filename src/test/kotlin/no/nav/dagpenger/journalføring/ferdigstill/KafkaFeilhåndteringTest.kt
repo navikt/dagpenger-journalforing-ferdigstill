@@ -72,7 +72,7 @@ class KafkaFeilhåndteringTest {
             this.putValue(PacketKeys.AKTØR_ID, aktørId)
             this.putValue(PacketKeys.AVSENDER_NAVN, "Donald")
             this.putValue(PacketKeys.HENVENDELSESTYPE, "NY_SØKNAD")
-            PacketToJoarkPayloadMapper.dokumentJsonAdapter.toJsonValue(
+            PacketMapper.dokumentJsonAdapter.toJsonValue(
                 listOf(
                     Dokument(
                         "id1",
@@ -122,7 +122,7 @@ class KafkaFeilhåndteringTest {
             this.putValue(PacketKeys.AKTØR_ID, aktørId)
             this.putValue(PacketKeys.AVSENDER_NAVN, "Donald")
             this.putValue(PacketKeys.HENVENDELSESTYPE, "NY_SØKNAD")
-            PacketToJoarkPayloadMapper.dokumentJsonAdapter.toJsonValue(
+            PacketMapper.dokumentJsonAdapter.toJsonValue(
                 listOf(
                     Dokument(
                         "id1",

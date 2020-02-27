@@ -56,19 +56,19 @@ class SoapArenaClient(
                 soapRequest.oppgavetype = WSOppgavetype().apply { value = "STARTVEDTAK" }
                 WSOppgave().apply {
                     sakInfo = WSSakInfo().withTvingNySak(true)
-                    beskrivelse = "Start Vedtaksbehandling - automatisk journalført.\n"
                 }
             }
             is VurderHenvendelseAngåendeEksisterendeSaksforholdCommand -> {
                 soapRequest.oppgavetype = WSOppgavetype().apply { value = "BEHENVPERSON" }
                 WSOppgave().apply {
                     sakInfo = WSSakInfo().withTvingNySak(false)
-                    beskrivelse = oppgavebeskrivelse
+
                 }
             }
         }
 
         soapRequest.oppgave.apply {
+            beskrivelse = oppgavebeskrivelse
             tema = WSTema().apply { value = "DAG" }
             bruker = WSPerson().apply { ident = naturligIdent }
             behandlendeEnhetId = this@toWSBestillOppgaveRequest.behandlendeEnhetId
