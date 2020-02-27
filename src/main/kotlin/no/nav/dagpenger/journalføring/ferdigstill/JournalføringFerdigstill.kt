@@ -106,7 +106,6 @@ internal class JournalføringFerdigstill(
         }
         return packet
     }
-/*
     fun behandleHenvendelseAngåendeEksisterendeSaksforhold(packet: Packet, oppgaveCommand: OppgaveCommand): Packet {
         try {
             if (packet.getNullableBoolean(PacketKeys.FERDIGSTILT_ARENA) != true) {
@@ -163,8 +162,6 @@ internal class JournalføringFerdigstill(
         val journalpostId = journalpostIdFrom(packet)
         journalPostApi.oppdater(journalpostId, journalPostFrom(packet, fagsakId))
         journalPostApi.ferdigstill(journalpostId)
-        Metrics.jpFerdigStillInc()
-        Metrics.automatiskJournalførtJaTellerInc()
         logger.info { "Automatisk journalført $journalpostId" }
     }
 
@@ -181,20 +178,9 @@ internal class JournalføringFerdigstill(
             registrertDatoFrom(packet)
         )
 
-        Metrics.jpFerdigStillInc()
         logger.info { "Manuelt journalført $journalpostId" }
     }
 
-    private fun kanBestilleFagsak(packet: Packet): Boolean {
-        val saker = arenaClient.hentArenaSaker(bruker(packet).id).also {
-            logger.info {
-                "Innsender av journalpost ${journalpostIdFrom(packet)} har ${it.filter { it.status == ArenaSakStatus.Aktiv }.size} aktive saker av ${it.size} dagpengesaker totalt"
-            }
-        }
-
-        return saker.none { it.status == ArenaSakStatus.Aktiv }
-            .also { if (!it) automatiskJournalførtNeiTellerInc("aktiv_sak") }
-    }
 
     private fun bestillOppgave(command: OppgaveCommand, journalpostId: String): FagsakId? {
         return try {
@@ -217,7 +203,7 @@ internal class JournalføringFerdigstill(
                 }
             }
         }
-    }*/
+    }
 }
 
 class AdapterException(val exception: Throwable) : RuntimeException(exception)

@@ -130,6 +130,7 @@ internal class FerdigstillJournalpostBehandlingslenke(
     override fun håndter(packet: Packet): Packet {
         if (kanBehandle(packet)) {
             journalpostApi.ferdigstill(packet.getStringValue(PacketKeys.JOURNALPOST_ID))
+            Metrics.automatiskJournalførtJaTellerInc()
         }
         return neste?.håndter(packet) ?: packet
     }
@@ -162,6 +163,7 @@ internal class MarkerFerdigBehandlingslenke(neste: Behandlingslenke?) : Behandli
     override fun håndter(packet: Packet): Packet {
         if (kanBehandle(packet)) {
             packet.putValue(PacketKeys.FERDIG_BEHANDLET, true)
+            Metrics.jpFerdigStillInc()
         }
         return neste?.håndter(packet) ?: packet
     }

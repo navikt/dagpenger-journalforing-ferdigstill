@@ -15,6 +15,7 @@ import no.nav.dagpenger.streams.River
 import no.nav.dagpenger.streams.streamConfig
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3
 import org.apache.kafka.streams.StreamsConfig
+import org.apache.logging.log4j.ThreadContext
 import java.util.Properties
 
 private val logger = KotlinLogging.logger {}
@@ -30,14 +31,21 @@ internal class Application(
     override fun filterPredicates() = listOf(erIkkeFerdigBehandletJournalpost)
 
     override fun onPacket(packet: Packet): Packet {
-        logger.info { "Processing: $packet" }
+        try {
+            ThreadContext.put(
+                "x_journalpost_id", packet.getStringValue(PacketKeys.JOURNALPOST_ID)
+            )
+            logger.info { "Processing: $packet" }
 
-        if (packet.getReadCount() >= 10) {
-            logger.error { "Read count >= 10 for packet with journalpostid ${packet.getStringValue(PacketKeys.JOURNALPOST_ID)}" }
-            throw ReadCountException()
+            if (packet.getReadCount() >= 10) {
+                logger.error { "Read count >= 10 for packet with journalpostid ${packet.getStringValue(PacketKeys.JOURNALPOST_ID)}" }
+                throw ReadCountException()
+            }
+
+            return journalføringFerdigstill.handlePacket(packet)
+        } finally {
+            ThreadContext.remove("x_journalpost_id")
         }
-
-        return journalføringFerdigstill.handlePacket(packet)
     }
 
     override fun getConfig(): Properties {
@@ -66,7 +74,6 @@ fun main() {
 
     val arenaClient: ArenaClient =
         SoapArenaClient(behandleArbeidsytelseSak, ytelseskontraktV3)
-
 
     val stsOidcClient = StsOidcClient(configuration.sts.baseUrl, configuration.sts.username, configuration.sts.password)
 

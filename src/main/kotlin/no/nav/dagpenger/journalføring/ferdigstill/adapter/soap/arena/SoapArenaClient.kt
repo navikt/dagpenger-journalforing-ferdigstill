@@ -46,6 +46,8 @@ class SoapArenaClient(
             retry { oppgaveV1.bestillOppgave(soapRequest) }
         } catch (e: Exception) {
             return when (e) {
+                Metrics.automatiskJournalførtNeiTellerInc(e.javaClass.simpleName)
+
                 is BestillOppgavePersonErInaktiv -> {
                     logger.warn { "Kan ikke bestille oppgave for journalpost. Person ikke arbeidssøker " }
                     null
