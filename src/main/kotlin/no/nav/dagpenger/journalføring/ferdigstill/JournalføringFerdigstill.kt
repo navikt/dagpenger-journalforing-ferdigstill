@@ -4,30 +4,16 @@ import com.squareup.moshi.Types
 import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.events.moshiInstance
-import no.nav.dagpenger.journalføring.ferdigstill.Metrics.automatiskJournalførtNeiTellerInc
 import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.bruker
-import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.dokumentTitlerFrom
-import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.journalPostFrom
-import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.journalpostIdFrom
-import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.nullableAktørFrom
-import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.registrertDatoFrom
-import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.tildeltEnhetsNrFrom
-import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.tittelFrom
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSakStatus
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Avsender
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Bruker
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Dokument
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.JournalpostApi
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ManuellJournalføringsOppgaveClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.OppdaterJournalpostPayload
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.OppgaveCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Sak
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.SaksType
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.createArenaTilleggsinformasjon
-import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonErInaktiv
-import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonIkkeFunnet
 import org.apache.kafka.streams.kstream.Predicate
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -105,15 +91,16 @@ internal class JournalføringFerdigstill(
     private val arenaClient: ArenaClient
 ) {
 
+    val ferdigBehandlingslenke = MarkerFerdigBehandlingslenke(null)
+    val manuellOppgaveLenke =
+        ManuellJournalføringsBehandlingslenke(manuellJournalføringsOppgaveClient, ferdigBehandlingslenke)
+    val ferdigstillOppgaveLenke = FerdigstillJournalpostBehandlingslenke(journalPostApi, manuellOppgaveLenke)
+    val oppdaterLenke = OppdaterJournalpostBehandlingslenke(journalPostApi, ferdigstillOppgaveLenke)
+    val eksisterendeSakLenke = EksisterendeSaksForholdBehandlingslenke(arenaClient, oppdaterLenke)
+    val nySakLenke = NyttSaksforholdBehandlingslenke(arenaClient, eksisterendeSakLenke)
+
     fun handlePacket(packet: Packet): Packet {
         try {
-            val ferdigBehandlingslenke = MarkerFerdigBehandlingslenke(null)
-            val manuellOppgaveLenke = ManuellJournalføringsBehandlingslenke(manuellJournalføringsOppgaveClient, ferdigBehandlingslenke)
-            val ferdigstillOppgaveLenke = FerdigstillJournalpostBehandlingslenke(journalPostApi, manuellOppgaveLenke)
-            val oppdaterLenke = OppdaterJournalpostBehandlingslenke(journalPostApi, ferdigstillOppgaveLenke)
-            val eksisterendeSakLenke = EksisterendeSaksForholdBehandlingslenke(arenaClient, oppdaterLenke)
-            val nySakLenke = NyttSaksforholdBehandlingslenke(arenaClient, eksisterendeSakLenke)
-
             return nySakLenke.håndter(packet)
         } catch (e: AdapterException) {
         }
