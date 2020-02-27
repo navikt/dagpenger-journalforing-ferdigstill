@@ -1,6 +1,5 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
-
 sealed class Henvendelse(val oppgavebeskrivelse: String) {
 
     companion object {

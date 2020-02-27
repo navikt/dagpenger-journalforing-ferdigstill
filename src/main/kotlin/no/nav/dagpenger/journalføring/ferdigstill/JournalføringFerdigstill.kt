@@ -7,7 +7,6 @@ import no.nav.dagpenger.events.moshiInstance
 import no.nav.dagpenger.journalføring.ferdigstill.Metrics.automatiskJournalførtNeiTellerInc
 import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.bruker
 import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.dokumentTitlerFrom
-import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.hasNaturligIdent
 import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.journalPostFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.journalpostIdFrom
 import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.nullableAktørFrom
@@ -27,7 +26,6 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.OppgaveCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Sak
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.SaksType
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderHenvendelseAngåendeEksisterendeSaksforholdCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.createArenaTilleggsinformasjon
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonErInaktiv
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonIkkeFunnet
@@ -36,7 +34,6 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 
 private val logger = KotlinLogging.logger {}
-
 
 internal val erIkkeFerdigBehandletJournalpost = Predicate<String, Packet> { _, packet ->
     packet.hasField(PacketKeys.JOURNALPOST_ID) &&
@@ -110,33 +107,17 @@ internal class JournalføringFerdigstill(
 ) {
 
     fun handlePacket(packet: Packet): Packet {
+        try {
+            val manuellOppgaveLenke = ManuellJournalføringsBehandlingslenke(manuellJournalføringsOppgaveClient, null)
+            val ferdigstillOppgaveLenke = FerdigstillJournalpostBehandlingslenke(journalPostApi, manuellOppgaveLenke)
+            val oppdaterLenke = OppdaterJournalpostBehandlingslenke(journalPostApi, ferdigstillOppgaveLenke)
+            val eksisterendeSakLenke = EksisterendeSaksForholdBehandlingslenke(arenaClient, oppdaterLenke)
+            val nySakLenke = NyttSaksforholdBehandlingslenke(arenaClient, eksisterendeSakLenke)
 
-        if (!hasNaturligIdent(packet)) {
-            automatiskJournalførtNeiTellerInc("ukjent_bruker")
-            journalførManuelt(packet)
-            packet.putValue(PacketKeys.FERDIG_BEHANDLET, true)
-            return packet
+            return nySakLenke.håndter(packet)
+        } catch (e: AdapterException) {
         }
-
-        val henvendelse = Henvendelse.fra(packet.getStringValue(PacketKeys.HENVENDELSESTYPE))
-
-        return when (henvendelse) {
-            is NyttSaksforhold -> behandleNySøknad(packet)
-            is EksisterendeSaksforhold -> {
-                val tilleggsinformasjon =
-                    createArenaTilleggsinformasjon(dokumentTitlerFrom(packet), registrertDatoFrom(packet))
-
-                behandleHenvendelseAngåendeEksisterendeSaksforhold(
-                    packet, VurderHenvendelseAngåendeEksisterendeSaksforholdCommand(
-                        naturligIdent = bruker(packet).id,
-                        behandlendeEnhetId = tildeltEnhetsNrFrom(packet),
-                        tilleggsinformasjon = tilleggsinformasjon,
-                        oppgavebeskrivelse = henvendelse.oppgavebeskrivelse,
-                        registrertDato = registrertDatoFrom(packet)
-                    )
-                )
-            }
-        }
+        return packet
     }
 
     fun behandleHenvendelseAngåendeEksisterendeSaksforhold(packet: Packet, oppgaveCommand: OppgaveCommand): Packet {
@@ -167,7 +148,8 @@ internal class JournalføringFerdigstill(
                                 naturligIdent = bruker(packet).id,
                                 behandlendeEnhetId = tildeltEnhetsNrFrom(packet),
                                 tilleggsinformasjon = tilleggsinformasjon,
-                                registrertDato = registrertDatoFrom(packet)
+                                registrertDato = registrertDatoFrom(packet),
+                                oppgavebeskrivelse = "asd"
                             ),
                             journalpostIdFrom(packet)
                         )

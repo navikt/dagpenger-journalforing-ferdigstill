@@ -31,7 +31,7 @@ internal class SoapArenaClientTest {
 
         val client = SoapArenaClient(stubbedClient, mockk())
 
-        val actual = client.bestillOppgave(StartVedtakCommand("123", "abc", "", ZonedDateTime.now()))
+        val actual = client.bestillOppgave(StartVedtakCommand("123", "abc", "", ZonedDateTime.now(), ""))
 
         actual shouldBe FagsakId("123")
     }
@@ -107,7 +107,7 @@ internal class SoapArenaClientTest {
         val client = SoapArenaClient(stubbedClient, mockk())
 
         assertFailsWith<BestillOppgaveArenaException> {
-            client.bestillOppgave(StartVedtakCommand("123456789", "abcbscb", "beskrivelse", ZonedDateTime.now()))
+            client.bestillOppgave(StartVedtakCommand("123456789", "abcbscb", "beskrivelse", ZonedDateTime.now(), ""))
         }
 
         verify(exactly = 3) { stubbedClient.bestillOppgave(any()) }

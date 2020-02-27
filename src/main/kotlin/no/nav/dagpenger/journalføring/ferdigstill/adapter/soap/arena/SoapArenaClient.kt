@@ -62,7 +62,6 @@ class SoapArenaClient(
                 soapRequest.oppgavetype = WSOppgavetype().apply { value = "BEHENVPERSON" }
                 WSOppgave().apply {
                     sakInfo = WSSakInfo().withTvingNySak(false)
-
                 }
             }
         }

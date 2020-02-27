@@ -4,13 +4,12 @@ import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.FAGSAK_ID
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSak
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSakStatus
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.OppgaveCommand
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.JournalpostApi
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.ManuellJournalføringsOppgaveClient
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.OppdaterJournalpostPayload
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderHenvendelseAngåendeEksisterendeSaksforholdCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.createArenaTilleggsinformasjon
-import no.nav.dagpenger.streams.HealthStatus
 
 // GoF pattern - Chain of responsibility (https://en.wikipedia.org/wiki/Chain-of-responsibility_pattern)
 abstract class Behandlingslenke(protected val neste: Behandlingslenke? = null) {
@@ -18,15 +17,15 @@ abstract class Behandlingslenke(protected val neste: Behandlingslenke? = null) {
     abstract fun kanBehandle(packet: Packet): Boolean
 }
 
-internal class NySøknadIArenaBehandlingslenke(private val arena: ArenaClient, neste: Behandlingslenke?) :
+internal class NyttSaksforholdBehandlingslenke(private val arena: ArenaClient, neste: Behandlingslenke?) :
     Behandlingslenke(neste) {
     private val logger = KotlinLogging.logger {}
 
     override fun kanBehandle(packet: Packet): Boolean =
-        PacketMapper.hasNaturligIdent(packet)
-            && PacketMapper.harIkkeFagsakId(packet)
-            && PacketMapper.henvendelse(packet) == NyttSaksforhold
-            && arena.harIkkeAktivSak(PacketMapper.bruker(packet))
+        PacketMapper.hasNaturligIdent(packet) &&
+            PacketMapper.harIkkeFagsakId(packet) &&
+            PacketMapper.henvendelse(packet) == NyttSaksforhold &&
+            arena.harIkkeAktivSak(PacketMapper.bruker(packet))
 
     override fun håndter(packet: Packet): Packet {
         if (kanBehandle(packet)) {
@@ -57,16 +56,16 @@ internal class NySøknadIArenaBehandlingslenke(private val arena: ArenaClient, n
 }
 
 internal class EksisterendeSaksForholdBehandlingslenke(private val arena: ArenaClient, neste: Behandlingslenke?) :
-    Behandlingslenke(null) {
+    Behandlingslenke(neste) {
 
     private val eksisterendeHenvendelsesTyper = setOf(
         KlageAnke, Utdanning, Etablering, Gjenopptak
     )
 
     override fun kanBehandle(packet: Packet): Boolean =
-        eksisterendeHenvendelsesTyper.contains(PacketMapper.henvendelse(packet))
-            && PacketMapper.hasNaturligIdent(packet)
-            && !packet.hasField(PacketKeys.FERDIGSTILT_ARENA)
+        eksisterendeHenvendelsesTyper.contains(PacketMapper.henvendelse(packet)) &&
+            PacketMapper.hasNaturligIdent(packet) &&
+            !packet.hasField(PacketKeys.FERDIGSTILT_ARENA)
 
     override fun håndter(packet: Packet): Packet {
         if (kanBehandle(packet)) {
@@ -94,3 +93,65 @@ internal class EksisterendeSaksForholdBehandlingslenke(private val arena: ArenaC
     }
 }
 
+internal class OppdaterJournalpostBehandlingslenke(val journalpostApi: JournalpostApi, neste: Behandlingslenke?) :
+    Behandlingslenke(neste) {
+    override fun håndter(packet: Packet): Packet {
+        if (kanBehandle(packet)) {
+            journalpostApi.oppdater(
+                journalpostId = packet.getStringValue(PacketKeys.JOURNALPOST_ID),
+                jp = oppdaterJournalpostPayloadFrom(
+                    packet,
+                    packet.getNullableStringValue(FAGSAK_ID)?.let { FagsakId(it) })
+            )
+        }
+        return neste?.håndter(packet) ?: packet
+    }
+
+    override fun kanBehandle(packet: Packet) = true
+
+    private fun oppdaterJournalpostPayloadFrom(packet: Packet, fagsakId: FagsakId?): OppdaterJournalpostPayload {
+        return OppdaterJournalpostPayload(
+            avsenderMottaker = PacketMapper.avsenderFrom(packet),
+            bruker = PacketMapper.bruker(packet),
+            tittel = PacketMapper.tittelFrom(packet),
+            sak = PacketMapper.sakFrom(fagsakId),
+            dokumenter = PacketMapper.dokumenterFrom(packet)
+        )
+    }
+}
+
+internal class FerdigstillJournalpostBehandlingslenke(
+    val journalpostApi: JournalpostApi,
+    neste: Behandlingslenke?
+) : Behandlingslenke(neste) {
+    override fun kanBehandle(packet: Packet) =
+        packet.hasField(PacketKeys.FERDIGSTILT_ARENA) || packet.hasField(FAGSAK_ID)
+
+    override fun håndter(packet: Packet): Packet {
+        if (kanBehandle(packet)) {
+            journalpostApi.ferdigstill(packet.getStringValue(PacketKeys.JOURNALPOST_ID))
+        }
+        return neste?.håndter(packet) ?: packet
+    }
+}
+
+internal class ManuellJournalføringsBehandlingslenke(
+    val manuellJournalføringsOppgaveClient: ManuellJournalføringsOppgaveClient,
+    neste: Behandlingslenke?
+) : Behandlingslenke(neste) {
+    override fun kanBehandle(packet: Packet) =
+        !packet.hasField(PacketKeys.FERDIGSTILT_ARENA) && !packet.hasField(FAGSAK_ID)
+
+    override fun håndter(packet: Packet): Packet {
+        if (kanBehandle(packet)) {
+            manuellJournalføringsOppgaveClient.opprettOppgave(
+                PacketMapper.journalpostIdFrom(packet),
+                PacketMapper.nullableAktørFrom(packet)?.id,
+                PacketMapper.tittelFrom(packet),
+                PacketMapper.tildeltEnhetsNrFrom(packet),
+                PacketMapper.registrertDatoFrom(packet)
+            )
+        }
+        return neste?.håndter(packet) ?: packet
+    }
+}

@@ -86,7 +86,7 @@ internal class JournalforingFerdigstillComponentTest {
                 configuration.journalPostApiUrl,
                 stsOidcClient
             ),
-            manuellJournalføringsOppgaveClient = mockk(),
+            manuellJournalføringsOppgaveClient = mockk(relaxed = true),
             arenaClient = arenaClientMock
         )
 

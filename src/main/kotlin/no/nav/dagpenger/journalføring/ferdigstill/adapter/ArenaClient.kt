@@ -9,9 +9,7 @@ import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOpp
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonIkkeFunnet
 import java.time.ZonedDateTime
 
-
 private val logger = KotlinLogging.logger {}
-
 
 interface ArenaClient : HealthCheck {
     fun bestillOppgave(command: OppgaveCommand): FagsakId?

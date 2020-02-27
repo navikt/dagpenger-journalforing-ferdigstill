@@ -7,7 +7,7 @@ import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
 import org.junit.Test
 
-internal class NySøknadIArenaBehandlingslenkeTest {
+internal class NyttSaksforholdBehandlingslenkeTest {
 
     @Test
     fun `Skal ikke behandle pakker uten person identifikator`() {
@@ -15,13 +15,12 @@ internal class NySøknadIArenaBehandlingslenkeTest {
         val arenaMock: ArenaClient = mockk()
         val nesteKjede: Behandlingslenke = mockk()
 
-        val nyArenaSakKjede = NySøknadIArenaBehandlingslenke(
+        val nyArenaSakKjede = NyttSaksforholdBehandlingslenke(
             arena = arenaMock, neste = nesteKjede
 
         )
         val packet = Packet().apply {
             this.putValue(PacketKeys.HENVENDELSESTYPE, "NY_SØKNAD")
-
         }
         every { nesteKjede.håndter(any()) } returns packet
         nyArenaSakKjede.håndter(packet)
