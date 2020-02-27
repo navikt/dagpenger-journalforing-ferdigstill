@@ -17,11 +17,8 @@ import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.DOKUMENTER
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.HENVENDELSESTYPE
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.JOURNALPOST_ID
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.NATURLIG_IDENT
-import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.dokumentJsonAdapter
+import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.dokumentJsonAdapter
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSak
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSakStatus
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.BestillOppgaveArenaException
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Dokument
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.JournalpostApi
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ManuellJournalføringsOppgaveClient
@@ -33,7 +30,6 @@ import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOpp
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.time.ZonedDateTime
 
 internal class JournalføringFerdigstillTest {
 
@@ -73,40 +69,11 @@ internal class JournalføringFerdigstillTest {
     }
 
     @Test
-    fun `skal ikke behandle pakker med jp id  469409257 469408975 469409099`() {
-        val application = Application(Configuration(), mockk())
-
-        application.filterPredicates().all {
-            it.test("", Packet().apply {
-                this.putValue(JOURNALPOST_ID, "469409257")
-            })
-        } shouldBe false
-
-        application.filterPredicates().all {
-            it.test("", Packet().apply {
-                this.putValue(JOURNALPOST_ID, "469408975")
-            })
-        } shouldBe false
-
-        application.filterPredicates().all {
-            it.test("", Packet().apply {
-                this.putValue(JOURNALPOST_ID, "469409099")
-            })
-        } shouldBe false
-
-        application.filterPredicates().all {
-            it.test("", Packet().apply {
-                this.putValue(JOURNALPOST_ID, "133713371")
-            })
-        } shouldBe true
-    }
-
-    @Test
     fun `Metrikker blir oppdatert når journalposter blir ferdigstilt`() {
 
         every {
-            arenaClient.hentArenaSaker("fnr")
-        } returns listOf(ArenaSak(123, ArenaSakStatus.Inaktiv))
+            arenaClient.harIkkeAktivSak(any())
+        } returns true
 
         JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient).apply {
             val generellPacket = Packet().apply {
@@ -197,7 +164,7 @@ internal class JournalføringFerdigstillTest {
 
         val slot = slot<OppgaveCommand>()
 
-        every { arenaClient.hentArenaSaker(naturligIdent) } returns emptyList()
+        every { arenaClient.harIkkeAktivSak(any()) } returns true
         every { arenaClient.bestillOppgave(command = capture(slot)) } returns FagsakId("123")
 
         val packet = Packet().apply {
@@ -231,7 +198,7 @@ internal class JournalføringFerdigstillTest {
         slot.captured.naturligIdent shouldBe naturligIdent
     }
 
-    @Test
+    /*@Test
     fun `kun journalføring blir gjort når oppgave er bestilt`() {
 
         val packet = lagPacket("journalPostId", "12345678910", "9999").apply {
@@ -253,7 +220,7 @@ internal class JournalføringFerdigstillTest {
             journalPostApi.oppdater(any(), any())
             journalPostApi.ferdigstill(any())
         }
-    }
+    }*/
 
     @Test
     fun `Opprett oppgave, og ferdigstill, når brevkode er gjenopptak`() {
@@ -285,7 +252,7 @@ internal class JournalføringFerdigstillTest {
         val slot = slot<OppgaveCommand>()
 
         every { arenaClient.bestillOppgave(command = capture(slot)) } returns null
-        every { arenaClient.hentArenaSaker(naturligIdent) } returns emptyList()
+        every { arenaClient.harIkkeAktivSak(any()) } returns true
 
         val packet = lagPacket(journalPostId, naturligIdent, behandlendeEnhet, henvendelsestype)
 
@@ -337,7 +304,7 @@ internal class JournalføringFerdigstillTest {
         val behandlendeEnhet = "9999"
         val aktørId = "987654321"
 
-        every { arenaClient.hentArenaSaker(naturligIdent) } returns listOf(ArenaSak(123, ArenaSakStatus.Aktiv))
+        every { arenaClient.harIkkeAktivSak(any()) } returns false
 
         val packet = Packet().apply {
             this.putValue(JOURNALPOST_ID, journalPostId)
@@ -398,7 +365,7 @@ internal class JournalføringFerdigstillTest {
         // Person er ikke arbeidssøker
         every {
             arenaClient.bestillOppgave(any())
-        } throws BestillOppgaveArenaException(BestillOppgavePersonErInaktiv())
+        } throws BestillOppgavePersonErInaktiv()
 
         journalFøringFerdigstill.handlePacket(packetPersonInaktiv)
 
@@ -416,7 +383,7 @@ internal class JournalføringFerdigstillTest {
         // Person er ikke funnet i arena
         every {
             arenaClient.bestillOppgave(any())
-        } throws BestillOppgaveArenaException(BestillOppgavePersonIkkeFunnet())
+        } throws BestillOppgavePersonIkkeFunnet()
 
         journalFøringFerdigstill.handlePacket(packetPersonIkkeFunnet)
 

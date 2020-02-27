@@ -22,8 +22,8 @@ import no.nav.common.JAASCredential
 import no.nav.common.KafkaEnvironment
 import no.nav.common.embeddedutils.getAvailablePort
 import no.nav.dagpenger.events.Packet
-import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.dokumentJsonAdapter
-import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.journalPostFrom
+import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.dokumentJsonAdapter
+import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.journalPostFrom
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Dokument
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.JournalpostRestApi
@@ -86,7 +86,7 @@ internal class JournalforingFerdigstillComponentTest {
                 configuration.journalPostApiUrl,
                 stsOidcClient
             ),
-            manuellJournalføringsOppgaveClient = mockk(),
+            manuellJournalføringsOppgaveClient = mockk(relaxed = true),
             arenaClient = arenaClientMock
         )
 
@@ -127,6 +127,8 @@ internal class JournalforingFerdigstillComponentTest {
 
     @Test
     fun ` Component test of JournalføringFerdigstill`() {
+
+        every { arenaClientMock.harIkkeAktivSak(any()) } returns true
 
         wireMockServer.addStubMapping(
             get(urlEqualTo("/rest/v1/sts/token/?grant_type=client_credentials&scope=openid"))
@@ -174,7 +176,6 @@ internal class JournalforingFerdigstillComponentTest {
             this.putValue(PacketKeys.AKTØR_ID, "1234567")
             this.putValue(PacketKeys.JOURNALPOST_ID, journalPostId)
             this.putValue(PacketKeys.AVSENDER_NAVN, "et navn")
-            this.putValue(PacketKeys.TOGGLE_BEHANDLE_NY_SØKNAD, true)
             this.putValue(PacketKeys.BEHANDLENDE_ENHET, "9999")
             this.putValue(PacketKeys.DATO_REGISTRERT, "2020-01-01T01:01:01")
             this.putValue(PacketKeys.HENVENDELSESTYPE, "NY_SØKNAD")

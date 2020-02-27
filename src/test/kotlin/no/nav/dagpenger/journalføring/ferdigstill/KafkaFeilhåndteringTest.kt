@@ -8,8 +8,6 @@ import io.mockk.mockk
 import io.mockk.verify
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSak
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSakStatus
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Dokument
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.JournalpostApi
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ManuellJournalføringsOppgaveClient
@@ -59,7 +57,8 @@ class KafkaFeilhåndteringTest {
         val behandlendeEnhet = "9999"
         val aktørId = "987654321"
 
-        every { arenaClient.hentArenaSaker(naturligIdent) } returns listOf(ArenaSak(123, ArenaSakStatus.Inaktiv))
+        every { arenaClient.harIkkeAktivSak(any()) } returns true
+
         every { arenaClient.bestillOppgave(any()) } returns FagsakId("abc")
         every { journalpostApi.oppdater(any(), any()) } throws AdapterException(RuntimeException()) andThen { Unit }
 
@@ -72,7 +71,7 @@ class KafkaFeilhåndteringTest {
             this.putValue(PacketKeys.AKTØR_ID, aktørId)
             this.putValue(PacketKeys.AVSENDER_NAVN, "Donald")
             this.putValue(PacketKeys.HENVENDELSESTYPE, "NY_SØKNAD")
-            PacketToJoarkPayloadMapper.dokumentJsonAdapter.toJsonValue(
+            PacketMapper.dokumentJsonAdapter.toJsonValue(
                 listOf(
                     Dokument(
                         "id1",
@@ -122,7 +121,7 @@ class KafkaFeilhåndteringTest {
             this.putValue(PacketKeys.AKTØR_ID, aktørId)
             this.putValue(PacketKeys.AVSENDER_NAVN, "Donald")
             this.putValue(PacketKeys.HENVENDELSESTYPE, "NY_SØKNAD")
-            PacketToJoarkPayloadMapper.dokumentJsonAdapter.toJsonValue(
+            PacketMapper.dokumentJsonAdapter.toJsonValue(
                 listOf(
                     Dokument(
                         "id1",

@@ -2,11 +2,14 @@ package no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.arena
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import mu.KotlinLogging
+import no.nav.dagpenger.journalføring.ferdigstill.AdapterException
 import no.nav.dagpenger.journalføring.ferdigstill.FagsakId
+import no.nav.dagpenger.journalføring.ferdigstill.Metrics
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSak
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSakStatus
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.BestillOppgaveArenaException
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.Bruker
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.HentArenaSakerException
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.OppgaveCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
@@ -33,6 +36,7 @@ class SoapArenaClient(
     private val ytelseskontraktV3: YtelseskontraktV3
 ) :
     ArenaClient {
+    private val logger = KotlinLogging.logger {}
 
     override fun bestillOppgave(command: OppgaveCommand): FagsakId? {
 
@@ -41,8 +45,21 @@ class SoapArenaClient(
         val response: WSBestillOppgaveResponse = try {
             retry { oppgaveV1.bestillOppgave(soapRequest) }
         } catch (e: Exception) {
-            throw BestillOppgaveArenaException(e)
-            // @todo Håndtere BestillOppgaveSikkerhetsbegrensning, BestillOppgaveOrganisasjonIkkeFunnet, BestillOppgavePersonErInaktiv, BestillOppgaveSakIkkeOpprettet, BestillOppgavePersonIkkeFunnet, BestillOppgaveUgyldigInput
+            Metrics.automatiskJournalførtNeiTellerInc(e.javaClass.simpleName)
+            return when (e) {
+                is BestillOppgavePersonErInaktiv -> {
+                    logger.warn { "Kan ikke bestille oppgave for journalpost. Person ikke arbeidssøker " }
+                    null
+                }
+                is BestillOppgavePersonIkkeFunnet -> {
+                    logger.warn { "Kan ikke bestille oppgave for journalpost. Person ikke funnet i arena " }
+                    null
+                }
+                else -> {
+                    logger.warn { "Kan ikke bestille oppgave for journalpost. Ukjent feil. " }
+                    throw AdapterException(e)
+                }
+            }
         }
 
         return response.arenaSakId?.let { FagsakId(it) }
@@ -56,19 +73,18 @@ class SoapArenaClient(
                 soapRequest.oppgavetype = WSOppgavetype().apply { value = "STARTVEDTAK" }
                 WSOppgave().apply {
                     sakInfo = WSSakInfo().withTvingNySak(true)
-                    beskrivelse = "Start Vedtaksbehandling - automatisk journalført.\n"
                 }
             }
             is VurderHenvendelseAngåendeEksisterendeSaksforholdCommand -> {
                 soapRequest.oppgavetype = WSOppgavetype().apply { value = "BEHENVPERSON" }
                 WSOppgave().apply {
                     sakInfo = WSSakInfo().withTvingNySak(false)
-                    beskrivelse = oppgavebeskrivelse
                 }
             }
         }
 
         soapRequest.oppgave.apply {
+            beskrivelse = oppgavebeskrivelse
             tema = WSTema().apply { value = "DAG" }
             bruker = WSPerson().apply { ident = naturligIdent }
             behandlendeEnhetId = this@toWSBestillOppgaveRequest.behandlendeEnhetId
@@ -82,7 +98,13 @@ class SoapArenaClient(
         return soapRequest
     }
 
-    override fun hentArenaSaker(naturligIdent: String): List<ArenaSak> {
+    override fun harIkkeAktivSak(bruker: Bruker): Boolean {
+        val saker = hentArenaSaker(bruker.id)
+        return saker.none { it.status == ArenaSakStatus.Aktiv }
+            .also { if (!it) Metrics.automatiskJournalførtNeiTellerInc("aktiv_sak") }
+    }
+
+    private fun hentArenaSaker(naturligIdent: String): List<ArenaSak> {
         val request =
             WSHentYtelseskontraktListeRequest()
                 .withPersonidentifikator(naturligIdent)

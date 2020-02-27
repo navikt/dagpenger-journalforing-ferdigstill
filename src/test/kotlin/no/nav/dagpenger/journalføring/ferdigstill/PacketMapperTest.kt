@@ -2,36 +2,36 @@ package no.nav.dagpenger.journalføring.ferdigstill
 
 import io.kotlintest.shouldBe
 import no.nav.dagpenger.events.Packet
-import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.dokumentJsonAdapter
+import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.dokumentJsonAdapter
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Dokument
 import org.junit.jupiter.api.Test
 
-internal class PacketToJoarkPayloadMapperTest {
+internal class PacketMapperTest {
 
     @Test
     fun `Exctract journal post id from packet`() {
-        PacketToJoarkPayloadMapper.journalpostIdFrom(Packet().apply {
+        PacketMapper.journalpostIdFrom(Packet().apply {
             this.putValue(PacketKeys.JOURNALPOST_ID, "journalPostId")
         }) shouldBe "journalPostId"
     }
 
     @Test
     fun `Exctract avsender from packet`() {
-        PacketToJoarkPayloadMapper.avsenderFrom(Packet().apply {
+        PacketMapper.avsenderFrom(Packet().apply {
             this.putValue(PacketKeys.AVSENDER_NAVN, "et navn")
         }).navn shouldBe "et navn"
     }
 
     @Test
     fun `Exctract bruker from packet`() {
-        PacketToJoarkPayloadMapper.brukerFrom(Packet().apply {
+        PacketMapper.bruker(Packet().apply {
             this.putValue(PacketKeys.NATURLIG_IDENT, "fnr")
         }).id shouldBe "fnr"
     }
 
     @Test
     fun `Extract dokumenter from packet`() {
-        val dokumenter = PacketToJoarkPayloadMapper.dokumenterFrom(Packet().apply {
+        val dokumenter = PacketMapper.dokumenterFrom(Packet().apply {
             dokumentJsonAdapter.toJsonValue(
                 listOf(
                     Dokument(
@@ -58,7 +58,7 @@ internal class PacketToJoarkPayloadMapperTest {
 
     @Test
     fun `Extract journal post from packet`() {
-        val jp = PacketToJoarkPayloadMapper.journalPostFrom(
+        val jp = PacketMapper.journalPostFrom(
             Packet().apply {
                 this.putValue(PacketKeys.JOURNALPOST_ID, "journalPostId")
                 this.putValue(PacketKeys.AVSENDER_NAVN, "navn")

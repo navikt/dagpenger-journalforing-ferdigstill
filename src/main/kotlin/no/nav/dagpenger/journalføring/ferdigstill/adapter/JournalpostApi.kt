@@ -34,9 +34,9 @@ internal enum class SaksType {
     FAGSAK
 }
 
+data class Bruker(val id: String, val idType: String = "FNR")
 internal data class Sak(val saksType: SaksType, val fagsakId: String?, val fagsaksystem: String?)
 internal data class Avsender(val navn: String)
-internal data class Bruker(val id: String, val idType: String = "FNR")
 internal data class Dokument(val dokumentInfoId: String, val tittel: String)
 
 internal class JournalpostRestApi(private val url: String, private val oidcClient: OidcClient) :

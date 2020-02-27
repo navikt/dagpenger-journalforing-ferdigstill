@@ -1,14 +1,12 @@
 package no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.arena
 
 import io.kotlintest.shouldBe
-import io.kotlintest.shouldThrow
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import no.nav.dagpenger.journalføring.ferdigstill.AdapterException
 import no.nav.dagpenger.journalføring.ferdigstill.FagsakId
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSakStatus
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.BestillOppgaveArenaException
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.HentArenaSakerException
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.Bruker
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderHenvendelseAngåendeEksisterendeSaksforholdCommand
 import no.nav.dagpenger.streams.HealthStatus
@@ -31,7 +29,7 @@ internal class SoapArenaClientTest {
 
         val client = SoapArenaClient(stubbedClient, mockk())
 
-        val actual = client.bestillOppgave(StartVedtakCommand("123", "abc", "", ZonedDateTime.now()))
+        val actual = client.bestillOppgave(StartVedtakCommand("123", "abc", "", ZonedDateTime.now(), ""))
 
         actual shouldBe FagsakId("123")
     }
@@ -52,33 +50,9 @@ internal class SoapArenaClientTest {
         )
 
         val client = SoapArenaClient(mockk(), ytelseskontraktV3)
-        val saker = client.hentArenaSaker("1234")
+        val harIkkeAktivSak = client.harIkkeAktivSak(Bruker("123"))
 
-        saker.isEmpty() shouldBe false
-        saker.first().fagsystemSakId shouldBe 123
-        saker.first().status shouldBe ArenaSakStatus.Inaktiv
-    }
-
-    @Test
-    fun `Skal kaste unntak med ukjent saksstatus`() {
-
-        val ytelseskontraktV3: YtelseskontraktV3 = mockk()
-
-        every {
-            ytelseskontraktV3.hentYtelseskontraktListe(any())
-        } returns WSHentYtelseskontraktListeResponse().withYtelseskontraktListe(
-            listOf(
-                WSDagpengekontrakt().withFagsystemSakId(
-                    123
-                ).withStatus("INAKT").withYtelsestype("Dagpenger")
-            )
-        )
-
-        val client = SoapArenaClient(mockk(), ytelseskontraktV3)
-
-        shouldThrow<HentArenaSakerException> {
-            client.hentArenaSaker("1234")
-        }
+        harIkkeAktivSak shouldBe true
     }
 
     @Test
@@ -106,8 +80,8 @@ internal class SoapArenaClientTest {
 
         val client = SoapArenaClient(stubbedClient, mockk())
 
-        assertFailsWith<BestillOppgaveArenaException> {
-            client.bestillOppgave(StartVedtakCommand("123456789", "abcbscb", "beskrivelse", ZonedDateTime.now()))
+        assertFailsWith<AdapterException> {
+            client.bestillOppgave(StartVedtakCommand("123456789", "abcbscb", "beskrivelse", ZonedDateTime.now(), ""))
         }
 
         verify(exactly = 3) { stubbedClient.bestillOppgave(any()) }

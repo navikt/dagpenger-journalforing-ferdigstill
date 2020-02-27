@@ -4,52 +4,28 @@ import com.squareup.moshi.Types
 import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.events.moshiInstance
-import no.nav.dagpenger.journalføring.ferdigstill.Metrics.automatiskJournalførtNeiTellerInc
-import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.brukerFrom
-import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.dokumentTitlerFrom
-import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.hasNaturligIdent
-import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.journalPostFrom
-import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.journalpostIdFrom
-import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.nullableAktørFrom
-import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.registrertDatoFrom
-import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.tildeltEnhetsNrFrom
-import no.nav.dagpenger.journalføring.ferdigstill.PacketToJoarkPayloadMapper.tittelFrom
+import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.bruker
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSakStatus
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Avsender
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.BestillOppgaveArenaException
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Bruker
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Dokument
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.JournalpostApi
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ManuellJournalføringsOppgaveClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.OppdaterJournalpostPayload
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.OppgaveCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Sak
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.SaksType
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderHenvendelseAngåendeEksisterendeSaksforholdCommand
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.createArenaTilleggsinformasjon
-import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonErInaktiv
-import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonIkkeFunnet
 import org.apache.kafka.streams.kstream.Predicate
 import java.time.LocalDateTime
 import java.time.ZoneId
 
 private val logger = KotlinLogging.logger {}
 
-private val skipjpids = setOf<String>(
-    "469409257",
-    "469408975",
-    "469409099",
-    "469409109"
-)
-
 internal val erIkkeFerdigBehandletJournalpost = Predicate<String, Packet> { _, packet ->
     packet.hasField(PacketKeys.JOURNALPOST_ID) &&
-        !packet.hasField(PacketKeys.FERDIG_BEHANDLET) && !skipjpids.contains(packet.getStringValue(PacketKeys.JOURNALPOST_ID)) // fixme - ref https://nav-it.slack.com/archives/CAHJ7634G/p1581702773024000
+        !packet.hasField(PacketKeys.FERDIG_BEHANDLET)
 }
 
-internal object PacketToJoarkPayloadMapper {
+internal object PacketMapper {
     val dokumentJsonAdapter = moshiInstance.adapter<List<Dokument>>(
         Types.newParameterizedType(
             List::class.java,
@@ -61,7 +37,7 @@ internal object PacketToJoarkPayloadMapper {
     fun avsenderFrom(packet: Packet) =
         Avsender(packet.getStringValue(PacketKeys.AVSENDER_NAVN))
 
-    fun brukerFrom(packet: Packet) =
+    fun bruker(packet: Packet) =
         Bruker(packet.getStringValue(PacketKeys.NATURLIG_IDENT))
 
     fun hasNaturligIdent(packet: Packet) = packet.hasField(PacketKeys.NATURLIG_IDENT)
@@ -70,6 +46,10 @@ internal object PacketToJoarkPayloadMapper {
             packet.getStringValue(PacketKeys.AKTØR_ID),
             "AKTØR"
         ) else null
+
+    fun henvendelse(packet: Packet): Henvendelse = Henvendelse.fra(packet.getStringValue(PacketKeys.HENVENDELSESTYPE))
+    fun harFagsakId(packet: Packet): Boolean = packet.hasField(PacketKeys.FAGSAK_ID)
+    fun harIkkeFagsakId(packet: Packet): Boolean = !harFagsakId(packet)
 
     fun tildeltEnhetsNrFrom(packet: Packet) = packet.getStringValue(PacketKeys.BEHANDLENDE_ENHET)
     fun dokumenterFrom(packet: Packet) = packet.getObjectValue(PacketKeys.DOKUMENTER) {
@@ -97,7 +77,7 @@ internal object PacketToJoarkPayloadMapper {
     fun journalPostFrom(packet: Packet, fagsakId: FagsakId?): OppdaterJournalpostPayload {
         return OppdaterJournalpostPayload(
             avsenderMottaker = avsenderFrom(packet),
-            bruker = brukerFrom(packet),
+            bruker = bruker(packet),
             tittel = tittelFrom(packet),
             sak = sakFrom(fagsakId),
             dokumenter = dokumenterFrom(packet)
@@ -111,145 +91,20 @@ internal class JournalføringFerdigstill(
     private val arenaClient: ArenaClient
 ) {
 
+    val ferdigBehandlingslenke = MarkerFerdigBehandlingslenke(null)
+    val manuellOppgaveLenke =
+        ManuellJournalføringsBehandlingslenke(manuellJournalføringsOppgaveClient, ferdigBehandlingslenke)
+    val ferdigstillOppgaveLenke = FerdigstillJournalpostBehandlingslenke(journalPostApi, manuellOppgaveLenke)
+    val oppdaterLenke = OppdaterJournalpostBehandlingslenke(journalPostApi, ferdigstillOppgaveLenke)
+    val eksisterendeSakLenke = EksisterendeSaksForholdBehandlingslenke(arenaClient, oppdaterLenke)
+    val nySakLenke = NyttSaksforholdBehandlingslenke(arenaClient, eksisterendeSakLenke)
+
     fun handlePacket(packet: Packet): Packet {
-
-        if (!hasNaturligIdent(packet)) {
-            automatiskJournalførtNeiTellerInc("ukjent_bruker")
-            journalførManuelt(packet)
-            packet.putValue(PacketKeys.FERDIG_BEHANDLET, true)
-            return packet
-        }
-
-        val henvendelse = Henvendelse.fra(packet.getStringValue(PacketKeys.HENVENDELSESTYPE))
-
-        return when (henvendelse) {
-            is NyttSaksforhold -> behandleNySøknad(packet)
-            is EksisterendeSaksforhold -> {
-                val tilleggsinformasjon =
-                    createArenaTilleggsinformasjon(dokumentTitlerFrom(packet), registrertDatoFrom(packet))
-
-                behandleHenvendelseAngåendeEksisterendeSaksforhold(
-                    packet, VurderHenvendelseAngåendeEksisterendeSaksforholdCommand(
-                        naturligIdent = brukerFrom(packet).id,
-                        behandlendeEnhetId = tildeltEnhetsNrFrom(packet),
-                        tilleggsinformasjon = tilleggsinformasjon,
-                        oppgavebeskrivelse = henvendelse.oppgavebeskrivelse,
-                        registrertDato = registrertDatoFrom(packet)
-                    )
-                )
-            }
-        }
-    }
-
-    fun behandleHenvendelseAngåendeEksisterendeSaksforhold(packet: Packet, oppgaveCommand: OppgaveCommand): Packet {
         try {
-            if (packet.getNullableBoolean(PacketKeys.FERDIGSTILT_ARENA) != true) {
-                bestillOppgave(oppgaveCommand, journalpostIdFrom(packet))
-                packet.putValue(PacketKeys.FERDIGSTILT_ARENA, true)
-            }
-
-            journalførAutomatisk(packet)
-            packet.putValue(PacketKeys.FERDIG_BEHANDLET, true)
+            return nySakLenke.håndter(packet)
         } catch (e: AdapterException) {
         }
-
         return packet
-    }
-
-    fun behandleNySøknad(packet: Packet): Packet {
-        try {
-            if (kanBestilleFagsak(packet)) {
-                val tilleggsinformasjon =
-                    createArenaTilleggsinformasjon(dokumentTitlerFrom(packet), registrertDatoFrom(packet))
-
-                val fagsakId =
-                    packet.getNullableStringValue(PacketKeys.FAGSAK_ID)?.let { FagsakId(it) }
-                        ?: bestillOppgave(
-                            StartVedtakCommand(
-                                naturligIdent = brukerFrom(packet).id,
-                                behandlendeEnhetId = tildeltEnhetsNrFrom(packet),
-                                tilleggsinformasjon = tilleggsinformasjon,
-                                registrertDato = registrertDatoFrom(packet)
-                            ),
-                            journalpostIdFrom(packet)
-                        )
-
-                if (fagsakId != null) {
-                    if (!packet.hasField(PacketKeys.FAGSAK_ID)) packet.putValue(PacketKeys.FAGSAK_ID, fagsakId.value)
-                    journalførAutomatisk(packet, fagsakId)
-                    packet.putValue(PacketKeys.FERDIG_BEHANDLET, true)
-                } else {
-                    journalførManuelt(packet)
-                    packet.putValue(PacketKeys.FERDIG_BEHANDLET, true)
-                }
-            } else {
-                journalførManuelt(packet)
-                packet.putValue(PacketKeys.FERDIG_BEHANDLET, true)
-            }
-        } catch (e: AdapterException) {
-        }
-
-        return packet
-    }
-
-    private fun journalførAutomatisk(packet: Packet, fagsakId: FagsakId? = null) {
-        val journalpostId = journalpostIdFrom(packet)
-        journalPostApi.oppdater(journalpostId, journalPostFrom(packet, fagsakId))
-        journalPostApi.ferdigstill(journalpostId)
-        Metrics.jpFerdigStillInc()
-        Metrics.automatiskJournalførtJaTellerInc()
-        logger.info { "Automatisk journalført $journalpostId" }
-    }
-
-    private fun journalførManuelt(packet: Packet) {
-        val journalpostId = journalpostIdFrom(packet)
-
-        nullableAktørFrom(packet)?.let { journalPostApi.oppdater(journalpostId, journalPostFrom(packet, null)) }
-
-        manuellJournalføringsOppgaveClient.opprettOppgave(
-            journalpostId,
-            nullableAktørFrom(packet)?.id,
-            tittelFrom(packet),
-            tildeltEnhetsNrFrom(packet),
-            registrertDatoFrom(packet)
-        )
-
-        Metrics.jpFerdigStillInc()
-        logger.info { "Manuelt journalført $journalpostId" }
-    }
-
-    private fun kanBestilleFagsak(packet: Packet): Boolean {
-        val saker = arenaClient.hentArenaSaker(brukerFrom(packet).id).also {
-            logger.info {
-                "Innsender av journalpost ${journalpostIdFrom(packet)} har ${it.filter { it.status == ArenaSakStatus.Aktiv }.size} aktive saker av ${it.size} dagpengesaker totalt"
-            }
-        }
-
-        return saker.none { it.status == ArenaSakStatus.Aktiv }
-            .also { if (!it) automatiskJournalførtNeiTellerInc("aktiv_sak") }
-    }
-
-    private fun bestillOppgave(command: OppgaveCommand, journalpostId: String): FagsakId? {
-        return try {
-            arenaClient.bestillOppgave(command)
-        } catch (e: BestillOppgaveArenaException) {
-            automatiskJournalførtNeiTellerInc(e.cause?.javaClass?.simpleName ?: "ukjent")
-
-            return when (e.cause) {
-                is BestillOppgavePersonErInaktiv -> {
-                    logger.warn { "Kan ikke bestille oppgave for journalpost $journalpostId. Person ikke arbeidssøker " }
-                    null
-                }
-                is BestillOppgavePersonIkkeFunnet -> {
-                    logger.warn { "Kan ikke bestille oppgave for journalpost $journalpostId. Person ikke funnet i arena " }
-                    null
-                }
-                else -> {
-                    logger.warn { "Kan ikke bestille oppgave for journalpost $journalpostId. Ukjent feil. " }
-                    throw AdapterException(e)
-                }
-            }
-        }
     }
 }
 
