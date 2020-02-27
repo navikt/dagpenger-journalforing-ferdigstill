@@ -43,13 +43,13 @@ internal class NyttSaksforholdBehandlingslenke(private val arena: ArenaClient, n
                     registrertDato = PacketMapper.registrertDatoFrom(packet),
                     oppgavebeskrivelse = PacketMapper.henvendelse(packet).oppgavebeskrivelse
 
-                ),
-                PacketMapper.journalpostIdFrom(packet)
+                )
             )
 
             if (fagsakId != null) {
                 packet.putValue(FAGSAK_ID, fagsakId.value)
             }
+            packet.putValue(PacketKeys.FERDIGSTILT_ARENA, true)
         }
         return neste?.håndter(packet) ?: packet
     }
@@ -107,7 +107,7 @@ internal class OppdaterJournalpostBehandlingslenke(val journalpostApi: Journalpo
         return neste?.håndter(packet) ?: packet
     }
 
-    override fun kanBehandle(packet: Packet) = true
+    override fun kanBehandle(packet: Packet) = PacketMapper.hasNaturligIdent(packet)
 
     private fun oppdaterJournalpostPayloadFrom(packet: Packet, fagsakId: FagsakId?): OppdaterJournalpostPayload {
         return OppdaterJournalpostPayload(
@@ -125,7 +125,7 @@ internal class FerdigstillJournalpostBehandlingslenke(
     neste: Behandlingslenke?
 ) : Behandlingslenke(neste) {
     override fun kanBehandle(packet: Packet) =
-        packet.hasField(PacketKeys.FERDIGSTILT_ARENA) || packet.hasField(FAGSAK_ID)
+        packet.hasField(PacketKeys.FERDIGSTILT_ARENA)
 
     override fun håndter(packet: Packet): Packet {
         if (kanBehandle(packet)) {
@@ -140,7 +140,7 @@ internal class ManuellJournalføringsBehandlingslenke(
     neste: Behandlingslenke?
 ) : Behandlingslenke(neste) {
     override fun kanBehandle(packet: Packet) =
-        !packet.hasField(PacketKeys.FERDIGSTILT_ARENA) && !packet.hasField(FAGSAK_ID)
+        !packet.hasField(PacketKeys.FERDIGSTILT_ARENA)
 
     override fun håndter(packet: Packet): Packet {
         if (kanBehandle(packet)) {
@@ -151,6 +151,17 @@ internal class ManuellJournalføringsBehandlingslenke(
                 PacketMapper.tildeltEnhetsNrFrom(packet),
                 PacketMapper.registrertDatoFrom(packet)
             )
+        }
+        return neste?.håndter(packet) ?: packet
+    }
+}
+
+internal class MarkerFerdigBehandlingslenke(neste: Behandlingslenke?) : Behandlingslenke(neste) {
+    override fun kanBehandle(packet: Packet) = true
+
+    override fun håndter(packet: Packet): Packet {
+        if (kanBehandle(packet)) {
+            packet.putValue(PacketKeys.FERDIG_BEHANDLET, true)
         }
         return neste?.håndter(packet) ?: packet
     }

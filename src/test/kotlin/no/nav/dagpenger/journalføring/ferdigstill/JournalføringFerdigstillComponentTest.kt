@@ -128,6 +128,8 @@ internal class JournalforingFerdigstillComponentTest {
     @Test
     fun ` Component test of JournalføringFerdigstill`() {
 
+        every { arenaClientMock.harIkkeAktivSak(any()) } returns true
+
         wireMockServer.addStubMapping(
             get(urlEqualTo("/rest/v1/sts/token/?grant_type=client_credentials&scope=openid"))
                 .willReturn(
@@ -174,7 +176,6 @@ internal class JournalforingFerdigstillComponentTest {
             this.putValue(PacketKeys.AKTØR_ID, "1234567")
             this.putValue(PacketKeys.JOURNALPOST_ID, journalPostId)
             this.putValue(PacketKeys.AVSENDER_NAVN, "et navn")
-            this.putValue(PacketKeys.TOGGLE_BEHANDLE_NY_SØKNAD, true)
             this.putValue(PacketKeys.BEHANDLENDE_ENHET, "9999")
             this.putValue(PacketKeys.DATO_REGISTRERT, "2020-01-01T01:01:01")
             this.putValue(PacketKeys.HENVENDELSESTYPE, "NY_SØKNAD")

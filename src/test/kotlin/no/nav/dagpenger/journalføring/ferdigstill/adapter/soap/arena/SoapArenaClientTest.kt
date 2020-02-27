@@ -7,7 +7,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import no.nav.dagpenger.journalføring.ferdigstill.FagsakId
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSakStatus
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.BestillOppgaveArenaException
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.Bruker
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.HentArenaSakerException
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderHenvendelseAngåendeEksisterendeSaksforholdCommand
@@ -52,33 +52,9 @@ internal class SoapArenaClientTest {
         )
 
         val client = SoapArenaClient(mockk(), ytelseskontraktV3)
-        val saker = client.hentArenaSaker("1234")
+        val harIkkeAktivSak = client.harIkkeAktivSak(Bruker("123"))
 
-        saker.isEmpty() shouldBe false
-        saker.first().fagsystemSakId shouldBe 123
-        saker.first().status shouldBe ArenaSakStatus.Inaktiv
-    }
-
-    @Test
-    fun `Skal kaste unntak med ukjent saksstatus`() {
-
-        val ytelseskontraktV3: YtelseskontraktV3 = mockk()
-
-        every {
-            ytelseskontraktV3.hentYtelseskontraktListe(any())
-        } returns WSHentYtelseskontraktListeResponse().withYtelseskontraktListe(
-            listOf(
-                WSDagpengekontrakt().withFagsystemSakId(
-                    123
-                ).withStatus("INAKT").withYtelsestype("Dagpenger")
-            )
-        )
-
-        val client = SoapArenaClient(mockk(), ytelseskontraktV3)
-
-        shouldThrow<HentArenaSakerException> {
-            client.hentArenaSaker("1234")
-        }
+        harIkkeAktivSak shouldBe true
     }
 
     @Test
@@ -106,7 +82,7 @@ internal class SoapArenaClientTest {
 
         val client = SoapArenaClient(stubbedClient, mockk())
 
-        assertFailsWith<BestillOppgaveArenaException> {
+        assertFailsWith<RuntimeException> {
             client.bestillOppgave(StartVedtakCommand("123456789", "abcbscb", "beskrivelse", ZonedDateTime.now(), ""))
         }
 

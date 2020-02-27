@@ -16,7 +16,6 @@ import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.tittelFrom
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSakStatus
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Avsender
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.BestillOppgaveArenaException
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Bruker
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Dokument
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.JournalpostApi
@@ -108,7 +107,8 @@ internal class JournalføringFerdigstill(
 
     fun handlePacket(packet: Packet): Packet {
         try {
-            val manuellOppgaveLenke = ManuellJournalføringsBehandlingslenke(manuellJournalføringsOppgaveClient, null)
+            val ferdigBehandlingslenke = MarkerFerdigBehandlingslenke(null)
+            val manuellOppgaveLenke = ManuellJournalføringsBehandlingslenke(manuellJournalføringsOppgaveClient, ferdigBehandlingslenke)
             val ferdigstillOppgaveLenke = FerdigstillJournalpostBehandlingslenke(journalPostApi, manuellOppgaveLenke)
             val oppdaterLenke = OppdaterJournalpostBehandlingslenke(journalPostApi, ferdigstillOppgaveLenke)
             val eksisterendeSakLenke = EksisterendeSaksForholdBehandlingslenke(arenaClient, oppdaterLenke)
@@ -119,7 +119,7 @@ internal class JournalføringFerdigstill(
         }
         return packet
     }
-
+/*
     fun behandleHenvendelseAngåendeEksisterendeSaksforhold(packet: Packet, oppgaveCommand: OppgaveCommand): Packet {
         try {
             if (packet.getNullableBoolean(PacketKeys.FERDIGSTILT_ARENA) != true) {
@@ -230,7 +230,7 @@ internal class JournalføringFerdigstill(
                 }
             }
         }
-    }
+    }*/
 }
 
 class AdapterException(val exception: Throwable) : RuntimeException(exception)

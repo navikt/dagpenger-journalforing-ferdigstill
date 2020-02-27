@@ -59,7 +59,8 @@ class KafkaFeilhåndteringTest {
         val behandlendeEnhet = "9999"
         val aktørId = "987654321"
 
-        every { arenaClient.hentArenaSaker(naturligIdent) } returns listOf(ArenaSak(123, ArenaSakStatus.Inaktiv))
+        every { arenaClient.harIkkeAktivSak(any()) } returns true
+
         every { arenaClient.bestillOppgave(any()) } returns FagsakId("abc")
         every { journalpostApi.oppdater(any(), any()) } throws AdapterException(RuntimeException()) andThen { Unit }
 

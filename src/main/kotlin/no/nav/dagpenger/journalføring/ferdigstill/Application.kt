@@ -67,6 +67,7 @@ fun main() {
     val arenaClient: ArenaClient =
         SoapArenaClient(behandleArbeidsytelseSak, ytelseskontraktV3)
 
+
     val stsOidcClient = StsOidcClient(configuration.sts.baseUrl, configuration.sts.username, configuration.sts.password)
 
     val soapStsClient = stsClient(
