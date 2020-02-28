@@ -1,21 +1,17 @@
-package no.nav.dagpenger.journalføring.ferdigstill
+package no.nav.dagpenger.journalføring.ferdigstill.adapter.vilkårtester
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.Bruker
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.vilkårtester.VilkårtesterClient
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
-class VilkårtesterTest {
-
+class BehovClientTest {
     companion object {
         val server: WireMockServer = WireMockServer(WireMockConfiguration.options().dynamicPort())
 
@@ -58,10 +54,9 @@ class VilkårtesterTest {
                 )
         )
 
-        val client = VilkårtesterClient(server.url(""), equalToPattern.value)
+        val client = BehovClient(server.url(""), equalToPattern.value)
 
-        client.hentSubsumsjonFor(aktørId)
-
+        client.startBehov(aktørId)
 
         val expectedRequest = """
                     {
