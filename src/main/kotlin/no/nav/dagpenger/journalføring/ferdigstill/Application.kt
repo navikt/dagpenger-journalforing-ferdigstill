@@ -1,6 +1,8 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
 import mu.KotlinLogging
+import no.finn.unleash.DefaultUnleash
+import no.finn.unleash.Unleash
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.GosysOppgaveClient
@@ -10,6 +12,7 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.SoapPort
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.arena.SoapArenaClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.configureFor
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.stsClient
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.vilkårtester.Vilkårtester
 import no.nav.dagpenger.oidc.StsOidcClient
 import no.nav.dagpenger.streams.River
 import no.nav.dagpenger.streams.streamConfig
@@ -89,6 +92,9 @@ fun main() {
         soapStsClient.configureFor(ytelseskontraktV3)
     }
 
+    val unleash: Unleash = DefaultUnleash(configuration.application.unleashConfig)
+
+    val vilkårtester = Vilkårtester(configuration.application.regelApiBaseUrl, configuration.auth.regelApiKey)
     val journalFøringFerdigstill = JournalføringFerdigstill(
         JournalpostRestApi(
             configuration.journalPostApiUrl,
@@ -98,7 +104,9 @@ fun main() {
             configuration.gosysApiUrl,
             stsOidcClient
         ),
-        arenaClient
+        arenaClient,
+        vilkårtester,
+        unleash
     )
 
     Application(configuration, journalFøringFerdigstill).start()

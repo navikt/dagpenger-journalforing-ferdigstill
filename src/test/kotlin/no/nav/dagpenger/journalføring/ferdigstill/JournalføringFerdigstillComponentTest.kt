@@ -18,6 +18,7 @@ import io.kotlintest.matchers.string.shouldContain
 import io.kotlintest.shouldBe
 import io.mockk.every
 import io.mockk.mockk
+import no.finn.unleash.FakeUnleash
 import no.nav.common.JAASCredential
 import no.nav.common.KafkaEnvironment
 import no.nav.common.embeddedutils.getAvailablePort
@@ -87,7 +88,9 @@ internal class JournalforingFerdigstillComponentTest {
                 stsOidcClient
             ),
             manuellJournalføringsOppgaveClient = mockk(relaxed = true),
-            arenaClient = arenaClientMock
+            arenaClient = arenaClientMock,
+            vilkårtester = mockk(),
+            unleash = FakeUnleash()
         )
 
         private val app = Application(configuration, journalFøringFerdigstill)

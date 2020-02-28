@@ -1,6 +1,7 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
 internal object PacketKeys {
+    const val OPPFYLLER_MINSTEINNTEKT: String = "oppfyllerMinsteinntekt"
     const val FERDIGSTILT_ARENA: String = "ferdigstiltIArena"
     const val AVSENDER_NAVN: String = "avsenderNavn"
     const val JOURNALPOST_ID: String = "journalpostId"

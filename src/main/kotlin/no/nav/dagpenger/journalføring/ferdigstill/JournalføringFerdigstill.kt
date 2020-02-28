@@ -2,6 +2,7 @@ package no.nav.dagpenger.journalføring.ferdigstill
 
 import com.squareup.moshi.Types
 import mu.KotlinLogging
+import no.finn.unleash.Unleash
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.events.moshiInstance
 import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.bruker
@@ -14,6 +15,7 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.ManuellJournalføring
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.OppdaterJournalpostPayload
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Sak
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.SaksType
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.vilkårtester.Vilkårtester
 import org.apache.kafka.streams.kstream.Predicate
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -46,7 +48,8 @@ internal object PacketMapper {
             packet.getStringValue(PacketKeys.AKTØR_ID),
             "AKTØR"
         ) else null
-
+    fun aktørFrom(packet: Packet) = Bruker(packet.getStringValue(PacketKeys.AKTØR_ID),
+        "AKTØR")
     fun henvendelse(packet: Packet): Henvendelse = Henvendelse.fra(packet.getStringValue(PacketKeys.HENVENDELSESTYPE))
     fun harFagsakId(packet: Packet): Boolean = packet.hasField(PacketKeys.FAGSAK_ID)
     fun harIkkeFagsakId(packet: Packet): Boolean = !harFagsakId(packet)
@@ -83,12 +86,16 @@ internal object PacketMapper {
             dokumenter = dokumenterFrom(packet)
         )
     }
+
+    fun hasAktørId(packet: Packet) = packet.hasField(PacketKeys.AKTØR_ID)
 }
 
 internal class JournalføringFerdigstill(
     private val journalPostApi: JournalpostApi,
     private val manuellJournalføringsOppgaveClient: ManuellJournalføringsOppgaveClient,
-    private val arenaClient: ArenaClient
+    private val arenaClient: ArenaClient,
+    private val vilkårtester: Vilkårtester,
+    private val unleash: Unleash
 ) {
 
     val ferdigBehandlingslenke = MarkerFerdigBehandlingslenke(null)
@@ -98,6 +105,7 @@ internal class JournalføringFerdigstill(
     val oppdaterLenke = OppdaterJournalpostBehandlingslenke(journalPostApi, ferdigstillOppgaveLenke)
     val eksisterendeSakLenke = EksisterendeSaksForholdBehandlingslenke(arenaClient, oppdaterLenke)
     val nySakLenke = NyttSaksforholdBehandlingslenke(arenaClient, eksisterendeSakLenke)
+    val vilkårtestingLenke = OppfyllerMinsteinntektBehandlingsLenke(vilkårtester, unleash, nySakLenke)
 
     fun handlePacket(packet: Packet): Packet {
         try {
