@@ -75,7 +75,7 @@ internal class JournalføringFerdigstillTest {
             arenaClient.harIkkeAktivSak(any())
         } returns true
 
-        JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient).apply {
+        JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient, mockk(), mockk()).apply {
             val generellPacket = Packet().apply {
                 this.putValue(JOURNALPOST_ID, "journalPostId")
                 this.putValue(AVSENDER_NAVN, "et navn")
@@ -120,7 +120,7 @@ internal class JournalføringFerdigstillTest {
     @Test
     fun `Opprett manuell journalføringsoppgave når bruker er ukjent`() {
         val journalFøringFerdigstill =
-            JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient)
+            JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient, mockk(), mockk())
         val journalPostId = "journalPostId"
         val dato = "2020-01-01T01:01:01"
         val zonedDateTime = LocalDateTime.parse(dato).atZone(ZoneId.of("Europe/Oslo"))
@@ -157,7 +157,7 @@ internal class JournalføringFerdigstillTest {
     @Test
     fun `Opprett fagsak og oppgave, og ferdigstill, når bruker ikke har aktiv fagsak`() {
         val journalFøringFerdigstill =
-            JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient)
+            JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient, mockk(), mockk())
         val journalPostId = "journalPostId"
         val naturligIdent = "12345678910"
         val behandlendeEnhet = "9999"
@@ -198,30 +198,6 @@ internal class JournalføringFerdigstillTest {
         slot.captured.naturligIdent shouldBe naturligIdent
     }
 
-    /*@Test
-    fun `kun journalføring blir gjort når oppgave er bestilt`() {
-
-        val packet = lagPacket("journalPostId", "12345678910", "9999").apply {
-            this.putValue(PacketKeys.FERDIGSTILT_ARENA, true)
-        }
-
-        val journalFøringFerdigstill =
-            JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient)
-
-        journalFøringFerdigstill.behandleHenvendelseAngåendeEksisterendeSaksforhold(
-            packet,
-            VurderHenvendelseAngåendeEksisterendeSaksforholdCommand("", "", "", ZonedDateTime.now(), "")
-        )
-
-        verify(exactly = 0) {
-            arenaClient.bestillOppgave(any())
-        }
-        verify(exactly = 1) {
-            journalPostApi.oppdater(any(), any())
-            journalPostApi.ferdigstill(any())
-        }
-    }*/
-
     @Test
     fun `Opprett oppgave, og ferdigstill, når brevkode er gjenopptak`() {
         testHenvendelseAngåendeEksisterendeSaksforhold("GJENOPPTAK")
@@ -244,7 +220,7 @@ internal class JournalføringFerdigstillTest {
 
     private fun testHenvendelseAngåendeEksisterendeSaksforhold(henvendelsestype: String) {
         val journalFøringFerdigstill =
-            JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient)
+            JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient, mockk(), mockk())
         val journalPostId = "journalPostId"
         val naturligIdent = "12345678910"
         val behandlendeEnhet = "9999"
@@ -298,7 +274,7 @@ internal class JournalføringFerdigstillTest {
     @Test
     fun `Opprett manuell journalføringsoppgave når bruker har aktiv fagsak`() {
         val journalFøringFerdigstill =
-            JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient)
+            JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient, mockk(), mockk())
         val journalPostId = "journalPostId"
         val naturligIdent = "12345678910"
         val behandlendeEnhet = "9999"
@@ -333,7 +309,7 @@ internal class JournalføringFerdigstillTest {
     @Test
     fun `Opprett manuell journalføringsoppgave når bestilling av arena-oppgave feiler`() {
         val journalFøringFerdigstill =
-            JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient)
+            JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient, mockk(), mockk())
         val journalPostId = "journalPostId"
         val naturligIdent = "12345678910"
         val behandlendeEnhet = "9999"

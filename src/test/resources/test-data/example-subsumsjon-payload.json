@@ -1,0 +1,103 @@
+{
+  "id": "01DBFXH3YD8JQ6ADK6Y7EX4K07",
+  "behovId": "01DBFXH33AAB6MAEK3SRQE5820",
+  "faktum": {
+    "aktorId": "0304060708090",
+    "vedtakId": 123456,
+    "beregningsdato": "2019-05-08",
+    "inntektsId": "01DBFXH3KBYX5YRV18CRM2NFHY",
+    "inntektAvvik": false,
+    "inntektManueltRedigert": false,
+    "antallBarn": 0
+  },
+  "grunnlagResultat": {
+    "avkortet": "150000",
+    "uavkortet": "150000",
+    "sporingsId": "01DBFXH3PB8DXWJHB8G2YJ9E2W",
+    "harAvkortet": false,
+    "subsumsjonsId": "01DBFXH3PBT5MSBEB9RN3WQRMS",
+    "beregningsregel": "ArbeidsinntektSiste12",
+    "regelIdentifikator": "Grunnlag.v1",
+    "grunnlagInntektsPerioder": [
+      {
+        "inntekt": "150000",
+        "periode": 1,
+        "inntektsPeriode": {
+          "sisteMåned": "2019-04",
+          "førsteMåned": "2018-05"
+        },
+        "inneholderFangstOgFisk": false
+      },
+      {
+        "inntekt": "0",
+        "periode": 2,
+        "inntektsPeriode": {
+          "sisteMåned": "2018-04",
+          "førsteMåned": "2017-05"
+        },
+        "inneholderFangstOgFisk": false
+      },
+      {
+        "inntekt": "0",
+        "periode": 3,
+        "inntektsPeriode": {
+          "sisteMåned": "2017-04",
+          "førsteMåned": "2016-05"
+        },
+        "inneholderFangstOgFisk": false
+      }
+    ]
+  },
+  "minsteinntektResultat": {
+    "sporingsId": "01DBFXH3N13T7RAF8R17WQHPWZ",
+    "subsumsjonsId": "01DBFXH3N1BSSVXB6X0GVFV7X3",
+    "regelIdentifikator": "Minsteinntekt.v1",
+    "oppfyllerMinsteinntekt": true,
+    "minsteinntektInntektsPerioder": [
+      {
+        "andel": "150000",
+        "inntekt": "150000",
+        "periode": 1,
+        "inntektsPeriode": {
+          "sisteMåned": "2019-04",
+          "førsteMåned": "2018-05"
+        },
+        "inneholderFangstOgFisk": false
+      },
+      {
+        "andel": "0",
+        "inntekt": "0",
+        "periode": 2,
+        "inntektsPeriode": {
+          "sisteMåned": "2018-04",
+          "førsteMåned": "2017-05"
+        },
+        "inneholderFangstOgFisk": false
+      },
+      {
+        "andel": "0",
+        "inntekt": "0",
+        "periode": 3,
+        "inntektsPeriode": {
+          "sisteMåned": "2017-04",
+          "førsteMåned": "2016-05"
+        },
+        "inneholderFangstOgFisk": false
+      }
+    ]
+  },
+  "periodeResultat": {
+    "sporingsId": "01DBFXH3RHW3V12925Z4J8N3S8",
+    "subsumsjonsId": "01DBFXH3RHDGZAD0A7ZZYNDTKW",
+    "periodeAntallUker": 52,
+    "regelIdentifikator": "Periode.v1"
+  },
+  "satsResultat": {
+    "dagsats": 360,
+    "ukesats": 1800,
+    "sporingsId": "01DBFXH3VP92K6QB3K6TG2V22P",
+    "subsumsjonsId": "01DBFXH3VP2FKZG331B0S9VE04",
+    "regelIdentifikator": "Sats.v1",
+    "benyttet90ProsentRegel": false
+  }
+}
