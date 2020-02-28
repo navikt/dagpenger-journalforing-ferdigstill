@@ -56,10 +56,14 @@ dependencies {
         }
     }
     implementation(Dagpenger.Streams)
+
+    implementation(Fuel.fuelMoshi)
+
     implementation(Kotlin.Logging.kotlinLogging)
     implementation(Moshi.moshi)
     implementation(Moshi.moshiKotlin)
     implementation(Moshi.moshiAdapters)
+    implementation(Moshi.moshiKtor)
     implementation(Prometheus.common)
     implementation(Prometheus.hotspot)
     implementation(Prometheus.log4j2)
