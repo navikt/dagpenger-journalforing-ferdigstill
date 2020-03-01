@@ -9,38 +9,29 @@ import com.natpryce.konfig.booleanType
 import com.natpryce.konfig.intType
 import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
-import io.netty.util.NetUtil.getHostname
-import no.finn.unleash.util.UnleashConfig
 import no.nav.dagpenger.events.Packet
-import no.nav.dagpenger.ktor.auth.ApiKeyVerifier
 import no.nav.dagpenger.streams.KafkaCredential
 import no.nav.dagpenger.streams.PacketDeserializer
 import no.nav.dagpenger.streams.PacketSerializer
 import no.nav.dagpenger.streams.Topic
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.StreamsConfig
-import java.net.InetAddress
-import java.net.UnknownHostException
 
 private val localProperties = ConfigurationMap(
     mapOf(
         "application.httpPort" to "8080",
         "application.name" to "dagpenger-journalføring-ferdigstill",
         "application.profile" to Profile.LOCAL.toString(),
-        "dp.regel.api.url" to "http://localhost:666",
         "allow.insecure.soap.requests" to false.toString(),
         "journalPostApi.url" to "http://localhost",
         "gosysApi.url" to "http://localhost",
         "kafka.bootstrap.servers" to "localhost:9092",
-        "regel.api.secret" to "secret",
-        "regel.api.key" to "regelKey",
         "srvdagpenger.journalforing.ferdigstill.password" to "password",
         "srvdagpenger.journalforing.ferdigstill.username" to "user",
         "sts.url" to "http://localhost",
         "soapsecuritytokenservice.url" to "http://localhost",
         "behandlearbeidsytelsesak.v1.url" to "https://localhost/ail_ws/BehandleArbeidOgAktivitetOppgave_v1",
         "ytelseskontrakt.v3.url" to "https://localhost/ail_ws/Ytelseskontrakt_v3",
-        "unleash.url" to "http://localhost:1010",
         "kafka.processing.guarantee" to StreamsConfig.AT_LEAST_ONCE
 
     )
@@ -51,7 +42,6 @@ private val devProperties = ConfigurationMap(
         "application.name" to "dagpenger-journalføring-ferdigstill",
         "application.profile" to Profile.DEV.toString(),
         "allow.insecure.soap.requests" to true.toString(),
-        "dp.regel.api.url" to "http://dp-regel-api",
         "journalPostApi.url" to "http://dokarkiv.q1.svc.nais.local",
         "gosysApi.url" to "http://oppgave.default.svc.nais.local",
         "kafka.bootstrap.servers" to "b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443",
@@ -59,7 +49,6 @@ private val devProperties = ConfigurationMap(
         "soapsecuritytokenservice.url" to "https://sts-q1.preprod.local/SecurityTokenServiceProvider/",
         "behandlearbeidsytelsesak.v1.url" to "https://arena-q1.adeo.no/ail_ws/BehandleArbeidOgAktivitetOppgave_v1",
         "ytelseskontrakt.v3.url" to "https://arena-q1.adeo.no/ail_ws/Ytelseskontrakt_v3",
-        "unleash.url" to "http://unleash.default.svc.nais.local/api",
         "kafka.processing.guarantee" to StreamsConfig.AT_LEAST_ONCE
     )
 )
@@ -69,7 +58,6 @@ private val prodProperties = ConfigurationMap(
         "application.name" to "dagpenger-journalføring-ferdigstill",
         "application.profile" to Profile.PROD.toString(),
         "allow.insecure.soap.requests" to true.toString(),
-        "dp.regel.api.url" to "http://dp-regel-api",
         "journalPostApi.url" to "http://dokarkiv.default.svc.nais.local",
         "gosysApi.url" to "http://oppgave.default.svc.nais.local",
         "kafka.bootstrap.servers" to "a01apvl00145.adeo.no:8443,a01apvl00146.adeo.no:8443,a01apvl00147.adeo.no:8443,a01apvl00148.adeo.no:8443,a01apvl00149.adeo.no:8443,a01apvl00150.adeo.no:8443",
@@ -77,7 +65,6 @@ private val prodProperties = ConfigurationMap(
         "soapsecuritytokenservice.url" to "https://sts.adeo.no/SecurityTokenServiceProvider/",
         "behandlearbeidsytelsesak.v1.url" to "https://arena.adeo.no/ail_ws/BehandleArbeidOgAktivitetOppgave_v1",
         "ytelseskontrakt.v3.url" to "https://arena.adeo.no/ail_ws/Ytelseskontrakt_v3",
-        "unleash.url" to "https://unleash.nais.adeo.no/api/",
         "kafka.processing.guarantee" to StreamsConfig.EXACTLY_ONCE
     )
 )
@@ -95,7 +82,6 @@ fun config(): Configuration {
 }
 
 data class Configuration(
-    val auth: Auth = Auth(),
     val kafka: Kafka = Kafka(),
     val application: Application = Application(),
     val journalPostApiUrl: String = config()[Key("journalPostApi.url", stringType)],
@@ -105,12 +91,6 @@ data class Configuration(
     val soapSTSClient: SoapSTSClient = SoapSTSClient(),
     val sts: Sts = Sts()
 ) {
-    class Auth(
-        regelApiSecret: String = config()[Key("regel.api.secret", stringType)],
-        regelApiKeyPlain: String = config()[Key("regel.api.key", stringType)]
-    ) {
-        val regelApiKey = ApiKeyVerifier(regelApiSecret).generate(regelApiKeyPlain)
-    }
 
     data class Kafka(
         val dagpengerJournalpostTopic: Topic<String, Packet> = Topic(
@@ -142,13 +122,7 @@ data class Configuration(
     data class Application(
         val profile: Profile = config()[Key("application.profile", stringType)].let { Profile.valueOf(it) },
         val httpPort: Int = config()[Key("application.httpPort", intType)],
-        val name: String = config()[Key("application.name", stringType)],
-        val unleashConfig: UnleashConfig = UnleashConfig.builder()
-            .appName(config().getOrElse(Key("app.name", stringType), "dagpenger-journalforing-ferdigstill"))
-            .instanceId(getHostname())
-            .unleashAPI(config()[Key("unleash.url", stringType)])
-            .build(),
-        val regelApiBaseUrl: String = config()[Key("dp.regel.api.url", stringType)]
+        val name: String = config()[Key("application.name", stringType)]
     )
 
     data class BehandleArbeidsytelseSakConfig(
@@ -162,13 +136,4 @@ data class Configuration(
 
 enum class Profile {
     LOCAL, DEV, PROD
-}
-
-fun getHostname(): String {
-    return try {
-        val addr: InetAddress = InetAddress.getLocalHost()
-        addr.hostName
-    } catch (e: UnknownHostException) {
-        "unknown"
-    }
 }

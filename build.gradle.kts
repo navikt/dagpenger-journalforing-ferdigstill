@@ -56,9 +56,6 @@ dependencies {
         }
     }
     implementation(Dagpenger.Streams)
-
-    implementation(Fuel.fuelMoshi)
-
     implementation(Kotlin.Logging.kotlinLogging)
     implementation(Moshi.moshi)
     implementation(Moshi.moshiKotlin)
