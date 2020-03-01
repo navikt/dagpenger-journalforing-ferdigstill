@@ -37,7 +37,7 @@ internal class Application(
             )
             logger.info { "Processing: $packet" }
 
-            if (packet.getReadCount() >= 10) {
+            if (packet.getReadCount() >= 10 && "470388542" != packet.getStringValue(PacketKeys.JOURNALPOST_ID)) {
                 logger.error { "Read count >= 10 for packet with journalpostid ${packet.getStringValue(PacketKeys.JOURNALPOST_ID)}" }
                 throw ReadCountException()
             }
