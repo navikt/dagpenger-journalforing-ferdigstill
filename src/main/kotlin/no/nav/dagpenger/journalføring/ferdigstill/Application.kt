@@ -30,6 +30,8 @@ internal class Application(
 
     override fun filterPredicates() = listOf(erIkkeFerdigBehandletJournalpost)
 
+    private val skipIds = setOf<String>("470388542", "470388626", "470388799")
+
     override fun onPacket(packet: Packet): Packet {
         try {
             ThreadContext.put(
@@ -37,7 +39,7 @@ internal class Application(
             )
             logger.info { "Processing: $packet" }
 
-            if (packet.getReadCount() >= 10 && "470388542" != packet.getStringValue(PacketKeys.JOURNALPOST_ID)) {
+            if (packet.getReadCount() >= 10 && !skipIds.contains(packet.getStringValue(PacketKeys.JOURNALPOST_ID))) {
                 logger.error { "Read count >= 10 for packet with journalpostid ${packet.getStringValue(PacketKeys.JOURNALPOST_ID)}" }
                 throw ReadCountException()
             }
