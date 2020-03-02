@@ -18,7 +18,6 @@ import no.nav.dagpenger.streams.River
 import no.nav.dagpenger.streams.streamConfig
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3
 import org.apache.kafka.streams.StreamsConfig
-import org.apache.kafka.streams.kstream.Predicate
 import org.apache.logging.log4j.ThreadContext
 import java.util.Properties
 
@@ -32,11 +31,7 @@ internal class Application(
     override val SERVICE_APP_ID = configuration.application.name
     override val HTTP_PORT: Int = configuration.application.httpPort
 
-    private val skipIds = setOf<String>("470388542", "470388626", "470388799")
-
-    override fun filterPredicates() = listOf(erIkkeFerdigBehandletJournalpost) + Predicate { _, packet ->
-        !skipIds.contains(packet.getStringValue(PacketKeys.JOURNALPOST_ID))
-    }
+    override fun filterPredicates() = listOf(erIkkeFerdigBehandletJournalpost)
 
     override fun onPacket(packet: Packet): Packet {
         try {
