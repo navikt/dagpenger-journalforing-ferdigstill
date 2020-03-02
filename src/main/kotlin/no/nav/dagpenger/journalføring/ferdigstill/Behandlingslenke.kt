@@ -133,6 +133,7 @@ internal class OppdaterJournalpostBehandlingslenke(val journalpostApi: Journalpo
                     packet,
                     packet.getNullableStringValue(FAGSAK_ID)?.let { FagsakId(it) })
             )
+            logger.info { "Oppdatert journalpost" }
         }
         return neste?.håndter(packet) ?: packet
     }
