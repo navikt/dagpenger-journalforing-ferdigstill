@@ -1,6 +1,7 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
 import mu.KotlinLogging
+import no.finn.unleash.Unleash
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.FAGSAK_ID
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
@@ -10,6 +11,7 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.OppdaterJournalpostPa
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderHenvendelseAngåendeEksisterendeSaksforholdCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.createArenaTilleggsinformasjon
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.vilkårtester.Vilkårtester
 
 private val logger = KotlinLogging.logger {}
 
@@ -17,6 +19,33 @@ private val logger = KotlinLogging.logger {}
 abstract class Behandlingslenke(protected val neste: Behandlingslenke? = null) {
     abstract fun håndter(packet: Packet): Packet
     abstract fun kanBehandle(packet: Packet): Boolean
+}
+
+internal class OppfyllerMinsteinntektBehandlingsLenke(
+    private val vilkårtester: Vilkårtester,
+    private val toggle: Unleash,
+    neste: Behandlingslenke?
+) : Behandlingslenke(neste) {
+    override fun håndter(packet: Packet): Packet {
+        try {
+            val oppfyllerMinsteinntekt =
+                vilkårtester.harBeståttMinsteArbeidsinntektVilkår(PacketMapper.aktørFrom(packet).id)
+
+            oppfyllerMinsteinntekt?.let {
+                packet.putValue(PacketKeys.OPPFYLLER_MINSTEINNTEKT, it)
+            }
+        } catch (e: Exception) {
+            logger.warn(e) { "Kunne ikke vurdere minste arbeidsinntekt" }
+        }
+        return neste?.håndter(packet) ?: packet
+    }
+
+    override fun kanBehandle(packet: Packet) =
+        toggle.isEnabled("dagpenger-journalforing-ferdigstill.vilkaartesting") &&
+        PacketMapper.hasNaturligIdent(packet) &&
+            PacketMapper.hasAktørId(packet) &&
+            PacketMapper.harIkkeFagsakId(packet) &&
+            PacketMapper.henvendelse(packet) == NyttSaksforhold
 }
 
 internal class NyttSaksforholdBehandlingslenke(private val arena: ArenaClient, neste: Behandlingslenke?) :
