@@ -249,7 +249,7 @@ internal class JournalføringFerdigstillTest {
 
         val packet = lagPacket(journalPostId, naturligIdent, behandlendeEnhet, "NY_SØKNAD")
 
-        val finishedPacket = journalFøringFerdigstill.handlePacket(packet)
+        journalFøringFerdigstill.handlePacket(packet)
 
         verify {
             arenaClient.bestillOppgave(any())
