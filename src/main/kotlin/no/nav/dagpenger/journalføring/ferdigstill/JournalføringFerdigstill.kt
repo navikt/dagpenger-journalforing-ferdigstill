@@ -48,12 +48,8 @@ internal object PacketMapper {
             packet.getStringValue(PacketKeys.AKTØR_ID),
             "AKTØR"
         ) else null
-
-    fun aktørFrom(packet: Packet) = Bruker(
-        packet.getStringValue(PacketKeys.AKTØR_ID),
-        "AKTØR"
-    )
-
+    fun aktørFrom(packet: Packet) = Bruker(packet.getStringValue(PacketKeys.AKTØR_ID),
+        "AKTØR")
     fun henvendelse(packet: Packet): Henvendelse = Henvendelse.fra(packet.getStringValue(PacketKeys.HENVENDELSESTYPE))
     fun harFagsakId(packet: Packet): Boolean = packet.hasField(PacketKeys.FAGSAK_ID)
     fun harIkkeFagsakId(packet: Packet): Boolean = !harFagsakId(packet)
