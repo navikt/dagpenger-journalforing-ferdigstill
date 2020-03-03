@@ -7,6 +7,8 @@ spec:
     paths:
       - kvPath: "serviceuser/data/dev/srvdp-jrnf-ferdig"
         mountPath: "/secrets/serviceuser/srvdp-jrnf-ferdig"
+      - kvPath: "kv/preprod/fss/dagpenger-journalforing-ferdigstill/default"
+        mountPath: "/var/run/secrets/nais.io/vault/"
 
 
 
