@@ -9,7 +9,6 @@ import com.natpryce.konfig.booleanType
 import com.natpryce.konfig.intType
 import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
-import io.netty.util.NetUtil.getHostname
 import no.finn.unleash.util.UnleashConfig
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.ktor.auth.ApiKeyVerifier
@@ -41,6 +40,7 @@ private val localProperties = ConfigurationMap(
         "behandlearbeidsytelsesak.v1.url" to "https://localhost/ail_ws/BehandleArbeidOgAktivitetOppgave_v1",
         "ytelseskontrakt.v3.url" to "https://localhost/ail_ws/Ytelseskontrakt_v3",
         "unleash.url" to "http://localhost:1010",
+        "auto.offset.reset" to "earliest",
         "kafka.processing.guarantee" to StreamsConfig.AT_LEAST_ONCE
 
     )
@@ -60,6 +60,7 @@ private val devProperties = ConfigurationMap(
         "behandlearbeidsytelsesak.v1.url" to "https://arena-q1.adeo.no/ail_ws/BehandleArbeidOgAktivitetOppgave_v1",
         "ytelseskontrakt.v3.url" to "https://arena-q1.adeo.no/ail_ws/Ytelseskontrakt_v3",
         "unleash.url" to "http://unleash.default.svc.nais.local/api",
+        "auto.offset.reset" to "latest",
         "kafka.processing.guarantee" to StreamsConfig.AT_LEAST_ONCE
     )
 )
@@ -78,6 +79,7 @@ private val prodProperties = ConfigurationMap(
         "behandlearbeidsytelsesak.v1.url" to "https://arena.adeo.no/ail_ws/BehandleArbeidOgAktivitetOppgave_v1",
         "ytelseskontrakt.v3.url" to "https://arena.adeo.no/ail_ws/Ytelseskontrakt_v3",
         "unleash.url" to "https://unleash.nais.adeo.no/api/",
+        "auto.offset.reset" to "earliest",
         "kafka.processing.guarantee" to StreamsConfig.EXACTLY_ONCE
     )
 )
@@ -123,6 +125,7 @@ data class Configuration(
             username = config()[Key("srvdagpenger.journalforing.ferdigstill.username", stringType)],
             password = config()[Key("srvdagpenger.journalforing.ferdigstill.password", stringType)]
         ),
+        val autoOffsetReset: String = config()[Key("auto.offset.reset", stringType)],
         val processingGuarantee: String = config()[Key("kafka.processing.guarantee", stringType)]
     )
 
