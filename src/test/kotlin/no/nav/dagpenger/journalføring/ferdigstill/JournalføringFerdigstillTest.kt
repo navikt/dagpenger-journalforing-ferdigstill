@@ -8,6 +8,7 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import io.prometheus.client.CollectorRegistry
+import no.finn.unleash.FakeUnleash
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.AKTØR_ID
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.AVSENDER_NAVN
@@ -25,6 +26,7 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.ManuellJournalføring
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.OppgaveCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderHenvendelseAngåendeEksisterendeSaksforholdCommand
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.vilkårtester.Vilkårtester
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonErInaktiv
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonIkkeFunnet
 import org.junit.jupiter.api.Test
@@ -75,7 +77,13 @@ internal class JournalføringFerdigstillTest {
             arenaClient.harIkkeAktivSak(any())
         } returns true
 
-        JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient, mockk(), mockk()).apply {
+        JournalføringFerdigstill(
+            journalPostApi,
+            manuellJournalføringsOppgaveClient,
+            arenaClient,
+            mockk(),
+            mockk()
+        ).apply {
             val generellPacket = Packet().apply {
                 this.putValue(JOURNALPOST_ID, "journalPostId")
                 this.putValue(AVSENDER_NAVN, "et navn")
@@ -216,6 +224,41 @@ internal class JournalføringFerdigstillTest {
     @Test
     fun `Opprett oppgave, og ferdigstill, når henvendelsestype er klage_anke`() {
         testHenvendelseAngåendeEksisterendeSaksforhold("KLAGE_ANKE")
+    }
+
+    @Test
+    fun `Ved kandidat for avslag basert på minsteinntekt spesifiseres dette i oppgavebeskrivelsen`() {
+        val vilkårtester = mockk<Vilkårtester>()
+        val journalFøringFerdigstill =
+            JournalføringFerdigstill(
+                journalPostApi,
+                manuellJournalføringsOppgaveClient,
+                arenaClient,
+                vilkårtester,
+                FakeUnleash().apply { enableAll() }
+            )
+        val journalPostId = "journalPostId"
+        val naturligIdent = "12345678910"
+        val behandlendeEnhet = "9999"
+
+        val slot = slot<OppgaveCommand>()
+
+        every { vilkårtester.harBeståttMinsteArbeidsinntektVilkår(any()) } returns false
+        every { arenaClient.bestillOppgave(command = capture(slot)) } returns null
+        every { arenaClient.harIkkeAktivSak(any()) } returns true
+
+        val packet = lagPacket(journalPostId, naturligIdent, behandlendeEnhet, "NY_SØKNAD")
+
+        val finishedPacket = journalFøringFerdigstill.handlePacket(packet)
+
+        verify {
+            arenaClient.bestillOppgave(any())
+            journalPostApi.oppdater(journalPostId, any())
+            journalPostApi.ferdigstill(journalPostId)
+        }
+
+        slot.captured.shouldBeTypeOf<StartVedtakCommand>()
+        slot.captured.oppgavebeskrivelse shouldBe "Kandidat for avslag: minsteinntekt"
     }
 
     private fun testHenvendelseAngåendeEksisterendeSaksforhold(henvendelsestype: String) {
