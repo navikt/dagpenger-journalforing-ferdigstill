@@ -26,6 +26,13 @@ internal class OppfyllerMinsteinntektBehandlingsLenke(
     private val toggle: Unleash,
     neste: Behandlingslenke?
 ) : Behandlingslenke(neste) {
+    override fun kanBehandle(packet: Packet) =
+        toggle.isEnabled("dagpenger-journalforing-ferdigstill.vilkaartesting") &&
+            PacketMapper.hasNaturligIdent(packet) &&
+            PacketMapper.hasAktørId(packet) &&
+            PacketMapper.harIkkeFagsakId(packet) &&
+            PacketMapper.henvendelse(packet) == NyttSaksforhold
+
     override fun håndter(packet: Packet): Packet {
         try {
             val oppfyllerMinsteinntekt =
@@ -39,13 +46,6 @@ internal class OppfyllerMinsteinntektBehandlingsLenke(
         }
         return neste?.håndter(packet) ?: packet
     }
-
-    override fun kanBehandle(packet: Packet) =
-        toggle.isEnabled("dagpenger-journalforing-ferdigstill.vilkaartesting") &&
-        PacketMapper.hasNaturligIdent(packet) &&
-            PacketMapper.hasAktørId(packet) &&
-            PacketMapper.harIkkeFagsakId(packet) &&
-            PacketMapper.henvendelse(packet) == NyttSaksforhold
 }
 
 internal class NyttSaksforholdBehandlingslenke(private val arena: ArenaClient, neste: Behandlingslenke?) :
@@ -71,7 +71,9 @@ internal class NyttSaksforholdBehandlingslenke(private val arena: ArenaClient, n
                     behandlendeEnhetId = PacketMapper.tildeltEnhetsNrFrom(packet),
                     tilleggsinformasjon = tilleggsinformasjon,
                     registrertDato = PacketMapper.registrertDatoFrom(packet),
-                    oppgavebeskrivelse = PacketMapper.henvendelse(packet).oppgavebeskrivelse
+                    oppgavebeskrivelse = if (packet.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) == false)
+                        "Kandidat for avslag: minsteinntekt"
+                    else PacketMapper.henvendelse(packet).oppgavebeskrivelse
 
                 )
             )

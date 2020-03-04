@@ -109,7 +109,7 @@ internal class JournalføringFerdigstill(
 
     fun handlePacket(packet: Packet): Packet {
         try {
-            return nySakLenke.håndter(packet)
+            return vilkårtestingLenke.håndter(packet)
         } catch (e: AdapterException) {
         }
         return packet
