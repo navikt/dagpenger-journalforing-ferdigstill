@@ -34,15 +34,17 @@ internal class OppfyllerMinsteinntektBehandlingsLenke(
             PacketMapper.henvendelse(packet) == NyttSaksforhold
 
     override fun håndter(packet: Packet): Packet {
-        try {
-            val oppfyllerMinsteinntekt =
-                vilkårtester.harBeståttMinsteArbeidsinntektVilkår(PacketMapper.aktørFrom(packet).id)
+        if (kanBehandle(packet)) {
+            try {
+                val oppfyllerMinsteinntekt =
+                    vilkårtester.harBeståttMinsteArbeidsinntektVilkår(PacketMapper.aktørFrom(packet).id)
 
-            oppfyllerMinsteinntekt?.let {
-                packet.putValue(PacketKeys.OPPFYLLER_MINSTEINNTEKT, it)
+                oppfyllerMinsteinntekt?.let {
+                    packet.putValue(PacketKeys.OPPFYLLER_MINSTEINNTEKT, it)
+                }
+            } catch (e: Exception) {
+                logger.warn(e) { "Kunne ikke vurdere minste arbeidsinntekt" }
             }
-        } catch (e: Exception) {
-            logger.warn(e) { "Kunne ikke vurdere minste arbeidsinntekt" }
         }
         return neste?.håndter(packet) ?: packet
     }

@@ -6,6 +6,7 @@ import io.kotlintest.shouldThrow
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import no.finn.unleash.FakeUnleash
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Dokument
@@ -49,7 +50,7 @@ class KafkaFeilhåndteringTest {
     @Test
     fun `skal fortsette der den slapp når noe feiler`() {
         val journalFøringFerdigstill =
-            JournalføringFerdigstill(journalpostApi, manuellJournalføringsOppgaveClient, arenaClient, mockk(), mockk())
+            JournalføringFerdigstill(journalpostApi, manuellJournalføringsOppgaveClient, arenaClient, mockk(), FakeUnleash())
         val application = Application(configuration, journalFøringFerdigstill)
 
         val journalPostId = "journalPostId"
