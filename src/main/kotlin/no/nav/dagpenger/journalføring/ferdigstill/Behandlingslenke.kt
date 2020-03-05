@@ -74,7 +74,7 @@ internal class NyttSaksforholdBehandlingslenke(private val arena: ArenaClient, n
                     tilleggsinformasjon = tilleggsinformasjon,
                     registrertDato = PacketMapper.registrertDatoFrom(packet),
                     oppgavebeskrivelse = if (packet.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) == false)
-                        "Kandidat for avslag: minsteinntekt"
+                        "Minsteinntekt – mulig avslag\n"
                     else PacketMapper.henvendelse(packet).oppgavebeskrivelse
 
                 )
