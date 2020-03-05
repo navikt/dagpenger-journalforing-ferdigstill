@@ -1,25 +1,11 @@
 package no.nav.dagpenger.journalføring.ferdigstill.adapter.vilkårtester
 
-import no.nav.dagpenger.events.inntekt.v1.Inntekt
 import java.math.BigDecimal
+import java.time.YearMonth
 
 data class Subsumsjon(
     val behovId: String,
-    val grunnlagResultat: GrunnlagResultat?,
-    val minsteinntektResultat: MinsteinntektResultat?,
-    val periodeResultat: PeriodeResultat?,
-    val satsResultat: SatsResultat?
-)
-
-data class GrunnlagResultat(
-    val subsumsjonsId: String,
-    val sporingsId: String,
-    val regelIdentifikator: String,
-    val avkortet: BigDecimal,
-    val uavkortet: BigDecimal,
-    val harAvkortet: Boolean,
-    val beregningsregel: String,
-    val grunnlagInntektsPerioder: List<Inntekt>?
+    val minsteinntektResultat: MinsteinntektResultat?
 )
 
 data class MinsteinntektResultat(
@@ -30,18 +16,22 @@ data class MinsteinntektResultat(
     val minsteinntektInntektsPerioder: List<Inntekt>
 )
 
-data class PeriodeResultat(
-    val subsumsjonsId: String,
-    val sporingsId: String,
-    val regelIdentifikator: String,
-    val periodeAntallUker: Int
-)
+data class Inntekt(
+    val inntekt: BigDecimal,
+    val periode: Int, // todo: enum?
+    val inntektsPeriode: InntektsPeriode,
+    val inneholderFangstOgFisk: Boolean,
+    val andel: BigDecimal? = null
+) {
+    init {
+        val gyldigePerioder = setOf(1, 2, 3)
+        if (!gyldigePerioder.contains(periode)) {
+            throw IllegalArgumentException("Ugyldig periode for inntektgrunnlat, gyldige verdier er ${gyldigePerioder.joinToString { "$it" }}")
+        }
+    }
+}
 
-data class SatsResultat(
-    val subsumsjonsId: String,
-    val sporingsId: String,
-    val regelIdentifikator: String,
-    val dagsats: Int,
-    val ukesats: Int,
-    val benyttet90ProsentRegel: Boolean
+data class InntektsPeriode(
+    val førsteMåned: YearMonth,
+    val sisteMåned: YearMonth
 )
