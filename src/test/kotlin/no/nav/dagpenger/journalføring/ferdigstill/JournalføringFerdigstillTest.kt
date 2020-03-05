@@ -258,7 +258,7 @@ internal class JournalføringFerdigstillTest {
         }
 
         slot.captured.shouldBeTypeOf<StartVedtakCommand>()
-        slot.captured.oppgavebeskrivelse shouldBe "Minsteinntekt – mulig avslag\n"
+        slot.captured.oppgavebeskrivelse shouldBe "Minsteinntekt - mulig avslag\n"
     }
 
     private fun testHenvendelseAngåendeEksisterendeSaksforhold(henvendelsestype: String) {
