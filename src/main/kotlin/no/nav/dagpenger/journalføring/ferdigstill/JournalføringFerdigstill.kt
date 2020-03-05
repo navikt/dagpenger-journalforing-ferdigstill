@@ -91,11 +91,11 @@ internal object PacketMapper {
 }
 
 internal class JournalføringFerdigstill(
-    private val journalPostApi: JournalpostApi,
-    private val manuellJournalføringsOppgaveClient: ManuellJournalføringsOppgaveClient,
-    private val arenaClient: ArenaClient,
-    private val vilkårtester: Vilkårtester,
-    private val unleash: Unleash
+    journalPostApi: JournalpostApi,
+    manuellJournalføringsOppgaveClient: ManuellJournalføringsOppgaveClient,
+    arenaClient: ArenaClient,
+    vilkårtester: Vilkårtester,
+    unleash: Unleash
 ) {
 
     val ferdigBehandlingslenke = MarkerFerdigBehandlingslenke(null)

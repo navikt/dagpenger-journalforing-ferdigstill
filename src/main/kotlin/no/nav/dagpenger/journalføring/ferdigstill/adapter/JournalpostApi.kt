@@ -5,6 +5,7 @@ import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.httpPatch
 import com.github.kittinunf.fuel.httpPut
+import com.github.kittinunf.result.Result
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import mu.KotlinLogging
@@ -70,13 +71,13 @@ internal class JournalpostRestApi(private val url: String, private val oidcClien
                 .response()
         }
 
-        result.fold(
-            { logger.info("Oppdatert journalpost: $journalpostId") },
-            { e ->
-                logger.error("Feilet oppdatering av journalpost: $journalpostId", e.exception)
-                throw AdapterException(e.exception)
+        when (result) {
+            is Result.Success -> return
+            is Result.Failure -> {
+                logger.error("Feilet oppdatering av journalpost: $journalpostId", result.error.exception)
+                throw AdapterException(result.error.exception)
             }
-        )
+        }
     }
 
     override fun ferdigstill(journalpostId: String) {
@@ -90,15 +91,15 @@ internal class JournalpostRestApi(private val url: String, private val oidcClien
                     .response()
             }
 
-        result.fold(
-            { logger.info("Ferdigstilt journalpost: $journalpostId") },
-            { e ->
+        when (result) {
+            is Result.Success -> return
+            is Result.Failure -> {
                 logger.error(
-                    "Feilet ferdigstilling av journalpost: : $journalpostId, respons fra joark ${e.response}",
-                    e.exception
+                    "Feilet ferdigstilling av journalpost: : $journalpostId, respons fra joark ${result.error.response}",
+                    result.error.exception
                 )
-                throw AdapterException(e.exception)
+                throw AdapterException(result.error.exception)
             }
-        )
+        }
     }
 }
