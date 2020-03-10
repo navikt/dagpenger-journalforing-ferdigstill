@@ -32,5 +32,5 @@ internal object Metrics {
         .labelNames("oppfyller")
         .register()
 
-    fun inngangsvilkårResultatTellerInc(oppfyllerKrav: Boolean) = inngangsvilkårResultatTeller.labels(oppfyllerKrav.toString())
+    fun inngangsvilkårResultatTellerInc(oppfyllerKrav: Boolean) = inngangsvilkårResultatTeller.labels(oppfyllerKrav.toString()).inc()
 }
