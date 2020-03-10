@@ -16,6 +16,8 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.vilkårtester.Vilkår
 
 private val logger = KotlinLogging.logger {}
 
+const val ENHET_FOR_HURTIGE_AVSLAG = "4403"
+
 // GoF pattern - Chain of responsibility (https://en.wikipedia.org/wiki/Chain-of-responsibility_pattern)
 abstract class Behandlingslenke(protected val neste: Behandlingslenke? = null) {
     abstract fun håndter(packet: Packet): Packet
@@ -69,16 +71,21 @@ internal class NyttSaksforholdBehandlingslenke(private val arena: ArenaClient, n
                     PacketMapper.registrertDatoFrom(packet)
                 )
 
+            val oppfyllerMinsteinntekt = packet.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) == false
+
             val fagsakId: FagsakId? = arena.bestillOppgave(
                 StartVedtakCommand(
                     naturligIdent = PacketMapper.bruker(packet).id,
-                    behandlendeEnhetId = PacketMapper.tildeltEnhetsNrFrom(packet),
+                    behandlendeEnhetId = when (oppfyllerMinsteinntekt) {
+                        true -> ENHET_FOR_HURTIGE_AVSLAG
+                        false -> PacketMapper.tildeltEnhetsNrFrom(packet)
+                    },
                     tilleggsinformasjon = tilleggsinformasjon,
                     registrertDato = PacketMapper.registrertDatoFrom(packet),
-                    oppgavebeskrivelse = if (packet.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) == false)
-                        "Minsteinntekt - mulig avslag\n"
-                    else PacketMapper.henvendelse(packet).oppgavebeskrivelse
-
+                    oppgavebeskrivelse = when (oppfyllerMinsteinntekt) {
+                        true -> "Minsteinntekt - mulig avslag\n"
+                        false -> PacketMapper.henvendelse(packet).oppgavebeskrivelse
+                    }
                 )
             )
 

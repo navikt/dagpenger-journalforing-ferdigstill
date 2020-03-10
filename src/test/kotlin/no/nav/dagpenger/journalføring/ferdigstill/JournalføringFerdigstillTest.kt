@@ -239,7 +239,7 @@ internal class JournalføringFerdigstillTest {
             )
         val journalPostId = "journalPostId"
         val naturligIdent = "12345678910"
-        val behandlendeEnhet = "9999"
+        val behandlendeEnhet = ENHET_FOR_HURTIGE_AVSLAG
 
         val slot = slot<OppgaveCommand>()
 
@@ -259,6 +259,7 @@ internal class JournalføringFerdigstillTest {
 
         slot.captured.shouldBeTypeOf<StartVedtakCommand>()
         slot.captured.oppgavebeskrivelse shouldBe "Minsteinntekt - mulig avslag\n"
+        slot.captured.behandlendeEnhetId shouldBe behandlendeEnhet
     }
 
     private fun testHenvendelseAngåendeEksisterendeSaksforhold(henvendelsestype: String) {
