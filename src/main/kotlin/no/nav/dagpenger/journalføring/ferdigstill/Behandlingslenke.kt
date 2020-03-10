@@ -3,6 +3,7 @@ package no.nav.dagpenger.journalføring.ferdigstill
 import mu.KotlinLogging
 import no.finn.unleash.Unleash
 import no.nav.dagpenger.events.Packet
+import no.nav.dagpenger.journalføring.ferdigstill.Metrics.inngangsvilkårResultatTellerInc
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.FAGSAK_ID
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.JournalpostApi
@@ -41,6 +42,7 @@ internal class OppfyllerMinsteinntektBehandlingsLenke(
 
                 oppfyllerMinsteinntekt?.let {
                     packet.putValue(PacketKeys.OPPFYLLER_MINSTEINNTEKT, it)
+                    inngangsvilkårResultatTellerInc(it)
                 }
             } catch (e: Exception) {
                 logger.warn(e) { "Kunne ikke vurdere minste arbeidsinntekt" }

@@ -24,4 +24,13 @@ internal object Metrics {
 
     fun automatiskJournalførtJaTellerInc() = automatiskJournalførtTeller.labels("true", "arena_ok").inc()
     fun automatiskJournalførtNeiTellerInc(reason: String) = automatiskJournalførtTeller.labels("false", reason).inc()
+
+    private val inngangsvilkårResultatTeller = Counter
+        .build()
+        .name("inngangsvilkaar_resultat_journalfort")
+        .help("Antall søknader som oppfyller / ikke oppfyller inngangsvilkårene vi tester")
+        .labelNames("oppfyller")
+        .register()
+
+    fun inngangsvilkårResultatTellerInc(oppfyllerKrav: Boolean) = inngangsvilkårResultatTeller.labels(oppfyllerKrav.toString())
 }
