@@ -19,11 +19,14 @@ internal object Metrics {
         .build()
         .name("automatisk_journalfort_arena")
         .help("Antall søknader som er automatisk journalført i Arena")
-        .labelNames("opprettet", "grunn")
+        .labelNames("opprettet", "grunn", "enhet")
         .register()
 
-    fun automatiskJournalførtJaTellerInc() = automatiskJournalførtTeller.labels("true", "arena_ok").inc()
-    fun automatiskJournalførtNeiTellerInc(reason: String) = automatiskJournalførtTeller.labels("false", reason).inc()
+    fun automatiskJournalførtJaTellerInc(enhet: String) =
+        automatiskJournalførtTeller.labels("true", "arena_ok", enhet).inc()
+
+    fun automatiskJournalførtNeiTellerInc(reason: String, enhet: String) =
+        automatiskJournalførtTeller.labels("false", reason, enhet).inc()
 
     private val inngangsvilkårResultatTeller = Counter
         .build()
@@ -32,5 +35,6 @@ internal object Metrics {
         .labelNames("oppfyller")
         .register()
 
-    fun inngangsvilkårResultatTellerInc(oppfyllerKrav: Boolean) = inngangsvilkårResultatTeller.labels(oppfyllerKrav.toString()).inc()
+    fun inngangsvilkårResultatTellerInc(oppfyllerKrav: Boolean) =
+        inngangsvilkårResultatTeller.labels(oppfyllerKrav.toString()).inc()
 }
