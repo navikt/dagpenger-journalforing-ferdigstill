@@ -66,6 +66,7 @@ internal class NyttSaksforholdBehandlingslenke(
             PacketMapper.harIkkeFagsakId(packet) &&
             PacketMapper.henvendelse(packet) == NyttSaksforhold &&
             arena.harIkkeAktivSak(PacketMapper.bruker(packet))
+                .also { if (!it) Metrics.automatiskJournalførtNeiTellerInc("aktiv_sak", PacketMapper.tildeltEnhetsNrFrom(packet)) }
 
     override fun håndter(packet: Packet): Packet {
         if (kanBehandle(packet)) {
@@ -190,7 +191,6 @@ internal class FerdigstillJournalpostBehandlingslenke(
         if (kanBehandle(packet)) {
             journalpostApi.ferdigstill(packet.getStringValue(PacketKeys.JOURNALPOST_ID))
             logger.info { "Automatisk journalført" }
-            Metrics.automatiskJournalførtJaTellerInc()
         }
         return neste?.håndter(packet) ?: packet
     }
