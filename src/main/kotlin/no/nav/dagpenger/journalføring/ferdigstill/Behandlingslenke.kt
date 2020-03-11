@@ -71,18 +71,18 @@ internal class NyttSaksforholdBehandlingslenke(private val arena: ArenaClient, n
                     PacketMapper.registrertDatoFrom(packet)
                 )
 
-            val oppfyllerMinsteinntekt = packet.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) == false
+            val kanAvslåsPåMinsteinntekt = packet.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) == false
 
             val fagsakId: FagsakId? = arena.bestillOppgave(
                 StartVedtakCommand(
                     naturligIdent = PacketMapper.bruker(packet).id,
-                    behandlendeEnhetId = when (oppfyllerMinsteinntekt) {
+                    behandlendeEnhetId = when (kanAvslåsPåMinsteinntekt) {
                         true -> ENHET_FOR_HURTIGE_AVSLAG
                         false -> PacketMapper.tildeltEnhetsNrFrom(packet)
                     },
                     tilleggsinformasjon = tilleggsinformasjon,
                     registrertDato = PacketMapper.registrertDatoFrom(packet),
-                    oppgavebeskrivelse = when (oppfyllerMinsteinntekt) {
+                    oppgavebeskrivelse = when (kanAvslåsPåMinsteinntekt) {
                         true -> "Minsteinntekt - mulig avslag\n"
                         false -> PacketMapper.henvendelse(packet).oppgavebeskrivelse
                     }
