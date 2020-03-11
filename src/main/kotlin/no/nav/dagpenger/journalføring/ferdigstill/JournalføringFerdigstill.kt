@@ -5,7 +5,6 @@ import mu.KotlinLogging
 import no.finn.unleash.Unleash
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.events.moshiInstance
-import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.bruker
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Avsender
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Bruker
@@ -104,7 +103,7 @@ internal class JournalføringFerdigstill(
     val ferdigstillOppgaveLenke = FerdigstillJournalpostBehandlingslenke(journalPostApi, manuellOppgaveLenke)
     val oppdaterLenke = OppdaterJournalpostBehandlingslenke(journalPostApi, ferdigstillOppgaveLenke)
     val eksisterendeSakLenke = EksisterendeSaksForholdBehandlingslenke(arenaClient, oppdaterLenke)
-    val nySakLenke = NyttSaksforholdBehandlingslenke(arenaClient, eksisterendeSakLenke)
+    val nySakLenke = NyttSaksforholdBehandlingslenke(arenaClient, unleash, eksisterendeSakLenke)
     val vilkårtestingLenke = OppfyllerMinsteinntektBehandlingsLenke(vilkårtester, unleash, nySakLenke)
 
     fun handlePacket(packet: Packet): Packet {

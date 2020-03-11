@@ -16,6 +16,8 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.vilkårtester.Vilkår
 
 private val logger = KotlinLogging.logger {}
 
+const val ENHET_FOR_HURTIGE_AVSLAG = "4403"
+
 // GoF pattern - Chain of responsibility (https://en.wikipedia.org/wiki/Chain-of-responsibility_pattern)
 abstract class Behandlingslenke(protected val neste: Behandlingslenke? = null) {
     abstract fun håndter(packet: Packet): Packet
@@ -52,7 +54,11 @@ internal class OppfyllerMinsteinntektBehandlingsLenke(
     }
 }
 
-internal class NyttSaksforholdBehandlingslenke(private val arena: ArenaClient, neste: Behandlingslenke?) :
+internal class NyttSaksforholdBehandlingslenke(
+    private val arena: ArenaClient,
+    val toggle: Unleash,
+    neste: Behandlingslenke?
+) :
     Behandlingslenke(neste) {
 
     override fun kanBehandle(packet: Packet): Boolean =
@@ -60,6 +66,7 @@ internal class NyttSaksforholdBehandlingslenke(private val arena: ArenaClient, n
             PacketMapper.harIkkeFagsakId(packet) &&
             PacketMapper.henvendelse(packet) == NyttSaksforhold &&
             arena.harIkkeAktivSak(PacketMapper.bruker(packet))
+                .also { if (!it) Metrics.automatiskJournalførtNeiTellerInc("aktiv_sak", PacketMapper.tildeltEnhetsNrFrom(packet)) }
 
     override fun håndter(packet: Packet): Packet {
         if (kanBehandle(packet)) {
@@ -69,16 +76,18 @@ internal class NyttSaksforholdBehandlingslenke(private val arena: ArenaClient, n
                     PacketMapper.registrertDatoFrom(packet)
                 )
 
+            val kanAvslåsPåMinsteinntekt = packet.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) == false
+
             val fagsakId: FagsakId? = arena.bestillOppgave(
                 StartVedtakCommand(
                     naturligIdent = PacketMapper.bruker(packet).id,
-                    behandlendeEnhetId = PacketMapper.tildeltEnhetsNrFrom(packet),
+                    behandlendeEnhetId = finnBehandlendeEnhet(kanAvslåsPåMinsteinntekt, packet),
                     tilleggsinformasjon = tilleggsinformasjon,
                     registrertDato = PacketMapper.registrertDatoFrom(packet),
-                    oppgavebeskrivelse = if (packet.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) == false)
-                        "Minsteinntekt - mulig avslag\n"
-                    else PacketMapper.henvendelse(packet).oppgavebeskrivelse
-
+                    oppgavebeskrivelse = when (kanAvslåsPåMinsteinntekt) {
+                        true -> "Minsteinntekt - mulig avslag\n"
+                        false -> PacketMapper.henvendelse(packet).oppgavebeskrivelse
+                    }
                 )
             )
 
@@ -88,6 +97,20 @@ internal class NyttSaksforholdBehandlingslenke(private val arena: ArenaClient, n
             packet.putValue(PacketKeys.FERDIGSTILT_ARENA, true)
         }
         return neste?.håndter(packet) ?: packet
+    }
+
+    private fun finnBehandlendeEnhet(
+        kanAvslåsPåMinsteinntekt: Boolean,
+        packet: Packet
+    ): String {
+        if (!toggle.isEnabled("dagpenger-journalforing-ferdigstill.bruk_hurtig_enhet", false)) {
+            return PacketMapper.tildeltEnhetsNrFrom(packet)
+        }
+
+        return when (kanAvslåsPåMinsteinntekt) {
+            true -> ENHET_FOR_HURTIGE_AVSLAG
+            false -> PacketMapper.tildeltEnhetsNrFrom(packet)
+        }
     }
 }
 
@@ -168,7 +191,6 @@ internal class FerdigstillJournalpostBehandlingslenke(
         if (kanBehandle(packet)) {
             journalpostApi.ferdigstill(packet.getStringValue(PacketKeys.JOURNALPOST_ID))
             logger.info { "Automatisk journalført" }
-            Metrics.automatiskJournalførtJaTellerInc()
         }
         return neste?.håndter(packet) ?: packet
     }

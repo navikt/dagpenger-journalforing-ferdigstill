@@ -128,7 +128,13 @@ internal class JournalføringFerdigstillTest {
     @Test
     fun `Opprett manuell journalføringsoppgave når bruker er ukjent`() {
         val journalFøringFerdigstill =
-            JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient, mockk(), FakeUnleash())
+            JournalføringFerdigstill(
+                journalPostApi,
+                manuellJournalføringsOppgaveClient,
+                arenaClient,
+                mockk(),
+                FakeUnleash()
+            )
         val journalPostId = "journalPostId"
         val dato = "2020-01-01T01:01:01"
         val zonedDateTime = LocalDateTime.parse(dato).atZone(ZoneId.of("Europe/Oslo"))
@@ -165,7 +171,13 @@ internal class JournalføringFerdigstillTest {
     @Test
     fun `Opprett fagsak og oppgave, og ferdigstill, når bruker ikke har aktiv fagsak`() {
         val journalFøringFerdigstill =
-            JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient, mockk(), FakeUnleash())
+            JournalføringFerdigstill(
+                journalPostApi,
+                manuellJournalføringsOppgaveClient,
+                arenaClient,
+                mockk(),
+                FakeUnleash()
+            )
         val journalPostId = "journalPostId"
         val naturligIdent = "12345678910"
         val behandlendeEnhet = "9999"
@@ -235,11 +247,14 @@ internal class JournalføringFerdigstillTest {
                 manuellJournalføringsOppgaveClient,
                 arenaClient,
                 vilkårtester,
-                FakeUnleash().apply { enableAll() }
+                FakeUnleash().apply {
+                    enable("dagpenger-journalforing-ferdigstill.vilkaartesting")
+                    disable("dagpenger-journalforing-ferdigstill.bruk_hurtig_enhet")
+                }
             )
         val journalPostId = "journalPostId"
         val naturligIdent = "12345678910"
-        val behandlendeEnhet = "9999"
+        val behandlendeEnhet = "4450"
 
         val slot = slot<OppgaveCommand>()
 
@@ -259,11 +274,54 @@ internal class JournalføringFerdigstillTest {
 
         slot.captured.shouldBeTypeOf<StartVedtakCommand>()
         slot.captured.oppgavebeskrivelse shouldBe "Minsteinntekt - mulig avslag\n"
+        slot.captured.behandlendeEnhetId shouldBe "4450"
+    }
+
+    @Test
+    fun `Ved kandidat for avslag basert på minsteinntekt havner på egen kø om feature flag er på`() {
+        val vilkårtester = mockk<Vilkårtester>()
+        val journalFøringFerdigstill =
+            JournalføringFerdigstill(
+                journalPostApi,
+                manuellJournalføringsOppgaveClient,
+                arenaClient,
+                vilkårtester,
+                FakeUnleash().apply { enableAll() }
+            )
+        val journalPostId = "journalPostId"
+        val naturligIdent = "12345678910"
+        val behandlendeEnhet = "4450"
+
+        val slot = slot<OppgaveCommand>()
+
+        every { vilkårtester.harBeståttMinsteArbeidsinntektVilkår(any()) } returns false
+        every { arenaClient.bestillOppgave(command = capture(slot)) } returns null
+        every { arenaClient.harIkkeAktivSak(any()) } returns true
+
+        val packet = lagPacket(journalPostId, naturligIdent, behandlendeEnhet, "NY_SØKNAD")
+
+        journalFøringFerdigstill.handlePacket(packet)
+
+        verify {
+            arenaClient.bestillOppgave(any())
+            journalPostApi.oppdater(journalPostId, any())
+            journalPostApi.ferdigstill(journalPostId)
+        }
+
+        slot.captured.shouldBeTypeOf<StartVedtakCommand>()
+        slot.captured.oppgavebeskrivelse shouldBe "Minsteinntekt - mulig avslag\n"
+        slot.captured.behandlendeEnhetId shouldBe ENHET_FOR_HURTIGE_AVSLAG
     }
 
     private fun testHenvendelseAngåendeEksisterendeSaksforhold(henvendelsestype: String) {
         val journalFøringFerdigstill =
-            JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient, mockk(), FakeUnleash())
+            JournalføringFerdigstill(
+                journalPostApi,
+                manuellJournalføringsOppgaveClient,
+                arenaClient,
+                mockk(),
+                FakeUnleash()
+            )
         val journalPostId = "journalPostId"
         val naturligIdent = "12345678910"
         val behandlendeEnhet = "9999"
@@ -317,7 +375,13 @@ internal class JournalføringFerdigstillTest {
     @Test
     fun `Opprett manuell journalføringsoppgave når bruker har aktiv fagsak`() {
         val journalFøringFerdigstill =
-            JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient, mockk(), FakeUnleash())
+            JournalføringFerdigstill(
+                journalPostApi,
+                manuellJournalføringsOppgaveClient,
+                arenaClient,
+                mockk(),
+                FakeUnleash()
+            )
         val journalPostId = "journalPostId"
         val naturligIdent = "12345678910"
         val behandlendeEnhet = "9999"
@@ -352,7 +416,13 @@ internal class JournalføringFerdigstillTest {
     @Test
     fun `Opprett manuell journalføringsoppgave når bestilling av arena-oppgave feiler`() {
         val journalFøringFerdigstill =
-            JournalføringFerdigstill(journalPostApi, manuellJournalføringsOppgaveClient, arenaClient, mockk(), FakeUnleash())
+            JournalføringFerdigstill(
+                journalPostApi,
+                manuellJournalføringsOppgaveClient,
+                arenaClient,
+                mockk(),
+                FakeUnleash()
+            )
         val journalPostId = "journalPostId"
         val naturligIdent = "12345678910"
         val behandlendeEnhet = "9999"
