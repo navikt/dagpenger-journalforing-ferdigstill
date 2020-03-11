@@ -54,7 +54,11 @@ internal class OppfyllerMinsteinntektBehandlingsLenke(
     }
 }
 
-internal class NyttSaksforholdBehandlingslenke(private val arena: ArenaClient, neste: Behandlingslenke?) :
+internal class NyttSaksforholdBehandlingslenke(
+    private val arena: ArenaClient,
+    val toggle: Unleash,
+    neste: Behandlingslenke?
+) :
     Behandlingslenke(neste) {
 
     override fun kanBehandle(packet: Packet): Boolean =
@@ -76,10 +80,7 @@ internal class NyttSaksforholdBehandlingslenke(private val arena: ArenaClient, n
             val fagsakId: FagsakId? = arena.bestillOppgave(
                 StartVedtakCommand(
                     naturligIdent = PacketMapper.bruker(packet).id,
-                    behandlendeEnhetId = when (kanAvslåsPåMinsteinntekt) {
-                        true -> ENHET_FOR_HURTIGE_AVSLAG
-                        false -> PacketMapper.tildeltEnhetsNrFrom(packet)
-                    },
+                    behandlendeEnhetId = finnBehandlendeEnhet(kanAvslåsPåMinsteinntekt, packet),
                     tilleggsinformasjon = tilleggsinformasjon,
                     registrertDato = PacketMapper.registrertDatoFrom(packet),
                     oppgavebeskrivelse = when (kanAvslåsPåMinsteinntekt) {
@@ -95,6 +96,20 @@ internal class NyttSaksforholdBehandlingslenke(private val arena: ArenaClient, n
             packet.putValue(PacketKeys.FERDIGSTILT_ARENA, true)
         }
         return neste?.håndter(packet) ?: packet
+    }
+
+    private fun finnBehandlendeEnhet(
+        kanAvslåsPåMinsteinntekt: Boolean,
+        packet: Packet
+    ): String {
+        if (!toggle.isEnabled("dagpenger-journalforing-ferdigstill.bruk_hurtig_enhet", false)) {
+            return PacketMapper.tildeltEnhetsNrFrom(packet)
+        }
+
+        return when (kanAvslåsPåMinsteinntekt) {
+            true -> ENHET_FOR_HURTIGE_AVSLAG
+            false -> PacketMapper.tildeltEnhetsNrFrom(packet)
+        }
     }
 }
 

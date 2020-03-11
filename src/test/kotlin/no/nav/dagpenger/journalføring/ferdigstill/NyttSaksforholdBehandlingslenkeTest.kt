@@ -3,6 +3,7 @@ package no.nav.dagpenger.journalføring.ferdigstill
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import no.finn.unleash.FakeUnleash
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
 import org.junit.Test
@@ -16,7 +17,7 @@ internal class NyttSaksforholdBehandlingslenkeTest {
         val nesteKjede: Behandlingslenke = mockk()
 
         val nyArenaSakKjede = NyttSaksforholdBehandlingslenke(
-            arena = arenaMock, neste = nesteKjede
+            arena = arenaMock, toggle = FakeUnleash(), neste = nesteKjede
 
         )
         val packet = Packet().apply {
