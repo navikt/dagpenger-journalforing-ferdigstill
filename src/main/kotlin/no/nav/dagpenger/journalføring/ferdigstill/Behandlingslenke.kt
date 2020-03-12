@@ -66,7 +66,12 @@ internal class NyttSaksforholdBehandlingslenke(
             PacketMapper.harIkkeFagsakId(packet) &&
             PacketMapper.henvendelse(packet) == NyttSaksforhold &&
             arena.harIkkeAktivSak(PacketMapper.bruker(packet))
-                .also { if (!it) Metrics.automatiskJournalførtNeiTellerInc("aktiv_sak", PacketMapper.tildeltEnhetsNrFrom(packet)) }
+                .also {
+                    if (!it) Metrics.automatiskJournalførtNeiTellerInc(
+                        "aktiv_sak",
+                        PacketMapper.tildeltEnhetsNrFrom(packet)
+                    )
+                }
 
     override fun håndter(packet: Packet): Packet {
         if (kanBehandle(packet)) {
@@ -81,7 +86,7 @@ internal class NyttSaksforholdBehandlingslenke(
             val fagsakId: FagsakId? = arena.bestillOppgave(
                 StartVedtakCommand(
                     naturligIdent = PacketMapper.bruker(packet).id,
-                    behandlendeEnhetId = finnBehandlendeEnhet(kanAvslåsPåMinsteinntekt, packet),
+                    behandlendeEnhetId = finnBehandlendeEnhet(packet),
                     tilleggsinformasjon = tilleggsinformasjon,
                     registrertDato = PacketMapper.registrertDatoFrom(packet),
                     oppgavebeskrivelse = when (kanAvslåsPåMinsteinntekt) {
@@ -100,14 +105,16 @@ internal class NyttSaksforholdBehandlingslenke(
     }
 
     private fun finnBehandlendeEnhet(
-        kanAvslåsPåMinsteinntekt: Boolean,
         packet: Packet
     ): String {
         if (!toggle.isEnabled("dagpenger-journalforing-ferdigstill.bruk_hurtig_enhet", false)) {
             return PacketMapper.tildeltEnhetsNrFrom(packet)
         }
 
-        return when (kanAvslåsPåMinsteinntekt) {
+        val kanAvslåsPåMinsteinntekt = packet.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) == false
+        val tildeltEnhetErIkkePermittering = PacketMapper.tildeltEnhetsNrFrom(packet) != "4455"
+
+        return when (kanAvslåsPåMinsteinntekt && tildeltEnhetErIkkePermittering) {
             true -> ENHET_FOR_HURTIGE_AVSLAG
             false -> PacketMapper.tildeltEnhetsNrFrom(packet)
         }
