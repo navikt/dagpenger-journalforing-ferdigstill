@@ -89,23 +89,23 @@ internal class SoapArenaClientTest {
 
     @Test
     fun ` helsesjekk skal være ok når Arena er oppe`() {
-        val ytelseskontraktV3: YtelseskontraktV3 = mockk()
+        val behandleArbeidOgAktivitetOppgaveV1: BehandleArbeidOgAktivitetOppgaveV1 = mockk()
         every {
-            ytelseskontraktV3.ping()
+            behandleArbeidOgAktivitetOppgaveV1.ping()
         } returns Unit
 
-        val client = SoapArenaClient(mockk(), ytelseskontraktV3)
+        val client = SoapArenaClient(behandleArbeidOgAktivitetOppgaveV1, mockk())
         client.status() shouldBe HealthStatus.UP
     }
 
     @Test
     fun ` helsesjekk skal ikke være ok når Arena nede`() {
-        val ytelseskontraktV3: YtelseskontraktV3 = mockk()
+        val behandleArbeidOgAktivitetOppgaveV1: BehandleArbeidOgAktivitetOppgaveV1 = mockk()
         every {
-            ytelseskontraktV3.ping()
+            behandleArbeidOgAktivitetOppgaveV1.ping()
         } throws RuntimeException()
 
-        val client = SoapArenaClient(mockk(), ytelseskontraktV3)
+        val client = SoapArenaClient(behandleArbeidOgAktivitetOppgaveV1, mockk())
         client.status() shouldBe HealthStatus.DOWN
     }
 }
