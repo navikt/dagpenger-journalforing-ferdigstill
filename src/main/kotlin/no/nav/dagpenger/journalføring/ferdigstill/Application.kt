@@ -40,9 +40,8 @@ internal class Application(
             )
             logger.info { "Processing: $packet" }
 
-            if (packet.getReadCount() >= 10 && packet.getStringValue(PacketKeys.JOURNALPOST_ID) != "471331953") {
-                logger.error { "Read count >= 10 for packet with journalpostid ${packet.getStringValue(PacketKeys.JOURNALPOST_ID)}" }
-                throw ReadCountException()
+            if (packet.getReadCount() >= 10) {
+                logger.warn { "Read count >= 10 for packet with journalpostid ${packet.getStringValue(PacketKeys.JOURNALPOST_ID)}" }
             }
 
             return journalføringFerdigstill.handlePacket(packet)
@@ -111,5 +110,3 @@ fun main() {
 
     Application(configuration, journalFøringFerdigstill).start()
 }
-
-class ReadCountException : RuntimeException()

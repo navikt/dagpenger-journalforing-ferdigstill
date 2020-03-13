@@ -129,6 +129,7 @@ class SoapArenaClient(
     override fun status(): HealthStatus {
         return try {
             oppgaveV1.ping()
+            ytelseskontraktV3.ping()
             HealthStatus.UP
         } catch (e: Exception) {
             HealthStatus.DOWN
