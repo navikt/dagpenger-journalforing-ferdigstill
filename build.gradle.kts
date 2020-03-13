@@ -3,6 +3,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransformer
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     application
@@ -35,49 +36,69 @@ application {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+tasks.withType<KotlinCompile> {
+    kotlinOptions.jvmTarget = "1.8"
 }
 
 val cxfVersion = "3.3.4"
 val tjenestespesifikasjonerVersion = "1.2019.09.25-00.21-49b69f0625e0"
+val resilience4jVersion = "1.3.1"
 
 fun tjenestespesifikasjon(name: String) = "no.nav.tjenestespesifikasjoner:$name:$tjenestespesifikasjonerVersion"
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    implementation(Dagpenger.Events)
+
+    // ktor utils
     implementation("com.github.navikt:dp-biblioteker:2019.11.14-12.52.2f5a90180072")
+
+    // feature toggle
     implementation("no.finn.unleash:unleash-client-java:3.2.9")
+
+    // httpclient
     // We need PATCH. SEE https://github.com/kittinunf/fuel/pull/562
     implementation("com.github.kittinunf.fuel:fuel") {
         version {
             strictly("f16bd8e30c")
         }
     }
+
+    // kafka
     implementation(Dagpenger.Streams)
+    implementation(Dagpenger.Events)
+    api(Kafka.clients)
+    api(Kafka.streams)
+    api(Kafka.Confluent.avroStreamSerdes)
 
+    // json
     implementation(Fuel.fuelMoshi)
-
-    implementation(Kotlin.Logging.kotlinLogging)
     implementation(Moshi.moshi)
     implementation(Moshi.moshiKotlin)
     implementation(Moshi.moshiAdapters)
+
+    // prometheus
     implementation(Prometheus.common)
     implementation(Prometheus.hotspot)
     implementation(Prometheus.log4j2)
     implementation(Konfig.konfig)
     implementation(Ktor.serverNetty)
+
+    // logging
+    implementation(Kotlin.Logging.kotlinLogging)
     implementation(Log4j2.api)
     implementation(Log4j2.core)
     implementation(Log4j2.slf4j)
     implementation(Log4j2.Logstash.logstashLayout)
     implementation(Ulid.ulid)
 
-    api(Kafka.clients)
-    api(Kafka.streams)
-    api(Kafka.Confluent.avroStreamSerdes)
+    // resilience
+    implementation("io.github.resilience4j:resilience4j-retry:$resilience4jVersion")
 
+    // testing
     testImplementation(Junit5.api)
     testImplementation(Junit5.kotlinRunner)
     testImplementation(kotlin("test"))

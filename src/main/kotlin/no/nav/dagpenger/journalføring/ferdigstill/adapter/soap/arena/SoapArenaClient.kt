@@ -1,7 +1,9 @@
 package no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.arena
 
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
+import io.github.resilience4j.core.IntervalFunction
+import io.github.resilience4j.retry.Retry
+import io.github.resilience4j.retry.RetryConfig
+import io.github.resilience4j.retry.RetryRegistry
 import mu.KotlinLogging
 import no.nav.dagpenger.journalføring.ferdigstill.AdapterException
 import no.nav.dagpenger.journalføring.ferdigstill.FagsakId
@@ -25,9 +27,9 @@ import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.informasjo
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.informasjon.WSSakInfo
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.informasjon.WSTema
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.meldinger.WSBestillOppgaveRequest
-import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.meldinger.WSBestillOppgaveResponse
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest
+import java.time.Duration
 import java.util.GregorianCalendar
 import javax.xml.datatype.DatatypeFactory
 
@@ -36,14 +38,32 @@ class SoapArenaClient(
     private val ytelseskontraktV3: YtelseskontraktV3
 ) :
     ArenaClient {
+
+    private val intervalWithCustomExponentialBackoff: IntervalFunction = IntervalFunction
+        .ofExponentialBackoff(IntervalFunction.DEFAULT_INITIAL_INTERVAL, 2.0)
+
+    private val config: RetryConfig = RetryConfig.custom<Any>()
+        .maxAttempts(3)
+        .waitDuration(Duration.ofMillis(1000))
+        .intervalFunction(intervalWithCustomExponentialBackoff)
+        .ignoreExceptions(BestillOppgavePersonErInaktiv::class.java, BestillOppgavePersonIkkeFunnet::class.java)
+        .build()
+
+    // Create a RetryRegistry with a custom global configuration
+    private val registry: RetryRegistry = RetryRegistry.of(config)
+
+    private val retry: Retry = registry.retry("SoapArenaClient")
+
     private val logger = KotlinLogging.logger {}
 
     override fun bestillOppgave(command: OppgaveCommand): FagsakId? {
 
         val soapRequest = command.toWSBestillOppgaveRequest()
 
-        val response: WSBestillOppgaveResponse = try {
-            retry { oppgaveV1.bestillOppgave(soapRequest) }
+        val response = try {
+            retry.executeCallable {
+                oppgaveV1.bestillOppgave(soapRequest)
+            }
         } catch (e: Exception) {
             Metrics.automatiskJournalførtNeiTellerInc(
                 reason = e.javaClass.simpleName,
@@ -114,7 +134,7 @@ class SoapArenaClient(
                 .withPersonidentifikator(naturligIdent)
 
         try {
-            val response = ytelseskontraktV3.hentYtelseskontraktListe(request)
+            val response = retry.executeCallable { ytelseskontraktV3.hentYtelseskontraktListe(request) }
             return response.ytelseskontraktListe.filter { it.ytelsestype == "Dagpenger" }.map {
                 ArenaSak(
                     it.fagsystemSakId,
@@ -133,25 +153,5 @@ class SoapArenaClient(
         } catch (e: Exception) {
             HealthStatus.DOWN
         }
-    }
-
-    private fun <T> retry(
-        times: Int = 3,
-        initialDelay: Long = 1000, // 1 second
-        maxDelay: Long = 30000, // 30 second
-        factor: Double = 2.0,
-        block: () -> T
-    ): T {
-        var currentDelay = initialDelay
-        repeat(times - 1) {
-            try {
-                return block()
-            } catch (e: Exception) {
-                if (e is BestillOppgavePersonErInaktiv || e is BestillOppgavePersonIkkeFunnet) throw e
-            }
-            runBlocking { delay(currentDelay) }
-            currentDelay = (currentDelay * factor).toLong().coerceAtMost(maxDelay)
-        }
-        return block() // last attempt
     }
 }
