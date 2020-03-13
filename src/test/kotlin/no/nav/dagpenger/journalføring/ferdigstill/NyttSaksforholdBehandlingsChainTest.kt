@@ -8,15 +8,15 @@ import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
 import org.junit.Test
 
-internal class NyttSaksforholdBehandlingslenkeTest {
+internal class NyttSaksforholdBehandlingsChainTest {
 
     @Test
     fun `Skal ikke behandle pakker uten person identifikator`() {
 
         val arenaMock: ArenaClient = mockk()
-        val nesteKjede: Behandlingslenke = mockk()
+        val nesteKjede: BehandlingsChain = mockk()
 
-        val nyArenaSakKjede = NyttSaksforholdBehandlingslenke(
+        val nyArenaSakKjede = NyttSaksforholdBehandlingsChain(
             arena = arenaMock, toggle = FakeUnleash(), neste = nesteKjede
 
         )

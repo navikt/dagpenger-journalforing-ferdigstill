@@ -59,7 +59,7 @@ class SoapArenaClient(
                     null
                 }
                 else -> {
-                    logger.warn { "Kan ikke bestille oppgave for journalpost. Ukjent feil. " }
+                    logger.warn(e) { "Kan ikke bestille oppgave for journalpost. Ukjent feil. " }
                     throw AdapterException(e)
                 }
             }
@@ -128,7 +128,7 @@ class SoapArenaClient(
 
     override fun status(): HealthStatus {
         return try {
-            ytelseskontraktV3.ping()
+            oppgaveV1.ping()
             HealthStatus.UP
         } catch (e: Exception) {
             HealthStatus.DOWN

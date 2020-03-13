@@ -97,18 +97,18 @@ internal class JournalføringFerdigstill(
     unleash: Unleash
 ) {
 
-    val ferdigBehandlingslenke = MarkerFerdigBehandlingslenke(null)
-    val manuellOppgaveLenke =
-        ManuellJournalføringsBehandlingslenke(manuellJournalføringsOppgaveClient, ferdigBehandlingslenke)
-    val ferdigstillOppgaveLenke = FerdigstillJournalpostBehandlingslenke(journalPostApi, manuellOppgaveLenke)
-    val oppdaterLenke = OppdaterJournalpostBehandlingslenke(journalPostApi, ferdigstillOppgaveLenke)
-    val eksisterendeSakLenke = EksisterendeSaksForholdBehandlingslenke(arenaClient, oppdaterLenke)
-    val nySakLenke = NyttSaksforholdBehandlingslenke(arenaClient, unleash, eksisterendeSakLenke)
-    val vilkårtestingLenke = OppfyllerMinsteinntektBehandlingsLenke(vilkårtester, unleash, nySakLenke)
+    val ferdigBehandlingsChain = MarkerFerdigBehandlingsChain(null)
+    val manuellJournalføringsBehandlingsChain =
+        ManuellJournalføringsBehandlingsChain(manuellJournalføringsOppgaveClient, ferdigBehandlingsChain)
+    val ferdigstillOppgaveChain = FerdigstillJournalpostBehandlingsChain(journalPostApi, manuellJournalføringsBehandlingsChain)
+    val oppdaterChain = OppdaterJournalpostBehandlingsChain(journalPostApi, ferdigstillOppgaveChain)
+    val eksisterendeSakChain = EksisterendeSaksForholdBehandlingsChain(arenaClient, oppdaterChain)
+    val nySakChain = NyttSaksforholdBehandlingsChain(arenaClient, unleash, eksisterendeSakChain)
+    val vilkårtestingChain = OppfyllerMinsteinntektBehandlingsChain(vilkårtester, unleash, nySakChain)
 
     fun handlePacket(packet: Packet): Packet {
         try {
-            return vilkårtestingLenke.håndter(packet)
+            return vilkårtestingChain.håndter(packet)
         } catch (e: AdapterException) {
         }
         return packet
