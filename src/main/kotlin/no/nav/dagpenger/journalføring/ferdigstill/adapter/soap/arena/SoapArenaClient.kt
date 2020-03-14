@@ -52,7 +52,8 @@ class SoapArenaClient(
     // Create a RetryRegistry with a custom global configuration
     private val registry: RetryRegistry = RetryRegistry.of(config)
 
-    private val retry: Retry = registry.retry("SoapArenaClient")
+    private val bestillOppgaveRetry: Retry = registry.retry("SoapArenaClient.bestillOppgave")
+    private val hentArenaSakerRetry: Retry = registry.retry("SoapArenaClient.hentArenaSaker")
 
     private val logger = KotlinLogging.logger {}
 
@@ -61,7 +62,7 @@ class SoapArenaClient(
         val soapRequest = command.toWSBestillOppgaveRequest()
 
         val response = try {
-            retry.executeCallable {
+            bestillOppgaveRetry.executeCallable {
                 oppgaveV1.bestillOppgave(soapRequest)
             }
         } catch (e: Exception) {
@@ -134,7 +135,7 @@ class SoapArenaClient(
                 .withPersonidentifikator(naturligIdent)
 
         try {
-            val response = retry.executeCallable { ytelseskontraktV3.hentYtelseskontraktListe(request) }
+            val response = hentArenaSakerRetry.executeCallable { ytelseskontraktV3.hentYtelseskontraktListe(request) }
             return response.ytelseskontraktListe.filter { it.ytelsestype == "Dagpenger" }.map {
                 ArenaSak(
                     it.fagsystemSakId,
