@@ -487,4 +487,21 @@ internal class JournalføringFerdigstillTest {
         }
         verify(exactly = 0) { journalPostApi.ferdigstill(any()) }
     }
+
+    @Test
+    fun `skal ikke behandle journalpost id 471479060 og 471478910`() {
+        val application = Application(Configuration(), mockk())
+
+        application.filterPredicates().all {
+            it.test("", Packet().apply {
+                this.putValue(JOURNALPOST_ID, "471479060")
+            })
+        } shouldBe false
+
+        application.filterPredicates().all {
+            it.test("", Packet().apply {
+                this.putValue(JOURNALPOST_ID, "471478910")
+            })
+        } shouldBe false
+    }
 }

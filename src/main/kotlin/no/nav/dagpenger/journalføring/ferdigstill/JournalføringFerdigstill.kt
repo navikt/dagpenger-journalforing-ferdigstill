@@ -21,9 +21,12 @@ import java.time.ZoneId
 
 private val logger = KotlinLogging.logger {}
 
+private val ignorerJournalpost: Set<String> = setOf("471479060", "471478910")
+
 internal val erIkkeFerdigBehandletJournalpost = Predicate<String, Packet> { _, packet ->
     packet.hasField(PacketKeys.JOURNALPOST_ID) &&
-        !packet.hasField(PacketKeys.FERDIG_BEHANDLET)
+        !packet.hasField(PacketKeys.FERDIG_BEHANDLET) &&
+        !ignorerJournalpost.contains(packet.getStringValue(PacketKeys.JOURNALPOST_ID))
 }
 
 internal object PacketMapper {
