@@ -34,7 +34,8 @@ internal class OppfyllerMinsteinntektBehandlingsChain(
             PacketMapper.hasNaturligIdent(packet) &&
             PacketMapper.hasAktørId(packet) &&
             PacketMapper.harIkkeFagsakId(packet) &&
-            PacketMapper.henvendelse(packet) == NyttSaksforhold
+            PacketMapper.henvendelse(packet) == NyttSaksforhold &&
+            !packet.hasField(PacketKeys.OPPFYLLER_MINSTEINNTEKT)
 
     override fun håndter(packet: Packet): Packet {
         if (kanBehandle(packet)) {
