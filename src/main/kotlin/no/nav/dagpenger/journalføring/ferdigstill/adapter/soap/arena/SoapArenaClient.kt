@@ -118,7 +118,6 @@ class SoapArenaClient(
                 this.value = "HOY"
             }
             frist = DatatypeFactory.newInstance().newXMLGregorianCalendar(GregorianCalendar.from(registrertDato))
-
             this.tilleggsinformasjon = this@toWSBestillOppgaveRequest.tilleggsinformasjon
         }
 

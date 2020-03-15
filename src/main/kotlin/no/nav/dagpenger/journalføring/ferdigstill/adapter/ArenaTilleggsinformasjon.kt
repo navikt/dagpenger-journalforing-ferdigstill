@@ -25,14 +25,10 @@ fun createArenaTilleggsinformasjon(dokumentTitler: List<String>, registrertDato:
         datoBeskrivelse +
         "Dokumentet er skannet inn og journalført automatisk av digitale dagpenger. Gjennomfør rutinen \"Etterkontroll av automatisk journalførte dokumenter\"."
 
-
-    return if (informasjon.length  > maksTegn) {
-        logger.warn { "Tillegsinformasjon over 1999 tegn" }
+    return if (informasjon.length > maksTegn) {
+        logger.warn { "Tillegsinformasjon over 1999 tegn, var ${informasjon.length}}" }
         "Hoveddokument: ${hovedDokument}\nRegistrert dato: ${formatertDato}\nDokumentet er skannet inn og journalført automatisk av digitale dagpenger. Gjennomfør rutinen \"Etterkontroll av automatisk journalførte dokumenter\"."
     } else {
         informasjon
     }
-
-
-
 }
