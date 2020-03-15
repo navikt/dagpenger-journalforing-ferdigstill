@@ -1,6 +1,7 @@
 package no.nav.dagpenger.journalføring.ferdigstill.adapter
 
 import org.junit.jupiter.api.Test
+import wiremock.org.apache.commons.lang3.RandomStringUtils
 import java.time.LocalDateTime
 import java.time.ZoneId
 import kotlin.test.assertEquals
@@ -25,6 +26,19 @@ internal class ArenaTilleggsinformasjonTest {
     fun `formaterer riktig når vedlegg mangler`() {
         val tilleggsinformasjon =
             createArenaTilleggsinformasjon(listOf("Søknad"), dato)
+
+        assertEquals(
+            "Hoveddokument: Søknad\n" +
+                "Registrert dato: 24.12.2019\n" +
+                "Dokumentet er skannet inn og journalført automatisk av digitale dagpenger. " +
+                "Gjennomfør rutinen \"Etterkontroll av automatisk journalførte dokumenter\".", tilleggsinformasjon
+        )
+    }
+
+    @Test
+    fun `Dropper informasjon over maks tegn satt i Arena`() {
+        val tilleggsinformasjon =
+            createArenaTilleggsinformasjon(listOf("Søknad", RandomStringUtils.randomAlphabetic(3000)), dato)
 
         assertEquals(
             "Hoveddokument: Søknad\n" +
