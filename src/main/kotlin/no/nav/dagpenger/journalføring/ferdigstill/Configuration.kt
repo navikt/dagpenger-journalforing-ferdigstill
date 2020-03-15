@@ -78,7 +78,7 @@ private val prodProperties = ConfigurationMap(
         "behandlearbeidsytelsesak.v1.url" to "https://arena.adeo.no/ail_ws/BehandleArbeidOgAktivitetOppgave_v1",
         "ytelseskontrakt.v3.url" to "https://arena.adeo.no/ail_ws/Ytelseskontrakt_v3",
         "unleash.url" to "https://unleash.nais.adeo.no/api/",
-        "kafka.processing.guarantee" to StreamsConfig.EXACTLY_ONCE
+        "kafka.processing.guarantee" to StreamsConfig.AT_LEAST_ONCE
     )
 )
 

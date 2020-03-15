@@ -2,7 +2,9 @@ package no.nav.dagpenger.journalføring.ferdigstill
 
 import io.kotlintest.matchers.doubles.shouldBeGreaterThan
 import io.kotlintest.matchers.types.shouldBeTypeOf
+import io.kotlintest.matchers.withClue
 import io.kotlintest.shouldBe
+import io.kotlintest.specs.FreeSpec
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
@@ -487,21 +489,21 @@ internal class JournalføringFerdigstillTest {
         }
         verify(exactly = 0) { journalPostApi.ferdigstill(any()) }
     }
-
-    @Test
-    fun `skal ikke behandle journalpost id 471479060 og 471478910`() {
-        val application = Application(Configuration(), mockk())
-
-        application.filterPredicates().all {
-            it.test("", Packet().apply {
-                this.putValue(JOURNALPOST_ID, "471479060")
-            })
-        } shouldBe false
-
-        application.filterPredicates().all {
-            it.test("", Packet().apply {
-                this.putValue(JOURNALPOST_ID, "471478910")
-            })
-        } shouldBe false
-    }
 }
+
+class IgnorerJournalpostTest : FreeSpec({
+
+    val application = Application(Configuration(), mockk())
+
+    "Skal droppe behandling av journalpost" - {
+        setOf("471479059", "471479060", "471478910").map { journalpost ->
+            withClue("Skal droppe journalpost $journalpost ") {
+                application.filterPredicates().all {
+                    it.test("", Packet().apply {
+                        this.putValue(JOURNALPOST_ID, journalpost)
+                    })
+                } shouldBe false
+            }
+        }
+    }
+})
