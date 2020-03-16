@@ -26,7 +26,8 @@ private val logger = KotlinLogging.logger {}
 
 internal class Application(
     private val configuration: Configuration,
-    private val journalføringFerdigstill: JournalføringFerdigstill
+    private val journalføringFerdigstill: JournalføringFerdigstill,
+    private val unleash: Unleash
 ) : River(configuration.kafka.dagpengerJournalpostTopic) {
 
     override val SERVICE_APP_ID = configuration.application.name
@@ -42,7 +43,7 @@ internal class Application(
             logger.info { "Processing: $packet" }
 
             val readCountLimit = 15
-            if (packet.getReadCount() >= readCountLimit) {
+            if (packet.getReadCount() >= readCountLimit && !unleash.isEnabled("dagpenger-journalforing-ferdigstill.skipReadCount", false)) {
                 logger.error { "Read count >= $readCountLimit for packet with journalpostid ${packet.getStringValue(PacketKeys.JOURNALPOST_ID)}" }
                 throw ReadCountException()
             }
@@ -111,7 +112,7 @@ fun main() {
         unleash
     )
 
-    Application(configuration, journalFøringFerdigstill).start()
+    Application(configuration, journalFøringFerdigstill, unleash).start()
     OpprydderApp(configuration, gosysOppgaveClient).start()
 }
 

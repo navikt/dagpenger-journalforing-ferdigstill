@@ -71,6 +71,27 @@ internal class JournalpostRestApiTest {
     }
 
     @Test
+    fun `skal håndtere hvis journalpost allerede er ferdigstilt`() {
+
+        val journalpostId = "12345"
+        WireMock.stubFor(
+            WireMock.patch(WireMock.urlEqualTo("/rest/journalpostapi/v1/journalpost/$journalpostId/ferdigstill"))
+                .willReturn(
+                    WireMock.aResponse().withStatus(400).withBody("<html><body><h1>Whitelabel Error Page</h1><p>This application has no explicit mapping for /error, so you are seeing this as a fallback.</p><div id='created'>Mon Mar 16 14:55:34 CET 2020</div><div>There was an unexpected error (type=Bad Request, status=400).</div><div>Journalpost med journalpostId=12345 er ikke midlertidig journalført</div></body></html>")
+                )
+        )
+
+        val stsOidcClient: StsOidcClient = mockk(relaxed = true)
+
+        val client = JournalpostRestApi(
+            server.baseUrl(),
+            stsOidcClient
+        )
+
+        client.ferdigstill(journalpostId)
+    }
+
+    @Test
     fun `Forsøker på ny hvis noe er feil`() {
         val journalpostId = "12345"
 

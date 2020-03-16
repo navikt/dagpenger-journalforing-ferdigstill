@@ -1,5 +1,6 @@
 package no.nav.dagpenger.journalføring.ferdigstill.adapter
 
+import com.github.kittinunf.fuel.core.FuelError
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.core.extensions.jsonBody
@@ -45,7 +46,8 @@ internal class JournalpostRestApi(private val url: String, private val oidcClien
     JournalpostApi {
 
     private val whitelistFeilmeldinger = setOf<String>(
-        "Bruker kan ikke oppdateres for journalpost med journalpostStatus=J og journalpostType=I."
+        "Bruker kan ikke oppdateres for journalpost med journalpostStatus=J og journalpostType=I.",
+        "er ikke midlertidig journalført"
     )
 
     private val feilmelding: Pattern = Pattern.compile("\\(type=([^,]+), status=([^)]+)\\)\\.<\\/div><div>([^<]+)")
@@ -83,12 +85,7 @@ internal class JournalpostRestApi(private val url: String, private val oidcClien
         when (result) {
             is Result.Success -> return
             is Result.Failure -> {
-                val body = result.error.response.data.toString(Charsets.UTF_8)
-                val match = feilmeldingRegex.find(body)?.groups?.last()
-                if (whitelistFeilmeldinger.contains(match?.value)) {
-                    logger.warn { "Journalpost $journalpostId i en tilstand som er ok. Tilstand: ${match?.value}" }
-                    return
-                }
+                if (sjekkTilstand(result, journalpostId)) return
                 logger.error(
                     "Feilet oppdatering av journalpost: $journalpostId, respons fra journalpostapi ${result.error.response}",
                     result.error.exception
@@ -112,6 +109,7 @@ internal class JournalpostRestApi(private val url: String, private val oidcClien
         when (result) {
             is Result.Success -> return
             is Result.Failure -> {
+                if (sjekkTilstand(result, journalpostId)) return
                 logger.error(
                     "Feilet ferdigstilling av journalpost: : $journalpostId, respons fra journalpostapi ${result.error.response}",
                     result.error.exception
@@ -119,5 +117,23 @@ internal class JournalpostRestApi(private val url: String, private val oidcClien
                 throw AdapterException(result.error.exception)
             }
         }
+    }
+
+    private fun sjekkTilstand(
+        result: Result.Failure<FuelError>,
+        journalpostId: String
+    ): Boolean {
+        val body = result.error.response.data.toString(Charsets.UTF_8)
+        val match = feilmeldingRegex.find(body)?.groups?.last()
+
+        val matches = whitelistFeilmeldinger.count {
+            match?.value?.contains(it) ?: false
+        }
+
+        if (matches >= 1) {
+            logger.warn { "Journalpost $journalpostId i en tilstand som er ok. Tilstand: ${match?.value}" }
+            return true
+        }
+        return false
     }
 }
