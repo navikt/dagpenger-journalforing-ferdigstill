@@ -47,6 +47,7 @@ tasks.withType<KotlinCompile> {
 val cxfVersion = "3.3.4"
 val tjenestespesifikasjonerVersion = "1.2019.09.25-00.21-49b69f0625e0"
 val resilience4jVersion = "1.3.1"
+val resultVersion = "1.3.30"
 
 fun tjenestespesifikasjon(name: String) = "no.nav.tjenestespesifikasjoner:$name:$tjenestespesifikasjonerVersion"
 
@@ -97,6 +98,9 @@ dependencies {
 
     // resilience
     implementation("io.github.resilience4j:resilience4j-retry:$resilience4jVersion")
+
+    // result
+    implementation("com.github.kittinunf.result:result:$resultVersion")
 
     // testing
     testImplementation(Junit5.api)

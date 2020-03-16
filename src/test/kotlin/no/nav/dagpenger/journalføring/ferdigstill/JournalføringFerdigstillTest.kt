@@ -491,6 +491,66 @@ internal class JournalføringFerdigstillTest {
         }
         verify(exactly = 0) { journalPostApi.ferdigstill(any()) }
     }
+    @Test
+    fun `Opprett manuell journalføringsoppgave når bestilling av arena-oppgave feiler for henvendelser angående eksisterende saksforhold`() {
+        val journalFøringFerdigstill =
+            JournalføringFerdigstill(
+                journalPostApi,
+                manuellJournalføringsOppgaveClient,
+                arenaClient,
+                mockk(),
+                FakeUnleash()
+            )
+        val journalPostId = "journalPostId"
+        val naturligIdent = "12345678910"
+        val behandlendeEnhet = "9999"
+        val aktørId = "987654321"
+        val dato = "2020-01-01T01:01:01"
+        val zonedDateTime = LocalDateTime.parse(dato).atZone(ZoneId.of("Europe/Oslo"))
+
+        val packetPersonInaktiv = Packet().apply {
+            this.putValue(JOURNALPOST_ID, journalPostId)
+            this.putValue(NATURLIG_IDENT, naturligIdent)
+            this.putValue(BEHANDLENDE_ENHET, behandlendeEnhet)
+            this.putValue(AKTØR_ID, aktørId)
+            this.putValue(DATO_REGISTRERT, dato)
+            this.putValue(AVSENDER_NAVN, "Donald")
+            this.putValue(HENVENDELSESTYPE, "ETABLERING")
+
+            dokumentJsonAdapter.toJsonValue(
+                listOf(
+                    Dokument(
+                        "id1",
+                        "tittel1"
+                    )
+                )
+            )?.let { this.putValue(DOKUMENTER, it) }
+        }
+
+        val packetPersonIkkeFunnet = Packet(packetPersonInaktiv.toJson()!!)
+
+        // Person er ikke arbeidssøker
+        every {
+            arenaClient.bestillOppgave(any())
+        } returns null
+
+        every {
+            arenaClient.harIkkeAktivSak(any())
+        } returns true
+
+        journalFøringFerdigstill.handlePacket(packetPersonInaktiv)
+
+        verify(exactly = 1) {
+            manuellJournalføringsOppgaveClient.opprettOppgave(
+                journalPostId,
+                aktørId,
+                "tittel1",
+                "9999",
+                zonedDateTime
+            )
+        }
+        verify(exactly = 0) { journalPostApi.ferdigstill(any()) }
+    }
 }
 
 class IgnorerJournalpostTest : FreeSpec({

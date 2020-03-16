@@ -1,5 +1,6 @@
 package no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.arena
 
+import com.github.kittinunf.result.Result
 import io.github.resilience4j.core.IntervalFunction
 import io.github.resilience4j.retry.Retry
 import io.github.resilience4j.retry.RetryConfig
@@ -57,7 +58,7 @@ class SoapArenaClient(
 
     private val logger = KotlinLogging.logger {}
 
-    override fun bestillOppgave(command: OppgaveCommand): FagsakId? {
+    override fun bestillOppgave(command: OppgaveCommand): Result<FagsakId?, Exception> {
 
         val soapRequest = command.toWSBestillOppgaveRequest()
 
@@ -73,11 +74,11 @@ class SoapArenaClient(
             return when (e) {
                 is BestillOppgavePersonErInaktiv -> {
                     logger.warn { "Kan ikke bestille oppgave for journalpost. Person ikke arbeidssøker " }
-                    null
+                    Result.error(e)
                 }
                 is BestillOppgavePersonIkkeFunnet -> {
                     logger.warn { "Kan ikke bestille oppgave for journalpost. Person ikke funnet i arena " }
-                    null
+                    Result.error(e)
                 }
                 else -> {
                     logger.warn(e) { "Kan ikke bestille oppgave for journalpost. Ukjent feil. " }
@@ -88,7 +89,7 @@ class SoapArenaClient(
 
         Metrics.automatiskJournalførtJaTellerInc(enhet = command.behandlendeEnhetId)
 
-        return response.arenaSakId?.let { FagsakId(it) }
+        return response.arenaSakId?.let { Result.success(FagsakId(it)) } ?: Result.success(v = null)
     }
 
     fun OppgaveCommand.toWSBestillOppgaveRequest(): WSBestillOppgaveRequest {
