@@ -94,24 +94,24 @@ fun main() {
     }
 
     val unleash: Unleash = DefaultUnleash(configuration.application.unleashConfig)
-
+    val gosysOppgaveClient = GosysOppgaveClient(
+    configuration.gosysApiUrl,
+    stsOidcClient
+    )
     val vilkårtester = Vilkårtester(configuration.application.regelApiBaseUrl, configuration.auth.regelApiKey)
     val journalFøringFerdigstill = JournalføringFerdigstill(
         JournalpostRestApi(
             configuration.journalPostApiUrl,
             stsOidcClient
         ),
-        GosysOppgaveClient(
-            configuration.gosysApiUrl,
-            stsOidcClient
-        ),
+       gosysOppgaveClient,
         arenaClient,
         vilkårtester,
         unleash
     )
 
     Application(configuration, journalFøringFerdigstill).start()
-    OpprydderApp(configuration, journalFøringFerdigstill).start()
+    OpprydderApp(configuration, gosysOppgaveClient).start()
 }
 
 class ReadCountException : RuntimeException()
