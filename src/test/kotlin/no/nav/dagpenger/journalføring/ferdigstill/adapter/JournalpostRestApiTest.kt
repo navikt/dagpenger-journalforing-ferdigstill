@@ -31,6 +31,107 @@ internal class JournalpostRestApiTest {
     }
 
     @Test
+    fun `Håndtere 400 feil i oppdatering journalpost`() {
+
+        val journalpostId = "12345"
+
+        WireMock.stubFor(
+            WireMock.put(WireMock.urlEqualTo("/rest/journalpostapi/v1/journalpost/$journalpostId"))
+                .willReturn(
+                    WireMock.aResponse().withStatus(400).withBody("<html><body><h1>Whitelabel Error Page</h1><p>This application has no explicit mapping for /error, so you are seeing this as a fallback.</p><div id='created'>Mon Mar 16 14:01:35 CET 2020</div><div>There was an unexpected error (type=Bad Request, status=400).</div><div>Bruker kan ikke oppdateres for journalpost med journalpostStatus=J og journalpostType=I.</div></body></html>")
+                )
+        )
+
+        val stsOidcClient: StsOidcClient = mockk(relaxed = true)
+
+        val client = JournalpostRestApi(
+            server.baseUrl(),
+            stsOidcClient
+        )
+
+        client.oppdater(
+            journalpostId,
+            OppdaterJournalpostPayload(
+                avsenderMottaker = Avsender("navn"),
+                bruker = Bruker("bruker"),
+                tittel = "tittel",
+                sak = Sak(
+                    SaksType.FAGSAK,
+                    "fagsakId",
+                    "AO01"
+                ),
+                dokumenter = listOf(
+                    Dokument(
+                        "dokumentId",
+                        "tittel"
+                    )
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `Håndtere 400 feil i oppdatering journalpost der response er escapet `() {
+
+        val journalpostId = "12345"
+
+        WireMock.stubFor(
+            WireMock.put(WireMock.urlEqualTo("/rest/journalpostapi/v1/journalpost/$journalpostId"))
+                .willReturn(
+                    WireMock.aResponse().withStatus(400).withBody("<html><body><h1>Whitelabel Error Page</h1><p>This application has no explicit mapping for /error, so you are seeing this as a fallback.</p><div id='created'>Mon Mar 16 14:01:35 CET 2020</div><div>There was an unexpected error (type=Bad Request, status=400).</div><div>Bruker kan ikke oppdateres for journalpost med journalpostStatus=J og journalpostType=I.</div></body></html>")
+                )
+        )
+
+        val stsOidcClient: StsOidcClient = mockk(relaxed = true)
+
+        val client = JournalpostRestApi(
+            server.baseUrl(),
+            stsOidcClient
+        )
+
+        client.oppdater(
+            journalpostId,
+            OppdaterJournalpostPayload(
+                avsenderMottaker = Avsender("navn"),
+                bruker = Bruker("bruker"),
+                tittel = "tittel",
+                sak = Sak(
+                    SaksType.FAGSAK,
+                    "fagsakId",
+                    "AO01"
+                ),
+                dokumenter = listOf(
+                    Dokument(
+                        "dokumentId",
+                        "tittel"
+                    )
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `skal håndtere hvis journalpost allerede er ferdigstilt`() {
+
+        val journalpostId = "12345"
+        WireMock.stubFor(
+            WireMock.patch(WireMock.urlEqualTo("/rest/journalpostapi/v1/journalpost/$journalpostId/ferdigstill"))
+                .willReturn(
+                    WireMock.aResponse().withStatus(400).withBody("<html><body><h1>Whitelabel Error Page</h1><p>This application has no explicit mapping for /error, so you are seeing this as a fallback.</p><div id='created'>Mon Mar 16 14:55:34 CET 2020</div><div>There was an unexpected error (type=Bad Request, status=400).</div><div>Journalpost med journalpostId=12345 er ikke midlertidig journalf&oslash;rt</div></body></html>")
+                )
+        )
+
+        val stsOidcClient: StsOidcClient = mockk(relaxed = true)
+
+        val client = JournalpostRestApi(
+            server.baseUrl(),
+            stsOidcClient
+        )
+
+        client.ferdigstill(journalpostId)
+    }
+
+    @Test
     fun `Forsøker på ny hvis noe er feil`() {
         val journalpostId = "12345"
 

@@ -94,7 +94,7 @@ internal class JournalforingFerdigstillComponentTest {
             unleash = FakeUnleash()
         )
 
-        private val app = Application(configuration, journalFøringFerdigstill)
+        private val app = Application(configuration, journalFøringFerdigstill, FakeUnleash())
         @BeforeAll
         @JvmStatic
         fun setup() {

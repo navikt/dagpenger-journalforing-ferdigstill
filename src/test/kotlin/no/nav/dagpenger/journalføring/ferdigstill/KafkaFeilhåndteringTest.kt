@@ -52,7 +52,7 @@ class KafkaFeilhåndteringTest {
     fun `skal fortsette der den slapp når noe feiler`() {
         val journalFøringFerdigstill =
             JournalføringFerdigstill(journalpostApi, manuellJournalføringsOppgaveClient, arenaClient, mockk(), FakeUnleash())
-        val application = Application(configuration, journalFøringFerdigstill)
+        val application = Application(configuration, journalFøringFerdigstill, FakeUnleash())
 
         val journalPostId = "journalPostId"
         val naturligIdent = "12345678910"
@@ -107,14 +107,14 @@ class KafkaFeilhåndteringTest {
 
     @Test
     fun `skal feile hvis pakken er lest mer enn 10 ganger`() {
-        val application = Application(configuration, mockk())
+        val application = Application(configuration, mockk(), FakeUnleash())
 
         val journalPostId = "journalPostId"
         val naturligIdent = "12345678910"
         val behandlendeEnhet = "9999"
         val aktørId = "987654321"
 
-        val packet = Packet("{\"system_read_count\": 9}").apply {
+        val packet = Packet("{\"system_read_count\": 16}").apply {
             this.putValue(PacketKeys.JOURNALPOST_ID, journalPostId)
             this.putValue(PacketKeys.TOGGLE_BEHANDLE_NY_SØKNAD, true)
             this.putValue(PacketKeys.NATURLIG_IDENT, naturligIdent)

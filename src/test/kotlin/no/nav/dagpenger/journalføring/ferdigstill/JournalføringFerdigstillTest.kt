@@ -45,7 +45,7 @@ internal class JournalføringFerdigstillTest {
     @Test
     fun `Skal ta imot pakker med journalpostId`() {
 
-        val application = Application(Configuration(), mockk())
+        val application = Application(Configuration(), mockk(), FakeUnleash())
 
         application.filterPredicates().all {
             it.test("", Packet().apply {
@@ -63,7 +63,7 @@ internal class JournalføringFerdigstillTest {
 
     @Test
     fun `skal ikke behandle pakker som er ferdig behandlet`() {
-        val application = Application(Configuration(), mockk())
+        val application = Application(Configuration(), mockk(), FakeUnleash())
 
         application.filterPredicates().all {
             it.test("", Packet().apply {
@@ -556,7 +556,7 @@ internal class JournalføringFerdigstillTest {
 
 class IgnorerJournalpostTest : FreeSpec({
 
-    val application = Application(Configuration(), mockk())
+    val application = Application(Configuration(), mockk(), FakeUnleash())
 
     "Skal droppe behandling av journalpost" - {
         setOf("471479059", "471479060", "471478910").map { journalpost ->
