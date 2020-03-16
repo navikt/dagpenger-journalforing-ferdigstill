@@ -1,5 +1,6 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
+import com.github.kittinunf.result.Result
 import mu.KotlinLogging
 import no.finn.unleash.Unleash
 import no.nav.dagpenger.events.Packet
@@ -84,7 +85,7 @@ internal class NyttSaksforholdBehandlingsChain(
 
             val kanAvslåsPåMinsteinntekt = packet.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) == false
 
-            val fagsakId: FagsakId? = arena.bestillOppgave(
+            val result = arena.bestillOppgave(
                 StartVedtakCommand(
                     naturligIdent = PacketMapper.bruker(packet).id,
                     behandlendeEnhetId = finnBehandlendeEnhet(packet),
@@ -97,9 +98,13 @@ internal class NyttSaksforholdBehandlingsChain(
                 )
             )
 
-            if (fagsakId != null) {
-                packet.putValue(FAGSAK_ID, fagsakId.value)
-                packet.putValue(PacketKeys.FERDIGSTILT_ARENA, true)
+            when (result) {
+                is Result.Success -> {
+                    result.value?.let {
+                        packet.putValue(FAGSAK_ID, it.value)
+                    }
+                    packet.putValue(PacketKeys.FERDIGSTILT_ARENA, true)
+                }
             }
         }
         return neste?.håndter(packet) ?: packet
@@ -144,7 +149,7 @@ internal class EksisterendeSaksForholdBehandlingsChain(private val arena: ArenaC
                 )
 
             val henvendelse = PacketMapper.henvendelse(packet)
-            arena.bestillOppgave(
+            val result = arena.bestillOppgave(
                 VurderHenvendelseAngåendeEksisterendeSaksforholdCommand(
                     naturligIdent = PacketMapper.bruker(packet).id,
                     behandlendeEnhetId = PacketMapper.tildeltEnhetsNrFrom(packet),
@@ -154,7 +159,11 @@ internal class EksisterendeSaksForholdBehandlingsChain(private val arena: ArenaC
                 )
             )
 
-            packet.putValue(PacketKeys.FERDIGSTILT_ARENA, true)
+            when (result) {
+                is Result.Success -> {
+                    packet.putValue(PacketKeys.FERDIGSTILT_ARENA, true)
+                }
+            }
         }
         return neste?.håndter(packet) ?: packet
     }

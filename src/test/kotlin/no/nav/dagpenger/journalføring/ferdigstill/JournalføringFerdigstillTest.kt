@@ -1,5 +1,6 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
+import com.github.kittinunf.result.Result
 import io.kotlintest.matchers.doubles.shouldBeGreaterThan
 import io.kotlintest.matchers.types.shouldBeTypeOf
 import io.kotlintest.matchers.withClue
@@ -29,6 +30,8 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.OppgaveCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderHenvendelseAngåendeEksisterendeSaksforholdCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.vilkårtester.Vilkårtester
+import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonErInaktiv
+import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonIkkeFunnet
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -185,7 +188,7 @@ internal class JournalføringFerdigstillTest {
         val slot = slot<OppgaveCommand>()
 
         every { arenaClient.harIkkeAktivSak(any()) } returns true
-        every { arenaClient.bestillOppgave(command = capture(slot)) } returns FagsakId("123")
+        every { arenaClient.bestillOppgave(command = capture(slot)) } returns Result.of(FagsakId("123"))
 
         val packet = Packet().apply {
             this.putValue(JOURNALPOST_ID, journalPostId)
@@ -259,7 +262,7 @@ internal class JournalføringFerdigstillTest {
         val slot = slot<OppgaveCommand>()
 
         every { vilkårtester.harBeståttMinsteArbeidsinntektVilkår(any()) } returns false
-        every { arenaClient.bestillOppgave(command = capture(slot)) } returns FagsakId("as")
+        every { arenaClient.bestillOppgave(command = capture(slot)) } returns Result.of(FagsakId("as"))
         every { arenaClient.harIkkeAktivSak(any()) } returns true
 
         val packet = lagPacket(journalPostId, naturligIdent, behandlendeEnhet, "NY_SØKNAD")
@@ -295,7 +298,7 @@ internal class JournalføringFerdigstillTest {
         val slot = slot<OppgaveCommand>()
 
         every { vilkårtester.harBeståttMinsteArbeidsinntektVilkår(any()) } returns false
-        every { arenaClient.bestillOppgave(command = capture(slot)) } returns FagsakId("123")
+        every { arenaClient.bestillOppgave(command = capture(slot)) } returns Result.of(FagsakId("123"))
         every { arenaClient.harIkkeAktivSak(any()) } returns true
 
         val packet = lagPacket(journalPostId, naturligIdent, behandlendeEnhet, "NY_SØKNAD")
@@ -328,7 +331,7 @@ internal class JournalføringFerdigstillTest {
 
         val slot = slot<OppgaveCommand>()
 
-        every { arenaClient.bestillOppgave(command = capture(slot)) } returns null
+        every { arenaClient.bestillOppgave(command = capture(slot)) } returns Result.success(null)
         every { arenaClient.harIkkeAktivSak(any()) } returns true
 
         val packet = lagPacket(journalPostId, naturligIdent, behandlendeEnhet, henvendelsestype)
@@ -454,7 +457,7 @@ internal class JournalføringFerdigstillTest {
         // Person er ikke arbeidssøker
         every {
             arenaClient.bestillOppgave(any())
-        } returns null
+        } returns Result.error(BestillOppgavePersonErInaktiv())
 
         every {
             arenaClient.harIkkeAktivSak(any())
@@ -476,11 +479,69 @@ internal class JournalføringFerdigstillTest {
         // Person er ikke funnet i arena
         every {
             arenaClient.bestillOppgave(any())
-        } returns null
+        } returns Result.error(BestillOppgavePersonIkkeFunnet())
 
         journalFøringFerdigstill.handlePacket(packetPersonIkkeFunnet)
 
         verify(exactly = 2) {
+            manuellJournalføringsOppgaveClient.opprettOppgave(
+                journalPostId,
+                aktørId,
+                "tittel1",
+                "9999",
+                zonedDateTime
+            )
+        }
+        verify(exactly = 0) { journalPostApi.ferdigstill(any()) }
+    }
+    @Test
+    fun `Opprett manuell journalføringsoppgave når bestilling av arena-oppgave feiler for henvendelser angående eksisterende saksforhold`() {
+        val journalFøringFerdigstill =
+            JournalføringFerdigstill(
+                journalPostApi,
+                manuellJournalføringsOppgaveClient,
+                arenaClient,
+                mockk(),
+                FakeUnleash()
+            )
+        val journalPostId = "journalPostId"
+        val naturligIdent = "12345678910"
+        val behandlendeEnhet = "9999"
+        val aktørId = "987654321"
+        val dato = "2020-01-01T01:01:01"
+        val zonedDateTime = LocalDateTime.parse(dato).atZone(ZoneId.of("Europe/Oslo"))
+
+        val packetPersonInaktiv = Packet().apply {
+            this.putValue(JOURNALPOST_ID, journalPostId)
+            this.putValue(NATURLIG_IDENT, naturligIdent)
+            this.putValue(BEHANDLENDE_ENHET, behandlendeEnhet)
+            this.putValue(AKTØR_ID, aktørId)
+            this.putValue(DATO_REGISTRERT, dato)
+            this.putValue(AVSENDER_NAVN, "Donald")
+            this.putValue(HENVENDELSESTYPE, "ETABLERING")
+
+            dokumentJsonAdapter.toJsonValue(
+                listOf(
+                    Dokument(
+                        "id1",
+                        "tittel1"
+                    )
+                )
+            )?.let { this.putValue(DOKUMENTER, it) }
+        }
+
+        // Person er ikke arbeidssøker
+        every {
+            arenaClient.bestillOppgave(any())
+        } returns Result.error(BestillOppgavePersonErInaktiv())
+
+        every {
+            arenaClient.harIkkeAktivSak(any())
+        } returns true
+
+        journalFøringFerdigstill.handlePacket(packetPersonInaktiv)
+
+        verify(exactly = 1) {
             manuellJournalføringsOppgaveClient.opprettOppgave(
                 journalPostId,
                 aktørId,

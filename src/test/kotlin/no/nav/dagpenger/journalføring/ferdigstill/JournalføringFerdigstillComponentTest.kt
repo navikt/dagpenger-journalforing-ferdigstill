@@ -1,6 +1,7 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
 import com.github.kittinunf.fuel.httpGet
+import com.github.kittinunf.result.Result
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
@@ -170,7 +171,7 @@ internal class JournalforingFerdigstillComponentTest {
 
         every {
             arenaClientMock.bestillOppgave(any())
-        } returns FagsakId("arenaSakId")
+        } returns Result.of(FagsakId("arenaSakId"))
 
         val expectedFerdigstillJson = """{ "journalfoerendeEnhet" : "9999"}"""
 
