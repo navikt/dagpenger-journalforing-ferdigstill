@@ -110,7 +110,6 @@ internal class JournalpostRestApiTest {
         )
     }
 
-
     @Test
     fun `skal håndtere hvis journalpost allerede er ferdigstilt`() {
 
