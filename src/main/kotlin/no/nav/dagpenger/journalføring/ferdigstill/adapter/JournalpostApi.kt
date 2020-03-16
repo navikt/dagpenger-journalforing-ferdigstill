@@ -74,7 +74,7 @@ internal class JournalpostRestApi(private val url: String, private val oidcClien
         when (result) {
             is Result.Success -> return
             is Result.Failure -> {
-                logger.error("Feilet oppdatering av journalpost: $journalpostId", result.error.exception)
+                logger.error("Feilet oppdatering av journalpost: $journalpostId, respons fra journalpostapi ${result.error.response}", result.error.exception)
                 throw AdapterException(result.error.exception)
             }
         }
@@ -95,7 +95,7 @@ internal class JournalpostRestApi(private val url: String, private val oidcClien
             is Result.Success -> return
             is Result.Failure -> {
                 logger.error(
-                    "Feilet ferdigstilling av journalpost: : $journalpostId, respons fra joark ${result.error.response}",
+                    "Feilet ferdigstilling av journalpost: : $journalpostId, respons fra journalpostapi ${result.error.response}",
                     result.error.exception
                 )
                 throw AdapterException(result.error.exception)

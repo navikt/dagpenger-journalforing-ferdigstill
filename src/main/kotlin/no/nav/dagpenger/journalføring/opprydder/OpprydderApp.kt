@@ -23,6 +23,8 @@ internal class OpprydderApp(
 
     override val SERVICE_APP_ID = "dp-opprydder-manuell-behandling-dry-run"
     override val HTTP_PORT: Int = 8079
+    override val withHealthChecks: Boolean
+        get() = false
 
     val manuellOppgaveChain = ManuellJournalføringsBehandlingsChain(gosysOppgaveClient, null)
 
