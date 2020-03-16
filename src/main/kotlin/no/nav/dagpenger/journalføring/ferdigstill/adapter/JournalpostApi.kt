@@ -47,7 +47,8 @@ internal class JournalpostRestApi(private val url: String, private val oidcClien
 
     private val whitelistFeilmeldinger = setOf<String>(
         "Bruker kan ikke oppdateres for journalpost med journalpostStatus=J og journalpostType=I.",
-        "er ikke midlertidig journalført"
+        "er ikke midlertidig journalført",
+        "er ikke midlertidig journalf&oslash;rt"
     )
 
     private val feilmelding: Pattern = Pattern.compile("\\(type=([^,]+), status=([^)]+)\\)\\.<\\/div><div>([^<]+)")
