@@ -1,5 +1,6 @@
 package no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.arena
 
+import com.github.kittinunf.result.Result
 import io.kotlintest.shouldBe
 import io.mockk.every
 import io.mockk.mockk
@@ -31,7 +32,7 @@ internal class SoapArenaClientTest {
 
         val actual = client.bestillOppgave(StartVedtakCommand("123", "abc", "", ZonedDateTime.now(), ""))
 
-        actual shouldBe FagsakId("123")
+        actual shouldBe Result.success(FagsakId("123"))
     }
 
     @Test

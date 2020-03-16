@@ -1,5 +1,6 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
+import com.github.kittinunf.result.Result
 import io.kotlintest.matchers.doubles.shouldBeGreaterThan
 import io.kotlintest.matchers.types.shouldBeTypeOf
 import io.kotlintest.matchers.withClue
@@ -29,6 +30,8 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.OppgaveCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderHenvendelseAngåendeEksisterendeSaksforholdCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.vilkårtester.Vilkårtester
+import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonErInaktiv
+import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonIkkeFunnet
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -185,7 +188,7 @@ internal class JournalføringFerdigstillTest {
         val slot = slot<OppgaveCommand>()
 
         every { arenaClient.harIkkeAktivSak(any()) } returns true
-        every { arenaClient.bestillOppgave(command = capture(slot)) } returns FagsakId("123")
+        every { arenaClient.bestillOppgave(command = capture(slot)) } returns Result.of(FagsakId("123"))
 
         val packet = Packet().apply {
             this.putValue(JOURNALPOST_ID, journalPostId)
@@ -259,7 +262,7 @@ internal class JournalføringFerdigstillTest {
         val slot = slot<OppgaveCommand>()
 
         every { vilkårtester.harBeståttMinsteArbeidsinntektVilkår(any()) } returns false
-        every { arenaClient.bestillOppgave(command = capture(slot)) } returns FagsakId("as")
+        every { arenaClient.bestillOppgave(command = capture(slot)) } returns Result.of(FagsakId("as"))
         every { arenaClient.harIkkeAktivSak(any()) } returns true
 
         val packet = lagPacket(journalPostId, naturligIdent, behandlendeEnhet, "NY_SØKNAD")
@@ -295,7 +298,7 @@ internal class JournalføringFerdigstillTest {
         val slot = slot<OppgaveCommand>()
 
         every { vilkårtester.harBeståttMinsteArbeidsinntektVilkår(any()) } returns false
-        every { arenaClient.bestillOppgave(command = capture(slot)) } returns FagsakId("123")
+        every { arenaClient.bestillOppgave(command = capture(slot)) } returns Result.of(FagsakId("123"))
         every { arenaClient.harIkkeAktivSak(any()) } returns true
 
         val packet = lagPacket(journalPostId, naturligIdent, behandlendeEnhet, "NY_SØKNAD")
@@ -328,7 +331,7 @@ internal class JournalføringFerdigstillTest {
 
         val slot = slot<OppgaveCommand>()
 
-        every { arenaClient.bestillOppgave(command = capture(slot)) } returns null
+        every { arenaClient.bestillOppgave(command = capture(slot)) } returns Result.success(null)
         every { arenaClient.harIkkeAktivSak(any()) } returns true
 
         val packet = lagPacket(journalPostId, naturligIdent, behandlendeEnhet, henvendelsestype)
@@ -454,7 +457,7 @@ internal class JournalføringFerdigstillTest {
         // Person er ikke arbeidssøker
         every {
             arenaClient.bestillOppgave(any())
-        } returns null
+        } returns Result.error(BestillOppgavePersonErInaktiv())
 
         every {
             arenaClient.harIkkeAktivSak(any())
@@ -476,7 +479,7 @@ internal class JournalføringFerdigstillTest {
         // Person er ikke funnet i arena
         every {
             arenaClient.bestillOppgave(any())
-        } returns null
+        } returns Result.error(BestillOppgavePersonIkkeFunnet())
 
         journalFøringFerdigstill.handlePacket(packetPersonIkkeFunnet)
 
@@ -527,12 +530,10 @@ internal class JournalføringFerdigstillTest {
             )?.let { this.putValue(DOKUMENTER, it) }
         }
 
-        val packetPersonIkkeFunnet = Packet(packetPersonInaktiv.toJson()!!)
-
         // Person er ikke arbeidssøker
         every {
             arenaClient.bestillOppgave(any())
-        } returns null
+        } returns Result.error(BestillOppgavePersonErInaktiv())
 
         every {
             arenaClient.harIkkeAktivSak(any())
