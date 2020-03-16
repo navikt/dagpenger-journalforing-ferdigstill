@@ -13,6 +13,7 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.arena.SoapArenaC
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.configureFor
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.stsClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.vilkårtester.Vilkårtester
+import no.nav.dagpenger.journalføring.opprydder.OpprydderApp
 import no.nav.dagpenger.oidc.StsOidcClient
 import no.nav.dagpenger.streams.River
 import no.nav.dagpenger.streams.streamConfig
@@ -110,6 +111,7 @@ fun main() {
     )
 
     Application(configuration, journalFøringFerdigstill).start()
+    OpprydderApp(configuration, journalFøringFerdigstill).start()
 }
 
 class ReadCountException : RuntimeException()
