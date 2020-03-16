@@ -99,8 +99,8 @@ internal class NyttSaksforholdBehandlingsChain(
 
             if (fagsakId != null) {
                 packet.putValue(FAGSAK_ID, fagsakId.value)
+                packet.putValue(PacketKeys.FERDIGSTILT_ARENA, true)
             }
-            packet.putValue(PacketKeys.FERDIGSTILT_ARENA, true)
         }
         return neste?.håndter(packet) ?: packet
     }

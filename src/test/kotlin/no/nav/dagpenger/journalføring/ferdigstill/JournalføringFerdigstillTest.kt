@@ -128,7 +128,7 @@ internal class JournalføringFerdigstillTest {
     }
 
     @Test
-    fun `Opprett manuell journalføringsoppgave når bruker er ukjent`() {
+    fun `Opprett manuell journalføringsoppgave vi ikke har fødselsnummer`() {
         val journalFøringFerdigstill =
             JournalføringFerdigstill(
                 journalPostApi,
@@ -261,7 +261,7 @@ internal class JournalføringFerdigstillTest {
         val slot = slot<OppgaveCommand>()
 
         every { vilkårtester.harBeståttMinsteArbeidsinntektVilkår(any()) } returns false
-        every { arenaClient.bestillOppgave(command = capture(slot)) } returns null
+        every { arenaClient.bestillOppgave(command = capture(slot)) } returns FagsakId("as")
         every { arenaClient.harIkkeAktivSak(any()) } returns true
 
         val packet = lagPacket(journalPostId, naturligIdent, behandlendeEnhet, "NY_SØKNAD")
@@ -280,7 +280,7 @@ internal class JournalføringFerdigstillTest {
     }
 
     @Test
-    fun `Ved kandidat for avslag basert på minsteinntekt havner på egen kø om feature flag er på`() {
+    fun `Ved kandidat for avslag basert på minsteinntekt havner på egen kø`() {
         val vilkårtester = mockk<Vilkårtester>()
         val journalFøringFerdigstill =
             JournalføringFerdigstill(
@@ -297,7 +297,7 @@ internal class JournalføringFerdigstillTest {
         val slot = slot<OppgaveCommand>()
 
         every { vilkårtester.harBeståttMinsteArbeidsinntektVilkår(any()) } returns false
-        every { arenaClient.bestillOppgave(command = capture(slot)) } returns null
+        every { arenaClient.bestillOppgave(command = capture(slot)) } returns FagsakId("123")
         every { arenaClient.harIkkeAktivSak(any()) } returns true
 
         val packet = lagPacket(journalPostId, naturligIdent, behandlendeEnhet, "NY_SØKNAD")
@@ -456,7 +456,11 @@ internal class JournalføringFerdigstillTest {
         // Person er ikke arbeidssøker
         every {
             arenaClient.bestillOppgave(any())
-        } throws BestillOppgavePersonErInaktiv()
+        } returns null
+
+        every {
+            arenaClient.harIkkeAktivSak(any())
+        } returns true
 
         journalFøringFerdigstill.handlePacket(packetPersonInaktiv)
 
@@ -474,7 +478,8 @@ internal class JournalføringFerdigstillTest {
         // Person er ikke funnet i arena
         every {
             arenaClient.bestillOppgave(any())
-        } throws BestillOppgavePersonIkkeFunnet()
+        } returns null
+
 
         journalFøringFerdigstill.handlePacket(packetPersonIkkeFunnet)
 
