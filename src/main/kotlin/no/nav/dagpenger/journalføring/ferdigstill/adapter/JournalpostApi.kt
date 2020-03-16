@@ -11,6 +11,7 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import mu.KotlinLogging
 import no.nav.dagpenger.journalføring.ferdigstill.AdapterException
 import no.nav.dagpenger.oidc.OidcClient
+import java.util.regex.Pattern
 
 private val logger = KotlinLogging.logger {}
 
@@ -42,6 +43,14 @@ internal data class Dokument(val dokumentInfoId: String, val tittel: String)
 
 internal class JournalpostRestApi(private val url: String, private val oidcClient: OidcClient) :
     JournalpostApi {
+
+    private val whitelistFeilmeldinger = setOf<String>(
+        "Bruker kan ikke oppdateres for journalpost med journalpostStatus=J og journalpostType=I."
+    )
+
+    private val feilmelding: Pattern = Pattern.compile("\\(type=([^,]+), status=([^)]+)\\)\\.<\\/div><div>([^<]+)")
+    val feilmeldingRegex = Regex("\\(type=([^,]+), status=([^)]+)\\)\\.<\\/div><div>([^<]+)")
+
     init {
         FuelManager.instance.forceMethods = true
     }
@@ -74,7 +83,16 @@ internal class JournalpostRestApi(private val url: String, private val oidcClien
         when (result) {
             is Result.Success -> return
             is Result.Failure -> {
-                logger.error("Feilet oppdatering av journalpost: $journalpostId, respons fra journalpostapi ${result.error.response}", result.error.exception)
+                val body = result.error.response.data.toString(Charsets.UTF_8)
+                val match = feilmeldingRegex.find(body)?.groups?.last()
+                if (whitelistFeilmeldinger.contains(match?.value)) {
+                    logger.warn { "Journalpost $journalpostId i en tilstand som er ok. Tilstand: ${match?.value}" }
+                    return
+                }
+                logger.error(
+                    "Feilet oppdatering av journalpost: $journalpostId, respons fra journalpostapi ${result.error.response}",
+                    result.error.exception
+                )
                 throw AdapterException(result.error.exception)
             }
         }
