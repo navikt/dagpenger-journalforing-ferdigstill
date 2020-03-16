@@ -22,7 +22,7 @@ internal class OpprydderApp(
 ) : Pond(configuration.kafka.dagpengerJournalpostTopic) {
 
     override val SERVICE_APP_ID = "dp-opprydder-manuell-behandling-dry-run"
-    override val HTTP_PORT: Int = configuration.application.httpPort
+    override val HTTP_PORT: Int = 8079
 
     val manuellOppgaveChain = ManuellJournalføringsBehandlingsChain(gosysOppgaveClient, null)
 
