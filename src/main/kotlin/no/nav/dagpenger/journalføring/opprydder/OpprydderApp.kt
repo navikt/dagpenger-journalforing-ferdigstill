@@ -3,11 +3,11 @@ package no.nav.dagpenger.journalføring.opprydder
 import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.journalføring.ferdigstill.Configuration
-import no.nav.dagpenger.journalføring.ferdigstill.JournalføringFerdigstill
 import no.nav.dagpenger.journalføring.ferdigstill.ManuellJournalføringsBehandlingsChain
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.GosysOppgaveClient
 import no.nav.dagpenger.journalføring.ferdigstill.erIkkeFerdigBehandletJournalpost
+import no.nav.dagpenger.journalføring.ferdigstill.skalFikses
 import no.nav.dagpenger.streams.Pond
 import no.nav.dagpenger.streams.streamConfig
 import org.apache.kafka.streams.StreamsConfig
@@ -26,21 +26,14 @@ internal class OpprydderApp(
 
     val manuellOppgaveChain = ManuellJournalføringsBehandlingsChain(gosysOppgaveClient, null)
 
-    override fun filterPredicates() = listOf(erIkkeFerdigBehandletJournalpost)
+    override fun filterPredicates() = listOf(erIkkeFerdigBehandletJournalpost, skalFikses)
 
     override fun onPacket(packet: Packet) {
         try {
             ThreadContext.put(
                 "x_journalpost_id", packet.getStringValue(PacketKeys.JOURNALPOST_ID)
             )
-            logger.info { "Processing: $packet" }
-
-            if (packet.getStringValue(PacketKeys.JOURNALPOST_ID) in fiksDisseJournalpostene && !packet.hasField(
-                    PacketKeys.FERDIG_BEHANDLET
-                )
-            ) {
-                logger.debug { "Dry run fant pakken med journalpostid" }
-            }
+            logger.info { "Opprydder dry run processing: $packet" }
         } finally {
             ThreadContext.remove("x_journalpost_id")
         }

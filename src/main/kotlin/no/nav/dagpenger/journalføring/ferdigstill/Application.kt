@@ -95,8 +95,8 @@ fun main() {
 
     val unleash: Unleash = DefaultUnleash(configuration.application.unleashConfig)
     val gosysOppgaveClient = GosysOppgaveClient(
-    configuration.gosysApiUrl,
-    stsOidcClient
+        configuration.gosysApiUrl,
+        stsOidcClient
     )
     val vilkårtester = Vilkårtester(configuration.application.regelApiBaseUrl, configuration.auth.regelApiKey)
     val journalFøringFerdigstill = JournalføringFerdigstill(
@@ -104,7 +104,7 @@ fun main() {
             configuration.journalPostApiUrl,
             stsOidcClient
         ),
-       gosysOppgaveClient,
+        gosysOppgaveClient,
         arenaClient,
         vilkårtester,
         unleash
