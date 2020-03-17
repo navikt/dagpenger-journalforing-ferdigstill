@@ -15,6 +15,7 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.OppdaterJournalpostPa
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Sak
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.SaksType
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.vilkårtester.Vilkårtester
+import no.nav.dagpenger.journalføring.opprydder.fiksDisseJournalpostene
 import no.nav.dagpenger.journalføring.opprydder.testFiksJournalpost
 import org.apache.kafka.streams.kstream.Predicate
 import java.time.LocalDateTime
@@ -31,7 +32,7 @@ internal val erIkkeFerdigBehandletJournalpost = Predicate<String, Packet> { _, p
 }
 
 internal val skalFikses = Predicate<String, Packet> { _, packet ->
-    packet.getStringValue(PacketKeys.JOURNALPOST_ID) in testFiksJournalpost
+    packet.getStringValue(PacketKeys.JOURNALPOST_ID) in fiksDisseJournalpostene
 }
 
 internal object PacketMapper {
