@@ -15,7 +15,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern
-import io.kotlintest.matchers.string.shouldContain
 import io.kotlintest.shouldBe
 import io.mockk.every
 import io.mockk.mockk
@@ -44,7 +43,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import java.util.Properties
 
-internal class JournalforingFerdigstillComponentTest {
+internal class JournalforingFerdigstillComponentV1Test {
 
     companion object {
         private const val username = "srvkafkaclient"
@@ -94,7 +93,7 @@ internal class JournalforingFerdigstillComponentTest {
             unleash = FakeUnleash()
         )
 
-        private val app = Application(configuration, journalFøringFerdigstill, FakeUnleash())
+        private val app = ApplicationV1(configuration, journalFøringFerdigstill, FakeUnleash())
         @BeforeAll
         @JvmStatic
         fun setup() {
@@ -114,14 +113,6 @@ internal class JournalforingFerdigstillComponentTest {
     @Test
     fun `Embedded kafka cluster is up and running `() {
         embeddedEnvironment.serverPark.status shouldBe KafkaEnvironment.ServerParkStatus.Started
-    }
-
-    @Test
-    fun `Application has prometheus metrics`() {
-        "http://localhost:${configuration.application.httpPort}/metrics".httpGet().responseString().third.fold(
-            { result -> result shouldContain "jvm" },
-            { e -> fail(e) }
-        )
     }
 
     @Test
@@ -196,7 +187,7 @@ internal class JournalforingFerdigstillComponentTest {
         val json = journalPostFrom(packet, FagsakId("arenaSakId")).let { toJsonPayload(it) }
 
         behovProducer(configuration).run {
-            this.send(ProducerRecord(configuration.kafka.dagpengerJournalpostTopic.name, packet)).get()
+            this.send(ProducerRecord(configuration.kafka.dagpengerJournalpostTopicV1.name, packet)).get()
         }
 
         retry {
@@ -222,7 +213,7 @@ internal class JournalforingFerdigstillComponentTest {
     }
 
     private fun behovProducer(configuration: Configuration): KafkaProducer<String, Packet> {
-        val topic = configuration.kafka.dagpengerJournalpostTopic
+        val topic = configuration.kafka.dagpengerJournalpostTopicV1
         val producer: KafkaProducer<String, Packet> = KafkaProducer(Properties().apply {
             put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, configuration.kafka.brokers)
             put(ProducerConfig.CLIENT_ID_CONFIG, "dummy-behov-producer")

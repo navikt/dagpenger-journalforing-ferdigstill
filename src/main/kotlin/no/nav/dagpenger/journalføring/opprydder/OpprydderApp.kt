@@ -19,7 +19,7 @@ private val logger = KotlinLogging.logger {}
 internal class OpprydderApp(
     private val configuration: Configuration,
     private val gosysOppgaveClient: GosysOppgaveClient
-) : Pond(configuration.kafka.dagpengerJournalpostTopic) {
+) : Pond(configuration.kafka.dagpengerJournalpostTopicV1) {
 
     override val SERVICE_APP_ID = "dp-opprydder-manuell-behandling-dry-run"
     override val HTTP_PORT: Int = 8079

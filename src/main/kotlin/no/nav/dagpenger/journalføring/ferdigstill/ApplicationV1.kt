@@ -24,11 +24,59 @@ import java.util.Properties
 
 private val logger = KotlinLogging.logger {}
 
-internal class Application(
+internal class ApplicationV1(
     private val configuration: Configuration,
     private val journalføringFerdigstill: JournalføringFerdigstill,
     private val unleash: Unleash
-) : River(configuration.kafka.dagpengerJournalpostTopic) {
+) : River(configuration.kafka.dagpengerJournalpostTopicV1) {
+
+    override val SERVICE_APP_ID = configuration.application.name
+    override val HTTP_PORT: Int = configuration.application.httpPort
+    override val withHealthChecks: Boolean
+        get() = false
+
+    override fun filterPredicates() = listOf(erIkkeFerdigBehandletJournalpost)
+
+    override fun onPacket(packet: Packet): Packet {
+        try {
+            ThreadContext.put(
+                "x_journalpost_id", packet.getStringValue(PacketKeys.JOURNALPOST_ID)
+            )
+            logger.info { "Processing: $packet" }
+
+            val readCountLimit = 15
+            if (packet.getReadCount() >= readCountLimit && !unleash.isEnabled("dagpenger-journalforing-ferdigstill.skipReadCount", false)) {
+                logger.error { "Read count >= $readCountLimit for packet with journalpostid ${packet.getStringValue(PacketKeys.JOURNALPOST_ID)}" }
+                throw ReadCountException()
+            }
+
+            return journalføringFerdigstill.handlePacket(packet)
+        } finally {
+            ThreadContext.remove("x_journalpost_id")
+        }
+    }
+
+    override fun getConfig(): Properties {
+        val properties = streamConfig(
+            SERVICE_APP_ID,
+            configuration.kafka.brokers,
+            configuration.kafka.credential
+        )
+        properties[StreamsConfig.PROCESSING_GUARANTEE_CONFIG] = configuration.kafka.processingGuarantee
+        return properties
+    }
+
+    override fun onFailure(packet: Packet, error: Throwable?): Packet {
+        logger.error(error) { "Feilet ved håndtering av journalpost: ${packet.getStringValue(PacketKeys.JOURNALPOST_ID)}. Pakke $packet" }
+        throw error ?: RuntimeException("Feilet ved håndtering av pakke, ukjent grunn")
+    }
+}
+
+internal class ApplicationV2(
+    private val configuration: Configuration,
+    private val journalføringFerdigstill: JournalføringFerdigstill,
+    private val unleash: Unleash
+) : River(configuration.kafka.dagpengerJournalpostTopicV2) {
 
     override val SERVICE_APP_ID = configuration.application.name
     override val HTTP_PORT: Int = configuration.application.httpPort
@@ -112,7 +160,8 @@ fun main() {
         unleash
     )
 
-    Application(configuration, journalFøringFerdigstill, unleash).start()
+    ApplicationV1(configuration, journalFøringFerdigstill, unleash).start()
+    ApplicationV2(configuration, journalFøringFerdigstill, unleash).start()
     OpprydderApp(configuration, gosysOppgaveClient).start()
 }
 

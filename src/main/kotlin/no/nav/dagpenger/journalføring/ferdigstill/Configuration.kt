@@ -113,8 +113,13 @@ data class Configuration(
     }
 
     data class Kafka(
-        val dagpengerJournalpostTopic: Topic<String, Packet> = Topic(
+        val dagpengerJournalpostTopicV1: Topic<String, Packet> = Topic(
             "privat-dagpenger-journalpost-mottatt-v1",
+            keySerde = Serdes.String(),
+            valueSerde = Serdes.serdeFrom(PacketSerializer(), PacketDeserializer())
+        ),
+        val dagpengerJournalpostTopicV2: Topic<String, Packet> = Topic(
+            "privat-dagpenger-journalpost-mottatt-v2",
             keySerde = Serdes.String(),
             valueSerde = Serdes.serdeFrom(PacketSerializer(), PacketDeserializer())
         ),

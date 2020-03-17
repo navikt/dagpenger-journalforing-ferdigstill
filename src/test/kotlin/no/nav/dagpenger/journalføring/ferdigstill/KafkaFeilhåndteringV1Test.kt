@@ -24,7 +24,7 @@ import org.apache.kafka.streams.test.ConsumerRecordFactory
 import org.junit.jupiter.api.Test
 import java.util.Properties
 
-class KafkaFeilhåndteringTest {
+class KafkaFeilhåndteringV1Test {
     private val configuration = Configuration()
 
     private val streamProperties = Properties().apply {
@@ -52,7 +52,7 @@ class KafkaFeilhåndteringTest {
     fun `skal fortsette der den slapp når noe feiler`() {
         val journalFøringFerdigstill =
             JournalføringFerdigstill(journalpostApi, manuellJournalføringsOppgaveClient, arenaClient, mockk(), FakeUnleash())
-        val application = Application(configuration, journalFøringFerdigstill, FakeUnleash())
+        val application = ApplicationV1(configuration, journalFøringFerdigstill, FakeUnleash())
 
         val journalPostId = "journalPostId"
         val naturligIdent = "12345678910"
@@ -107,7 +107,7 @@ class KafkaFeilhåndteringTest {
 
     @Test
     fun `skal feile hvis pakken er lest mer enn 10 ganger`() {
-        val application = Application(configuration, mockk(), FakeUnleash())
+        val application = ApplicationV1(configuration, mockk(), FakeUnleash())
 
         val journalPostId = "journalPostId"
         val naturligIdent = "12345678910"
@@ -144,9 +144,9 @@ class KafkaFeilhåndteringTest {
 
     private fun readOutput(topologyTestDriver: TopologyTestDriver): ProducerRecord<String, Packet>? {
         return topologyTestDriver.readOutput(
-            configuration.kafka.dagpengerJournalpostTopic.name,
-            configuration.kafka.dagpengerJournalpostTopic.keySerde.deserializer(),
-            configuration.kafka.dagpengerJournalpostTopic.valueSerde.deserializer()
+            configuration.kafka.dagpengerJournalpostTopicV1.name,
+            configuration.kafka.dagpengerJournalpostTopicV1.keySerde.deserializer(),
+            configuration.kafka.dagpengerJournalpostTopicV1.valueSerde.deserializer()
         )
     }
 }

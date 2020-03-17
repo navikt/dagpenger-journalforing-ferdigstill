@@ -36,7 +36,7 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 import java.time.ZoneId
 
-internal class JournalføringFerdigstillTest {
+internal class JournalføringFerdigstillV2Test {
 
     private val journalPostApi = mockk<JournalpostApi>(relaxed = true)
     private val manuellJournalføringsOppgaveClient = mockk<ManuellJournalføringsOppgaveClient>(relaxed = true)
@@ -45,16 +45,16 @@ internal class JournalføringFerdigstillTest {
     @Test
     fun `Skal ta imot pakker med journalpostId`() {
 
-        val application = Application(Configuration(), mockk(), FakeUnleash())
+        val ApplicationV2 = ApplicationV2(Configuration(), mockk(), FakeUnleash())
 
-        application.filterPredicates().all {
+        ApplicationV2.filterPredicates().all {
             it.test("", Packet().apply {
                 this.putValue(JOURNALPOST_ID, "journalPostId")
                 this.putValue("toggleBehandleNySøknad", true)
             })
         } shouldBe true
 
-        application.filterPredicates().all {
+        ApplicationV2.filterPredicates().all {
             it.test("", Packet().apply {
                 this.putValue("noe annet", "blabla")
             })
@@ -63,9 +63,9 @@ internal class JournalføringFerdigstillTest {
 
     @Test
     fun `skal ikke behandle pakker som er ferdig behandlet`() {
-        val application = Application(Configuration(), mockk(), FakeUnleash())
+        val ApplicationV2 = ApplicationV2(Configuration(), mockk(), FakeUnleash())
 
-        application.filterPredicates().all {
+        ApplicationV2.filterPredicates().all {
             it.test("", Packet().apply {
                 this.putValue(JOURNALPOST_ID, "journalPostId")
                 this.putValue(PacketKeys.FERDIG_BEHANDLET, true)
@@ -556,12 +556,12 @@ internal class JournalføringFerdigstillTest {
 
 class IgnorerJournalpostTest : FreeSpec({
 
-    val application = Application(Configuration(), mockk(), FakeUnleash())
+    val ApplicationV2 = ApplicationV2(Configuration(), mockk(), FakeUnleash())
 
     "Skal droppe behandling av journalpost" - {
         setOf("471479059", "471479060", "471478910").map { journalpost ->
             withClue("Skal droppe journalpost $journalpost ") {
-                application.filterPredicates().all {
+                ApplicationV2.filterPredicates().all {
                     it.test("", Packet().apply {
                         this.putValue(JOURNALPOST_ID, journalpost)
                     })
