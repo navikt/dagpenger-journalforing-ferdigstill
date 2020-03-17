@@ -21,7 +21,7 @@ private val logger = KotlinLogging.logger {}
 const val ENHET_FOR_HURTIGE_AVSLAG = "4403"
 
 private val chainTimeSpent = Histogram.build()
-    .name("TIME_SPENT_IN_CHAIN")
+    .name("time_spent_in_chain")
     .help("Time spent on each chain")
     .labelNames("chain_name")
     .register()
