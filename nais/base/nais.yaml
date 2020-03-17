@@ -13,8 +13,8 @@ spec:
     enabled: true
     path: /metrics
   replicas:
-    min: 6
-    max: 6
+    min: 2
+    max: 4
   resources:
     limits:
       cpu: 1000m
