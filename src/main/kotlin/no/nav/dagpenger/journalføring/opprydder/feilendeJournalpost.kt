@@ -1,7 +1,7 @@
 package no.nav.dagpenger.journalføring.opprydder
 
+val testFiksJournalpost = listOf("471522803")
 val fiksDisseJournalpostene = listOf(
-    "471522803",
     "471522797",
     "471522653",
     "471523516",
