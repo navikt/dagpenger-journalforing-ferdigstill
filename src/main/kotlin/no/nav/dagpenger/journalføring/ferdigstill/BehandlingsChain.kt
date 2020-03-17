@@ -1,6 +1,7 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
 import com.github.kittinunf.result.Result
+import io.prometheus.client.Histogram
 import mu.KotlinLogging
 import no.finn.unleash.Unleash
 import no.nav.dagpenger.events.Packet
@@ -19,17 +20,38 @@ private val logger = KotlinLogging.logger {}
 
 const val ENHET_FOR_HURTIGE_AVSLAG = "4403"
 
+private val chainTimeSpent = Histogram.build()
+    .name("time_spent_in_chain")
+    .help("Time spent on each chain")
+    .labelNames("chain_name")
+    .register()
+
 // GoF pattern - Chain of responsibility (https://en.wikipedia.org/wiki/Chain-of-responsibility_pattern)
 abstract class BehandlingsChain(protected val neste: BehandlingsChain? = null) {
     abstract fun håndter(packet: Packet): Packet
     abstract fun kanBehandle(packet: Packet): Boolean
 }
 
+abstract class InstrumentedBehandlingsChain(neste: BehandlingsChain?) : BehandlingsChain(neste) {
+
+    override fun håndter(packet: Packet): Packet {
+        val timer = chainTimeSpent
+            .labels(this.javaClass.name.toString())
+            .startTimer()
+
+        val handledPacket = this.håndter(Packet())
+
+        timer.observeDuration()
+
+        return handledPacket
+    }
+}
+
 internal class OppfyllerMinsteinntektBehandlingsChain(
     private val vilkårtester: Vilkårtester,
     private val toggle: Unleash,
     neste: BehandlingsChain?
-) : BehandlingsChain(neste) {
+) : InstrumentedBehandlingsChain(neste) {
     override fun kanBehandle(packet: Packet) =
         toggle.isEnabled("dagpenger-journalforing-ferdigstill.vilkaartesting") &&
             PacketMapper.hasNaturligIdent(packet) &&
@@ -61,7 +83,7 @@ internal class NyttSaksforholdBehandlingsChain(
     val toggle: Unleash,
     neste: BehandlingsChain?
 ) :
-    BehandlingsChain(neste) {
+    InstrumentedBehandlingsChain(neste) {
 
     override fun kanBehandle(packet: Packet): Boolean =
         PacketMapper.hasNaturligIdent(packet) &&
@@ -128,7 +150,7 @@ internal class NyttSaksforholdBehandlingsChain(
 }
 
 internal class EksisterendeSaksForholdBehandlingsChain(private val arena: ArenaClient, neste: BehandlingsChain?) :
-    BehandlingsChain(neste) {
+    InstrumentedBehandlingsChain(neste) {
 
     private val eksisterendeHenvendelsesTyper = setOf(
         KlageAnke, Utdanning, Etablering, Gjenopptak
@@ -170,7 +192,7 @@ internal class EksisterendeSaksForholdBehandlingsChain(private val arena: ArenaC
 }
 
 internal class OppdaterJournalpostBehandlingsChain(val journalpostApi: JournalpostApi, neste: BehandlingsChain?) :
-    BehandlingsChain(neste) {
+    InstrumentedBehandlingsChain(neste) {
     override fun håndter(packet: Packet): Packet {
         if (kanBehandle(packet)) {
             journalpostApi.oppdater(
@@ -200,7 +222,7 @@ internal class OppdaterJournalpostBehandlingsChain(val journalpostApi: Journalpo
 internal class FerdigstillJournalpostBehandlingsChain(
     val journalpostApi: JournalpostApi,
     neste: BehandlingsChain?
-) : BehandlingsChain(neste) {
+) : InstrumentedBehandlingsChain(neste) {
     override fun kanBehandle(packet: Packet) =
         packet.hasField(PacketKeys.FERDIGSTILT_ARENA)
 
@@ -216,7 +238,7 @@ internal class FerdigstillJournalpostBehandlingsChain(
 internal class ManuellJournalføringsBehandlingsChain(
     val manuellJournalføringsOppgaveClient: ManuellJournalføringsOppgaveClient,
     neste: BehandlingsChain?
-) : BehandlingsChain(neste) {
+) : InstrumentedBehandlingsChain(neste) {
     override fun kanBehandle(packet: Packet) =
         !packet.hasField(PacketKeys.FERDIGSTILT_ARENA)
 
@@ -235,7 +257,7 @@ internal class ManuellJournalføringsBehandlingsChain(
     }
 }
 
-internal class MarkerFerdigBehandlingsChain(neste: BehandlingsChain?) : BehandlingsChain(neste) {
+internal class MarkerFerdigBehandlingsChain(neste: BehandlingsChain?) : InstrumentedBehandlingsChain(neste) {
     override fun kanBehandle(packet: Packet) = true
 
     override fun håndter(packet: Packet): Packet {
