@@ -20,6 +20,12 @@ private val logger = KotlinLogging.logger {}
 
 const val ENHET_FOR_HURTIGE_AVSLAG = "4403"
 
+private val chainTimeSpent = Histogram.build()
+    .name("TIME_SPENT_IN_CHAIN")
+    .help("Time spent on each chain")
+    .labelNames("chain_name")
+    .register()
+
 // GoF pattern - Chain of responsibility (https://en.wikipedia.org/wiki/Chain-of-responsibility_pattern)
 abstract class BehandlingsChain(protected val neste: BehandlingsChain? = null) {
     abstract fun håndter(packet: Packet): Packet
@@ -27,11 +33,6 @@ abstract class BehandlingsChain(protected val neste: BehandlingsChain? = null) {
 }
 
 abstract class InstrumentedBehandlingsChain(neste: BehandlingsChain?) : BehandlingsChain(neste) {
-    private val chainTimeSpent = Histogram.build()
-        .name("TIME_SPENT_IN_CHAIN")
-        .help("Time spent on each chain")
-        .labelNames("chain_name")
-        .register()
 
     override fun håndter(packet: Packet): Packet {
         val timer = chainTimeSpent
