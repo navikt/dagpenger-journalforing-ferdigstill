@@ -33,7 +33,6 @@ abstract class BehandlingsChain(protected val neste: BehandlingsChain? = null) {
 }
 
 abstract class InstrumentedBehandlingsChain(neste: BehandlingsChain?) : BehandlingsChain(neste) {
-
     override fun håndter(packet: Packet): Packet {
         val timer = chainTimeSpent
             .labels(this.javaClass.name.toString())
