@@ -21,11 +21,7 @@ private val logger = KotlinLogging.logger {}
 const val ENHET_FOR_HURTIGE_AVSLAG = "4403"
 
 private val chainTimeSpent = Histogram.build()
-<<<<<<< HEAD
     .name("time_spent_in_chain")
-=======
-    .name("TIME_SPENT_IN_CHAIN")
->>>>>>> Prometheus metric must be 'global'
     .help("Time spent on each chain")
     .labelNames("chain_name")
     .register()
