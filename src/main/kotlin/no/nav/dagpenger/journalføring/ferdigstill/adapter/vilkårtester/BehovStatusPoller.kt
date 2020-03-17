@@ -3,12 +3,16 @@ package no.nav.dagpenger.journalføring.ferdigstill.adapter.vilkårtester
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.fuel.moshi.responseObject
 import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.time.delay
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import mu.KotlinLogging
 import java.time.Duration
+import java.util.concurrent.Executors
 
 private val LOGGER = KotlinLogging.logger {}
+private val api = Executors.newFixedThreadPool(4).asCoroutineDispatcher()
 
 class BehovStatusPoller(
     private val regelApiUrl: String,
@@ -45,14 +49,17 @@ class BehovStatusPoller(
 
     suspend fun pollStatus(statusUrl: String): String {
         val url = "$regelApiUrl$statusUrl"
-        try {
-            return withTimeout(timeout.toMillis()) {
-                return@withTimeout pollWithDelay(url)
-            }
-        } catch (e: Exception) {
-            when (e) {
-                is TimeoutCancellationException -> throw RegelApiTimeoutException("Polled behov status for more than ${timeout.toMillis()} milliseconds")
-                else -> throw PollSubsumsjonStatusException("Failed", e)
+
+        return withContext(api) {
+            try {
+                return@withContext withTimeout(timeout.toMillis()) {
+                    return@withTimeout pollWithDelay(url)
+                }
+            } catch (e: Exception) {
+                when (e) {
+                    is TimeoutCancellationException -> throw RegelApiTimeoutException("Polled behov status for more than ${timeout.toMillis()} milliseconds")
+                    else -> throw PollSubsumsjonStatusException("Failed", e)
+                }
             }
         }
     }
