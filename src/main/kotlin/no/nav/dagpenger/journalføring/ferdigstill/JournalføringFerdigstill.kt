@@ -16,7 +16,6 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.Sak
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.SaksType
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.vilkårtester.Vilkårtester
 import no.nav.dagpenger.journalføring.opprydder.fiksDisseJournalpostene
-import no.nav.dagpenger.journalføring.opprydder.testFiksJournalpost
 import org.apache.kafka.streams.kstream.Predicate
 import java.time.LocalDateTime
 import java.time.ZoneId
