@@ -116,7 +116,7 @@ internal class JournalføringFerdigstill(
 
     fun handlePacket(packet: Packet): Packet {
         try {
-            return vilkårtestingChain.håndter(packet)
+            return vilkårtestingChain.instrumentedHåndter(packet)
         } catch (e: AdapterException) {
         }
         return packet
