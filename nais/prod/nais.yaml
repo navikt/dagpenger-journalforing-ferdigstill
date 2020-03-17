@@ -4,8 +4,8 @@ metadata:
   name: dagpenger-journalforing-ferdigstill
 spec:
   replicas:
-    min: 0
-    max: 0
+    min: 6
+    max: 6
   vault:
     paths:
       - kvPath: "serviceuser/data/prod/srvdagpenger-journ"
