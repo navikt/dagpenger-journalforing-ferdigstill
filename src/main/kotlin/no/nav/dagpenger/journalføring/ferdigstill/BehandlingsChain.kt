@@ -39,12 +39,10 @@ abstract class InstrumentedBehandlingsChain(neste: BehandlingsChain?) : Behandli
             .labels(this.javaClass.name.toString())
             .startTimer()
 
-        val handledPacket = this.håndter(Packet())
-
-        timer.observeDuration()
-
-        return handledPacket
+        return instrumentedHåndter(packet).also { timer.observeDuration() }
     }
+
+    abstract fun instrumentedHåndter(packet: Packet): Packet
 }
 
 internal class OppfyllerMinsteinntektBehandlingsChain(
@@ -60,7 +58,7 @@ internal class OppfyllerMinsteinntektBehandlingsChain(
             PacketMapper.henvendelse(packet) == NyttSaksforhold &&
             !packet.hasField(PacketKeys.OPPFYLLER_MINSTEINNTEKT)
 
-    override fun håndter(packet: Packet): Packet {
+    override fun instrumentedHåndter(packet: Packet): Packet {
         if (kanBehandle(packet)) {
             try {
                 val oppfyllerMinsteinntekt =
@@ -97,7 +95,7 @@ internal class NyttSaksforholdBehandlingsChain(
                     )
                 }
 
-    override fun håndter(packet: Packet): Packet {
+    override fun instrumentedHåndter(packet: Packet): Packet {
         if (kanBehandle(packet)) {
             val tilleggsinformasjon =
                 createArenaTilleggsinformasjon(
@@ -161,7 +159,7 @@ internal class EksisterendeSaksForholdBehandlingsChain(private val arena: ArenaC
             PacketMapper.hasNaturligIdent(packet) &&
             !packet.hasField(PacketKeys.FERDIGSTILT_ARENA)
 
-    override fun håndter(packet: Packet): Packet {
+    override fun instrumentedHåndter(packet: Packet): Packet {
         if (kanBehandle(packet)) {
 
             val tilleggsinformasjon =
@@ -193,7 +191,7 @@ internal class EksisterendeSaksForholdBehandlingsChain(private val arena: ArenaC
 
 internal class OppdaterJournalpostBehandlingsChain(val journalpostApi: JournalpostApi, neste: BehandlingsChain?) :
     InstrumentedBehandlingsChain(neste) {
-    override fun håndter(packet: Packet): Packet {
+    override fun instrumentedHåndter(packet: Packet): Packet {
         if (kanBehandle(packet)) {
             journalpostApi.oppdater(
                 journalpostId = packet.getStringValue(PacketKeys.JOURNALPOST_ID),
@@ -226,7 +224,7 @@ internal class FerdigstillJournalpostBehandlingsChain(
     override fun kanBehandle(packet: Packet) =
         packet.hasField(PacketKeys.FERDIGSTILT_ARENA)
 
-    override fun håndter(packet: Packet): Packet {
+    override fun instrumentedHåndter(packet: Packet): Packet {
         if (kanBehandle(packet)) {
             journalpostApi.ferdigstill(packet.getStringValue(PacketKeys.JOURNALPOST_ID))
             logger.info { "Automatisk journalført" }
@@ -242,7 +240,7 @@ internal class ManuellJournalføringsBehandlingsChain(
     override fun kanBehandle(packet: Packet) =
         !packet.hasField(PacketKeys.FERDIGSTILT_ARENA)
 
-    override fun håndter(packet: Packet): Packet {
+    override fun instrumentedHåndter(packet: Packet): Packet {
         if (kanBehandle(packet)) {
             manuellJournalføringsOppgaveClient.opprettOppgave(
                 PacketMapper.journalpostIdFrom(packet),
@@ -260,7 +258,7 @@ internal class ManuellJournalføringsBehandlingsChain(
 internal class MarkerFerdigBehandlingsChain(neste: BehandlingsChain?) : InstrumentedBehandlingsChain(neste) {
     override fun kanBehandle(packet: Packet) = true
 
-    override fun håndter(packet: Packet): Packet {
+    override fun instrumentedHåndter(packet: Packet): Packet {
         if (kanBehandle(packet)) {
             packet.putValue(PacketKeys.FERDIG_BEHANDLET, true)
             Metrics.jpFerdigStillInc()
