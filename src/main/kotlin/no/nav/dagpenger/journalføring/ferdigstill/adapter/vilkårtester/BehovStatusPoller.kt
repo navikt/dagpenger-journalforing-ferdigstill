@@ -2,6 +2,8 @@ package no.nav.dagpenger.journalføring.ferdigstill.adapter.vilkårtester
 
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.fuel.moshi.responseObject
+import io.prometheus.client.Counter
+import io.prometheus.client.Histogram
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.time.delay
@@ -13,6 +15,16 @@ import java.util.concurrent.Executors
 
 private val LOGGER = KotlinLogging.logger {}
 private val api = Executors.newFixedThreadPool(4).asCoroutineDispatcher()
+
+private val timeSpentPolling = Histogram.build()
+    .name("time_spent_polling_status")
+    .help("Time spent polling status on behov")
+    .register()
+
+private val timesPolled = Counter.build()
+    .name("times_polled_status")
+    .help("Times we needed to pull for status on behov")
+    .register()
 
 class BehovStatusPoller(
     private val regelApiUrl: String,
