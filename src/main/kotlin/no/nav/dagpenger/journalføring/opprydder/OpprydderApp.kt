@@ -20,7 +20,7 @@ internal class OpprydderApp(
     private val gosysOppgaveClient: GosysOppgaveClient
 ) : Pond(configuration.kafka.dagpengerJournalpostTopic) {
 
-    override val SERVICE_APP_ID = "dp-opprydder-manuell-behandling-dry-run-v3"
+    override val SERVICE_APP_ID = "dp-opprydder-manuell-behandling-dry-run-v4"
     override val HTTP_PORT: Int = 8079
     override val withHealthChecks: Boolean
         get() = false
