@@ -6,11 +6,10 @@ import no.nav.dagpenger.journalføring.ferdigstill.Configuration
 import no.nav.dagpenger.journalføring.ferdigstill.ManuellJournalføringsBehandlingsChain
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.GosysOppgaveClient
-import no.nav.dagpenger.journalføring.ferdigstill.erIkkeFerdigBehandletJournalpost
-import no.nav.dagpenger.journalføring.ferdigstill.skalFikses
 import no.nav.dagpenger.streams.Pond
 import no.nav.dagpenger.streams.streamConfig
 import org.apache.kafka.streams.StreamsConfig
+import org.apache.kafka.streams.kstream.Predicate
 import org.apache.logging.log4j.ThreadContext
 import java.util.Properties
 
@@ -21,24 +20,30 @@ internal class OpprydderApp(
     private val gosysOppgaveClient: GosysOppgaveClient
 ) : Pond(configuration.kafka.dagpengerJournalpostTopic) {
 
-    override val SERVICE_APP_ID = "dp-opprydder-manuell-behandling-real-run"
+    override val SERVICE_APP_ID = "dp-opprydder-manuell-behandling-dry-run-v2"
     override val HTTP_PORT: Int = 8079
     override val withHealthChecks: Boolean
         get() = false
 
     val manuellOppgaveChain = ManuellJournalføringsBehandlingsChain(gosysOppgaveClient, null)
 
-    override fun filterPredicates() = listOf(erIkkeFerdigBehandletJournalpost, skalFikses)
+    override fun filterPredicates() = listOf(erFerdigBehandletJournalpostSomSkalFikses)
+
+    internal val erFerdigBehandletJournalpostSomSkalFikses = Predicate<String, Packet> { _, packet ->
+        packet.hasField(PacketKeys.JOURNALPOST_ID) &&
+            packet.getNullableBoolean(PacketKeys.FERDIG_BEHANDLET) == true &&
+            packet.getStringValue(PacketKeys.JOURNALPOST_ID) in fiksDisseJournalpostene
+    }
 
     override fun onPacket(packet: Packet) {
         try {
-            ThreadContext.put(
-                "x_journalpost_id", packet.getStringValue(PacketKeys.JOURNALPOST_ID)
+            ThreadContext.putAll(mapOf(
+                "x_journalpost_id" to packet.getStringValue(PacketKeys.JOURNALPOST_ID),
+                "x_dry_run" to "true")
             )
-            logger.info { "Opprydder bestiller manuell oppgave for: $packet" }
-            manuellOppgaveChain.håndter(packet)
+            logger.info { "Opprydder besøker ${packet.getStringValue(PacketKeys.JOURNALPOST_ID)}, henvendelsestype: ${packet.getStringValue(PacketKeys.HENVENDELSESTYPE)}" }
         } finally {
-            ThreadContext.remove("x_journalpost_id")
+            ThreadContext.removeAll(listOf("x_journalpost_id", "x_dry_run"))
         }
     }
 
