@@ -44,7 +44,6 @@ internal class JournalføringFerdigstillTest {
 
     @Test
     fun `Skal ta imot pakker med journalpostId`() {
-
         val application = Application(Configuration(), mockk(), FakeUnleash())
 
         application.filterPredicates().all {
@@ -126,6 +125,10 @@ internal class JournalføringFerdigstillTest {
         }
 
         CollectorRegistry.defaultRegistry.getSampleValue("dagpenger_journalpost_ferdigstilt") shouldBeGreaterThan 0.0
+        CollectorRegistry.defaultRegistry.getSampleValue("time_spent_in_chain_count",
+            listOf("chain_name").toTypedArray(),
+            listOf("OppdaterJournalpostBehandlingsChain").toTypedArray()
+        ) shouldBeGreaterThan 0.0
     }
 
     @Test

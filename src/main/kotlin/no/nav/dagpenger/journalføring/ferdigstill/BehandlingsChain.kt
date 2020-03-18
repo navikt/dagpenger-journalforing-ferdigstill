@@ -1,6 +1,7 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
 import com.github.kittinunf.result.Result
+import io.prometheus.client.Histogram
 import mu.KotlinLogging
 import no.finn.unleash.Unleash
 import no.nav.dagpenger.events.Packet
@@ -19,10 +20,24 @@ private val logger = KotlinLogging.logger {}
 
 const val ENHET_FOR_HURTIGE_AVSLAG = "4403"
 
+private val chainTimeSpent = Histogram.build()
+    .name("time_spent_in_chain")
+    .help("Time spent on each chain")
+    .labelNames("chain_name")
+    .register()
+
 // GoF pattern - Chain of responsibility (https://en.wikipedia.org/wiki/Chain-of-responsibility_pattern)
 abstract class BehandlingsChain(protected val neste: BehandlingsChain? = null) {
     abstract fun håndter(packet: Packet): Packet
     abstract fun kanBehandle(packet: Packet): Boolean
+}
+
+fun BehandlingsChain.instrument(handler: () -> Packet): Packet {
+    val timer = chainTimeSpent
+        .labels(this.javaClass.simpleName.toString())
+        .startTimer()
+
+    return handler().also { timer.observeDuration() }
 }
 
 internal class OppfyllerMinsteinntektBehandlingsChain(
@@ -38,7 +53,7 @@ internal class OppfyllerMinsteinntektBehandlingsChain(
             PacketMapper.henvendelse(packet) == NyttSaksforhold &&
             !packet.hasField(PacketKeys.OPPFYLLER_MINSTEINNTEKT)
 
-    override fun håndter(packet: Packet): Packet {
+    override fun håndter(packet: Packet): Packet = instrument {
         if (kanBehandle(packet)) {
             try {
                 val oppfyllerMinsteinntekt =
@@ -52,7 +67,8 @@ internal class OppfyllerMinsteinntektBehandlingsChain(
                 logger.warn(e) { "Kunne ikke vurdere minste arbeidsinntekt" }
             }
         }
-        return neste?.håndter(packet) ?: packet
+
+        return@instrument neste?.håndter(packet) ?: packet
     }
 }
 
@@ -60,8 +76,7 @@ internal class NyttSaksforholdBehandlingsChain(
     private val arena: ArenaClient,
     val toggle: Unleash,
     neste: BehandlingsChain?
-) :
-    BehandlingsChain(neste) {
+) : BehandlingsChain(neste) {
 
     override fun kanBehandle(packet: Packet): Boolean =
         PacketMapper.hasNaturligIdent(packet) &&
@@ -75,7 +90,7 @@ internal class NyttSaksforholdBehandlingsChain(
                     )
                 }
 
-    override fun håndter(packet: Packet): Packet {
+    override fun håndter(packet: Packet): Packet = instrument {
         if (kanBehandle(packet)) {
             val tilleggsinformasjon =
                 createArenaTilleggsinformasjon(
@@ -107,7 +122,8 @@ internal class NyttSaksforholdBehandlingsChain(
                 }
             }
         }
-        return neste?.håndter(packet) ?: packet
+
+        return@instrument neste?.håndter(packet) ?: packet
     }
 
     private fun finnBehandlendeEnhet(
@@ -139,7 +155,7 @@ internal class EksisterendeSaksForholdBehandlingsChain(private val arena: ArenaC
             PacketMapper.hasNaturligIdent(packet) &&
             !packet.hasField(PacketKeys.FERDIGSTILT_ARENA)
 
-    override fun håndter(packet: Packet): Packet {
+    override fun håndter(packet: Packet): Packet = instrument {
         if (kanBehandle(packet)) {
 
             val tilleggsinformasjon =
@@ -165,13 +181,14 @@ internal class EksisterendeSaksForholdBehandlingsChain(private val arena: ArenaC
                 }
             }
         }
-        return neste?.håndter(packet) ?: packet
+
+        return@instrument neste?.håndter(packet) ?: packet
     }
 }
 
 internal class OppdaterJournalpostBehandlingsChain(val journalpostApi: JournalpostApi, neste: BehandlingsChain?) :
     BehandlingsChain(neste) {
-    override fun håndter(packet: Packet): Packet {
+    override fun håndter(packet: Packet): Packet = instrument {
         if (kanBehandle(packet)) {
             journalpostApi.oppdater(
                 journalpostId = packet.getStringValue(PacketKeys.JOURNALPOST_ID),
@@ -181,7 +198,8 @@ internal class OppdaterJournalpostBehandlingsChain(val journalpostApi: Journalpo
             )
             logger.info { "Oppdatert journalpost" }
         }
-        return neste?.håndter(packet) ?: packet
+
+        return@instrument neste?.håndter(packet) ?: packet
     }
 
     override fun kanBehandle(packet: Packet) = PacketMapper.hasNaturligIdent(packet)
@@ -204,12 +222,13 @@ internal class FerdigstillJournalpostBehandlingsChain(
     override fun kanBehandle(packet: Packet) =
         packet.hasField(PacketKeys.FERDIGSTILT_ARENA)
 
-    override fun håndter(packet: Packet): Packet {
+    override fun håndter(packet: Packet): Packet = instrument {
         if (kanBehandle(packet)) {
             journalpostApi.ferdigstill(packet.getStringValue(PacketKeys.JOURNALPOST_ID))
             logger.info { "Automatisk journalført" }
         }
-        return neste?.håndter(packet) ?: packet
+
+        return@instrument neste?.håndter(packet) ?: packet
     }
 }
 
@@ -220,7 +239,7 @@ internal class ManuellJournalføringsBehandlingsChain(
     override fun kanBehandle(packet: Packet) =
         !packet.hasField(PacketKeys.FERDIGSTILT_ARENA)
 
-    override fun håndter(packet: Packet): Packet {
+    override fun håndter(packet: Packet): Packet = instrument {
         if (kanBehandle(packet)) {
             manuellJournalføringsOppgaveClient.opprettOppgave(
                 PacketMapper.journalpostIdFrom(packet),
@@ -231,18 +250,20 @@ internal class ManuellJournalføringsBehandlingsChain(
             )
             logger.info { "Manuelt journalført" }
         }
-        return neste?.håndter(packet) ?: packet
+
+        return@instrument neste?.håndter(packet) ?: packet
     }
 }
 
 internal class MarkerFerdigBehandlingsChain(neste: BehandlingsChain?) : BehandlingsChain(neste) {
     override fun kanBehandle(packet: Packet) = true
 
-    override fun håndter(packet: Packet): Packet {
+    override fun håndter(packet: Packet): Packet = instrument {
         if (kanBehandle(packet)) {
             packet.putValue(PacketKeys.FERDIG_BEHANDLET, true)
             Metrics.jpFerdigStillInc()
         }
-        return neste?.håndter(packet) ?: packet
+
+        return@instrument neste?.håndter(packet) ?: packet
     }
 }
