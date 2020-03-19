@@ -284,7 +284,7 @@ internal class JournalføringFerdigstillTest {
     }
 
     @Test
-    fun `Ved kandidat for avslag basert på minsteinntekt havner på egen kø`() {
+    fun `Ved kandidat for avslag basert på minsteinntekt uten permittering havner på egen kø`() {
         val vilkårtester = mockk<Vilkårtester>()
         val journalFøringFerdigstill =
             JournalføringFerdigstill(
@@ -316,7 +316,43 @@ internal class JournalføringFerdigstillTest {
 
         slot.captured.shouldBeTypeOf<StartVedtakCommand>()
         slot.captured.oppgavebeskrivelse shouldBe "Minsteinntekt - mulig avslag\n"
-        slot.captured.behandlendeEnhetId shouldBe ENHET_FOR_HURTIGE_AVSLAG
+        slot.captured.behandlendeEnhetId shouldBe ENHET_FOR_HURTIG_AVSLAG_IKKE_PERMITTERT
+    }
+
+    @Test
+    fun `Ved kandidat for avslag basert på minsteinntekt med permitterting havner på egen kø`() {
+        val vilkårtester = mockk<Vilkårtester>()
+        val journalFøringFerdigstill =
+            JournalføringFerdigstill(
+                journalPostApi,
+                manuellJournalføringsOppgaveClient,
+                arenaClient,
+                vilkårtester,
+                FakeUnleash().apply { enableAll() }
+            )
+        val journalPostId = "journalPostId"
+        val naturligIdent = "12345678910"
+        val behandlendeEnhet = "4455"
+
+        val slot = slot<OppgaveCommand>()
+
+        every { vilkårtester.harBeståttMinsteArbeidsinntektVilkår(any()) } returns false
+        every { arenaClient.bestillOppgave(command = capture(slot)) } returns Result.of(FagsakId("123"))
+        every { arenaClient.harIkkeAktivSak(any()) } returns true
+
+        val packet = lagPacket(journalPostId, naturligIdent, behandlendeEnhet, "NY_SØKNAD")
+
+        journalFøringFerdigstill.handlePacket(packet)
+
+        verify {
+            arenaClient.bestillOppgave(any())
+            journalPostApi.oppdater(journalPostId, any())
+            journalPostApi.ferdigstill(journalPostId)
+        }
+
+        slot.captured.shouldBeTypeOf<StartVedtakCommand>()
+        slot.captured.oppgavebeskrivelse shouldBe "Minsteinntekt - mulig avslag\n"
+        slot.captured.behandlendeEnhetId shouldBe ENHET_FOR_HURTIG_AVSLAG_PERMITTERT
     }
 
     private fun testHenvendelseAngåendeEksisterendeSaksforhold(henvendelsestype: String) {
