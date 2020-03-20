@@ -18,7 +18,8 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.vilkårtester.Vilkår
 
 private val logger = KotlinLogging.logger {}
 
-const val ENHET_FOR_HURTIGE_AVSLAG = "4403"
+const val ENHET_FOR_HURTIG_AVSLAG_IKKE_PERMITTERT = "4451"
+const val ENHET_FOR_HURTIG_AVSLAG_PERMITTERT = "4456"
 
 private val chainTimeSpent = Histogram.build()
     .name("time_spent_in_chain")
@@ -134,12 +135,17 @@ internal class NyttSaksforholdBehandlingsChain(
         }
 
         val kanAvslåsPåMinsteinntekt = packet.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) == false
-        val tildeltEnhetErIkkePermittering = PacketMapper.tildeltEnhetsNrFrom(packet) != "4455"
 
-        return when (kanAvslåsPåMinsteinntekt && tildeltEnhetErIkkePermittering) {
-            true -> ENHET_FOR_HURTIGE_AVSLAG
+        return when (kanAvslåsPåMinsteinntekt) {
+            true -> packet.finnEnhetForHurtigAvslag()
             false -> PacketMapper.tildeltEnhetsNrFrom(packet)
         }
+    }
+
+    private fun Packet.finnEnhetForHurtigAvslag() = when (this.getStringValue(PacketKeys.BEHANDLENDE_ENHET)) {
+        "4450" -> ENHET_FOR_HURTIG_AVSLAG_IKKE_PERMITTERT
+        "4455" -> ENHET_FOR_HURTIG_AVSLAG_PERMITTERT
+        else -> this.getStringValue(PacketKeys.BEHANDLENDE_ENHET)
     }
 }
 
