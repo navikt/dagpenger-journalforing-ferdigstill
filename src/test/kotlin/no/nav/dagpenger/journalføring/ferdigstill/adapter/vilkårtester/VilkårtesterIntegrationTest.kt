@@ -53,9 +53,9 @@ class VilkårtesterIntegrationTest {
         setUpSubsumsjonStub(subsumsjonsId, subsumsjon)
 
         val client = Vilkårtester(server.baseUrl(), xApiKey)
-        val resultat = client.harBeståttMinsteArbeidsinntektVilkår(aktørId)
+        val resultat = client.hentMinsteArbeidsinntektVilkår(aktørId)
 
-        resultat shouldBe subsumsjon.minsteinntektResultat!!.oppfyllerMinsteinntekt
+        resultat!!.harBeståttMinsteArbeidsinntektVilkår shouldBe subsumsjon.minsteinntektResultat!!.oppfyllerMinsteinntekt
     }
 
     private fun setUpSubsumsjonStub(subsumsjonsId: String, subsumsjon: Subsumsjon) {

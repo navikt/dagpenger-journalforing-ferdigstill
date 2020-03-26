@@ -13,7 +13,8 @@ data class MinsteinntektResultat(
     val sporingsId: String,
     val oppfyllerMinsteinntekt: Boolean,
     val regelIdentifikator: String,
-    val minsteinntektInntektsPerioder: List<Inntekt>
+    val minsteinntektInntektsPerioder: List<Inntekt>,
+    val beregningsregel: Beregningsregel
 )
 
 data class Inntekt(
@@ -35,3 +36,8 @@ data class InntektsPeriode(
     val førsteMåned: YearMonth,
     val sisteMåned: YearMonth
 )
+
+enum class Beregningsregel {
+    ORDINAER,
+    KORONA
+}
