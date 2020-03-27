@@ -29,6 +29,7 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.ManuellJournalføring
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.OppgaveCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderHenvendelseAngåendeEksisterendeSaksforholdCommand
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.vilkårtester.MinsteArbeidsinntektVilkår
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.vilkårtester.Vilkårtester
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonErInaktiv
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonIkkeFunnet
@@ -264,7 +265,7 @@ internal class JournalføringFerdigstillTest {
 
         val slot = slot<OppgaveCommand>()
 
-        every { vilkårtester.harBeståttMinsteArbeidsinntektVilkår(any()) } returns false
+        every { vilkårtester.hentMinsteArbeidsinntektVilkår(any()) } returns MinsteArbeidsinntektVilkår(false, false)
         every { arenaClient.bestillOppgave(command = capture(slot)) } returns Result.of(FagsakId("as"))
         every { arenaClient.harIkkeAktivSak(any()) } returns true
 
@@ -280,6 +281,45 @@ internal class JournalføringFerdigstillTest {
 
         slot.captured.shouldBeTypeOf<StartVedtakCommand>()
         slot.captured.oppgavebeskrivelse shouldBe "Minsteinntekt - mulig avslag\n"
+        slot.captured.behandlendeEnhetId shouldBe "4450"
+    }
+
+    @Test
+    fun `Ved kandidat for avslag basert på minsteinntekt med koronaregler spesifiseres dette i oppgavebeskrivelsen`() {
+        val vilkårtester = mockk<Vilkårtester>()
+        val journalFøringFerdigstill =
+            JournalføringFerdigstill(
+                journalPostApi,
+                manuellJournalføringsOppgaveClient,
+                arenaClient,
+                vilkårtester,
+                FakeUnleash().apply {
+                    enable("dagpenger-journalforing-ferdigstill.vilkaartesting")
+                    disable("dagpenger-journalforing-ferdigstill.bruk_hurtig_enhet")
+                }
+            )
+        val journalPostId = "journalPostId"
+        val naturligIdent = "12345678910"
+        val behandlendeEnhet = "4450"
+
+        val slot = slot<OppgaveCommand>()
+
+        every { vilkårtester.hentMinsteArbeidsinntektVilkår(any()) } returns MinsteArbeidsinntektVilkår(false, true)
+        every { arenaClient.bestillOppgave(command = capture(slot)) } returns Result.of(FagsakId("as"))
+        every { arenaClient.harIkkeAktivSak(any()) } returns true
+
+        val packet = lagPacket(journalPostId, naturligIdent, behandlendeEnhet, "NY_SØKNAD")
+
+        journalFøringFerdigstill.handlePacket(packet)
+
+        verify {
+            arenaClient.bestillOppgave(any())
+            journalPostApi.oppdater(journalPostId, any())
+            journalPostApi.ferdigstill(journalPostId)
+        }
+
+        slot.captured.shouldBeTypeOf<StartVedtakCommand>()
+        slot.captured.oppgavebeskrivelse shouldBe "Minsteinntekt - mulig avslag - korona\n"
         slot.captured.behandlendeEnhetId shouldBe "4450"
     }
 
@@ -300,7 +340,7 @@ internal class JournalføringFerdigstillTest {
 
         val slot = slot<OppgaveCommand>()
 
-        every { vilkårtester.harBeståttMinsteArbeidsinntektVilkår(any()) } returns false
+        every { vilkårtester.hentMinsteArbeidsinntektVilkår(any()) } returns MinsteArbeidsinntektVilkår(false, false)
         every { arenaClient.bestillOppgave(command = capture(slot)) } returns Result.of(FagsakId("123"))
         every { arenaClient.harIkkeAktivSak(any()) } returns true
 
@@ -336,7 +376,7 @@ internal class JournalføringFerdigstillTest {
 
         val slot = slot<OppgaveCommand>()
 
-        every { vilkårtester.harBeståttMinsteArbeidsinntektVilkår(any()) } returns false
+        every { vilkårtester.hentMinsteArbeidsinntektVilkår(any()) } returns MinsteArbeidsinntektVilkår(false, false)
         every { arenaClient.bestillOppgave(command = capture(slot)) } returns Result.of(FagsakId("123"))
         every { arenaClient.harIkkeAktivSak(any()) } returns true
 

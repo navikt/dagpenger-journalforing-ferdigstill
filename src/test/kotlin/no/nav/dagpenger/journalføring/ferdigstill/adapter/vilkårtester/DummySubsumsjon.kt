@@ -6,4 +6,4 @@ fun dummySubsumsjon(behovId: String = "abc", minsteinntektResultat: Minsteinntek
 )
 
 fun dummyMinsteinntekt(oppfyllerMinsteinntekt: Boolean = true) =
-    MinsteinntektResultat("", "", oppfyllerMinsteinntekt, "", emptyList())
+    MinsteinntektResultat("", "", oppfyllerMinsteinntekt, "", emptyList(), Beregningsregel.ORDINAER)

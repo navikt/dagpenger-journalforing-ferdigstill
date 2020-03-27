@@ -57,12 +57,13 @@ internal class OppfyllerMinsteinntektBehandlingsChain(
     override fun håndter(packet: Packet): Packet = instrument {
         if (kanBehandle(packet)) {
             try {
-                val oppfyllerMinsteinntekt =
-                    vilkårtester.harBeståttMinsteArbeidsinntektVilkår(PacketMapper.aktørFrom(packet).id)
+                val minsteArbeidsinntektVilkår =
+                    vilkårtester.hentMinsteArbeidsinntektVilkår(PacketMapper.aktørFrom(packet).id)
 
-                oppfyllerMinsteinntekt?.let {
-                    packet.putValue(PacketKeys.OPPFYLLER_MINSTEINNTEKT, it)
-                    inngangsvilkårResultatTellerInc(it)
+                minsteArbeidsinntektVilkår?.let {
+                    packet.putValue(PacketKeys.OPPFYLLER_MINSTEINNTEKT, it.harBeståttMinsteArbeidsinntektVilkår)
+                    packet.putValue(PacketKeys.KORONAREGELVERK_MINSTEINNTEKT_BRUKT, it.koronaRegelverkBrukt)
+                    inngangsvilkårResultatTellerInc(it.harBeståttMinsteArbeidsinntektVilkår)
                 }
             } catch (e: Exception) {
                 logger.warn(e) { "Kunne ikke vurdere minste arbeidsinntekt" }
@@ -100,6 +101,8 @@ internal class NyttSaksforholdBehandlingsChain(
                 )
 
             val kanAvslåsPåMinsteinntekt = packet.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) == false
+            val koronaRegelverkMinsteinntektBrukt =
+                packet.getNullableBoolean(PacketKeys.KORONAREGELVERK_MINSTEINNTEKT_BRUKT) == true
 
             val result = arena.bestillOppgave(
                 StartVedtakCommand(
@@ -107,9 +110,10 @@ internal class NyttSaksforholdBehandlingsChain(
                     behandlendeEnhetId = finnBehandlendeEnhet(packet),
                     tilleggsinformasjon = tilleggsinformasjon,
                     registrertDato = PacketMapper.registrertDatoFrom(packet),
-                    oppgavebeskrivelse = when (kanAvslåsPåMinsteinntekt) {
-                        true -> "Minsteinntekt - mulig avslag\n"
-                        false -> PacketMapper.henvendelse(packet).oppgavebeskrivelse
+                    oppgavebeskrivelse = when {
+                        kanAvslåsPåMinsteinntekt && koronaRegelverkMinsteinntektBrukt -> "Minsteinntekt - mulig avslag - korona\n"
+                        kanAvslåsPåMinsteinntekt && !koronaRegelverkMinsteinntektBrukt -> "Minsteinntekt - mulig avslag\n"
+                        else -> PacketMapper.henvendelse(packet).oppgavebeskrivelse
                     }
                 )
             )

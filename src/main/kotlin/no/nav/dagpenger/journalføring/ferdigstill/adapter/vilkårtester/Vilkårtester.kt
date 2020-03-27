@@ -2,11 +2,7 @@ package no.nav.dagpenger.journalføring.ferdigstill.adapter.vilkårtester
 
 import kotlinx.coroutines.runBlocking
 
-interface MinsteArbeidsinntektVilkårTester {
-    fun harBeståttMinsteArbeidsinntektVilkår(aktørId: String): Boolean?
-}
-
-class Vilkårtester(regelApiUrl: String, regelApiKey: String) : MinsteArbeidsinntektVilkårTester {
+class Vilkårtester(regelApiUrl: String, regelApiKey: String) {
     private val BehovClient = BehovClient(regelApiUrl = regelApiUrl, regelApiKey = regelApiKey)
     private val statusPollClient = BehovStatusPoller(regelApiUrl = regelApiUrl, regelApiKey = regelApiKey)
     private val subsumsjonsClient = SubsumsjonsClient(regelApiUrl = regelApiUrl, regelApiKey = regelApiKey)
@@ -19,6 +15,16 @@ class Vilkårtester(regelApiUrl: String, regelApiKey: String) : MinsteArbeidsinn
         return subsumsjon
     }
 
-    override fun harBeståttMinsteArbeidsinntektVilkår(aktørId: String) =
-        hentSubsumsjonFor(aktørId).minsteinntektResultat?.oppfyllerMinsteinntekt
+    fun hentMinsteArbeidsinntektVilkår(aktørId: String) =
+        hentSubsumsjonFor(aktørId).minsteinntektResultat?.let {
+            MinsteArbeidsinntektVilkår(
+                it.oppfyllerMinsteinntekt,
+                it.beregningsregel == Beregningsregel.KORONA
+            )
+        }
 }
+
+data class MinsteArbeidsinntektVilkår(
+    val harBeståttMinsteArbeidsinntektVilkår: Boolean,
+    val koronaRegelverkBrukt: Boolean
+)
