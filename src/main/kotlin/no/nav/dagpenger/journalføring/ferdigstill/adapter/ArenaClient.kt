@@ -1,12 +1,12 @@
 package no.nav.dagpenger.journalføring.ferdigstill.adapter
 
 import com.github.kittinunf.result.Result
-import no.nav.dagpenger.journalføring.ferdigstill.FagsakId
+import no.nav.dagpenger.journalføring.ferdigstill.IdPar
 import no.nav.dagpenger.streams.HealthCheck
 import java.time.ZonedDateTime
 
 interface ArenaClient : HealthCheck {
-    fun bestillOppgave(command: OppgaveCommand): Result<FagsakId?, Exception>
+    fun bestillOppgave(command: OppgaveCommand): Result<IdPar, Exception>
     fun harIkkeAktivSak(bruker: Bruker): Boolean
 }
 

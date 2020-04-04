@@ -171,7 +171,7 @@ internal class JournalforingFerdigstillComponentTest {
 
         every {
             arenaClientMock.bestillOppgave(any())
-        } returns Result.of(FagsakId("arenaSakId"))
+        } returns Result.of(IdPar(oppgaveId = OppgaveId("abc"), fagsakId = FagsakId("arenaSakId")))
 
         val expectedFerdigstillJson = """{ "journalfoerendeEnhet" : "9999"}"""
 

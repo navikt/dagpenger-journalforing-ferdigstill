@@ -7,6 +7,8 @@ import io.mockk.mockk
 import io.mockk.verify
 import no.nav.dagpenger.journalføring.ferdigstill.AdapterException
 import no.nav.dagpenger.journalføring.ferdigstill.FagsakId
+import no.nav.dagpenger.journalføring.ferdigstill.IdPar
+import no.nav.dagpenger.journalføring.ferdigstill.OppgaveId
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Bruker
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderHenvendelseAngåendeEksisterendeSaksforholdCommand
@@ -26,13 +28,13 @@ internal class SoapArenaClientTest {
     @Test
     fun `suksessfull bestilling av vedtaksbehandling gir arenaSakId `() {
         val stubbedClient = mockk<BehandleArbeidOgAktivitetOppgaveV1>()
-        every { stubbedClient.bestillOppgave(any()) } returns WSBestillOppgaveResponse().withArenaSakId("123")
+        every { stubbedClient.bestillOppgave(any()) } returns WSBestillOppgaveResponse().withArenaSakId("123").withOppgaveId("321")
 
         val client = SoapArenaClient(stubbedClient, mockk())
 
         val actual = client.bestillOppgave(StartVedtakCommand("123", "abc", "", ZonedDateTime.now(), ""))
 
-        actual shouldBe Result.success(FagsakId("123"))
+        actual shouldBe Result.success(IdPar(OppgaveId("321"), FagsakId("123")))
     }
 
     @Test
@@ -59,7 +61,7 @@ internal class SoapArenaClientTest {
     @Test
     fun `bestillOppgave skal kunne bestille oppgave uten saksreferanse`() {
         val stubbedClient = mockk<BehandleArbeidOgAktivitetOppgaveV1>()
-        every { stubbedClient.bestillOppgave(any()) } returns WSBestillOppgaveResponse()
+        every { stubbedClient.bestillOppgave(any()) } returns WSBestillOppgaveResponse().withOppgaveId("abc")
 
         val client = SoapArenaClient(stubbedClient, mockk())
 

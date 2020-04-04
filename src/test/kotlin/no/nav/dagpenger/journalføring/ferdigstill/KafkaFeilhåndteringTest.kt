@@ -61,7 +61,7 @@ class KafkaFeilhåndteringTest {
 
         every { arenaClient.harIkkeAktivSak(any()) } returns true
 
-        every { arenaClient.bestillOppgave(any()) } returns Result.of(FagsakId("abc"))
+        every { arenaClient.bestillOppgave(any()) } returns Result.of(IdPar(oppgaveId = OppgaveId("abc"), fagsakId = FagsakId("abc")))
         every { journalpostApi.oppdater(any(), any()) } throws AdapterException(RuntimeException()) andThen { Unit }
 
         val packet = Packet().apply {
