@@ -7,7 +7,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import no.nav.dagpenger.journalføring.ferdigstill.AdapterException
 import no.nav.dagpenger.journalføring.ferdigstill.FagsakId
-import no.nav.dagpenger.journalføring.ferdigstill.IdPar
+import no.nav.dagpenger.journalføring.ferdigstill.ArenaIdParRespons
 import no.nav.dagpenger.journalføring.ferdigstill.OppgaveId
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Bruker
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
@@ -34,7 +34,7 @@ internal class SoapArenaClientTest {
 
         val actual = client.bestillOppgave(StartVedtakCommand("123", "abc", "", ZonedDateTime.now(), ""))
 
-        actual shouldBe Result.success(IdPar(OppgaveId("321"), FagsakId("123")))
+        actual shouldBe Result.success(ArenaIdParRespons(OppgaveId("321"), FagsakId("123")))
     }
 
     @Test
