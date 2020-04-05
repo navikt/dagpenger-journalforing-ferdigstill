@@ -192,7 +192,7 @@ internal class JournalføringFerdigstillTest {
         val slot = slot<OppgaveCommand>()
 
         every { arenaClient.harIkkeAktivSak(any()) } returns true
-        every { arenaClient.bestillOppgave(command = capture(slot)) } returns Result.of(FagsakId("123"))
+        every { arenaClient.bestillOppgave(command = capture(slot)) } returns Result.of(ArenaIdParRespons(OppgaveId("abc"), FagsakId("123")))
 
         val packet = Packet().apply {
             this.putValue(JOURNALPOST_ID, journalPostId)
@@ -266,7 +266,7 @@ internal class JournalføringFerdigstillTest {
         val slot = slot<OppgaveCommand>()
 
         every { vilkårtester.hentMinsteArbeidsinntektVilkår(any()) } returns MinsteArbeidsinntektVilkår(false, false)
-        every { arenaClient.bestillOppgave(command = capture(slot)) } returns Result.of(FagsakId("as"))
+        every { arenaClient.bestillOppgave(command = capture(slot)) } returns Result.of(ArenaIdParRespons(oppgaveId = OppgaveId("abc"), fagsakId = FagsakId("as")))
         every { arenaClient.harIkkeAktivSak(any()) } returns true
 
         val packet = lagPacket(journalPostId, naturligIdent, behandlendeEnhet, "NY_SØKNAD")
@@ -305,7 +305,7 @@ internal class JournalføringFerdigstillTest {
         val slot = slot<OppgaveCommand>()
 
         every { vilkårtester.hentMinsteArbeidsinntektVilkår(any()) } returns MinsteArbeidsinntektVilkår(false, true)
-        every { arenaClient.bestillOppgave(command = capture(slot)) } returns Result.of(FagsakId("as"))
+        every { arenaClient.bestillOppgave(command = capture(slot)) } returns Result.of(ArenaIdParRespons(oppgaveId = OppgaveId("abc"), fagsakId = FagsakId("as")))
         every { arenaClient.harIkkeAktivSak(any()) } returns true
 
         val packet = lagPacket(journalPostId, naturligIdent, behandlendeEnhet, "NY_SØKNAD")
@@ -341,7 +341,7 @@ internal class JournalføringFerdigstillTest {
         val slot = slot<OppgaveCommand>()
 
         every { vilkårtester.hentMinsteArbeidsinntektVilkår(any()) } returns MinsteArbeidsinntektVilkår(false, false)
-        every { arenaClient.bestillOppgave(command = capture(slot)) } returns Result.of(FagsakId("123"))
+        every { arenaClient.bestillOppgave(command = capture(slot)) } returns Result.of(ArenaIdParRespons(oppgaveId = OppgaveId("abc"), fagsakId = FagsakId("123")))
         every { arenaClient.harIkkeAktivSak(any()) } returns true
 
         val packet = lagPacket(journalPostId, naturligIdent, behandlendeEnhet, "NY_SØKNAD")
@@ -377,7 +377,7 @@ internal class JournalføringFerdigstillTest {
         val slot = slot<OppgaveCommand>()
 
         every { vilkårtester.hentMinsteArbeidsinntektVilkår(any()) } returns MinsteArbeidsinntektVilkår(false, false)
-        every { arenaClient.bestillOppgave(command = capture(slot)) } returns Result.of(FagsakId("123"))
+        every { arenaClient.bestillOppgave(command = capture(slot)) } returns Result.of(ArenaIdParRespons(oppgaveId = OppgaveId("abc"), fagsakId = FagsakId("123")))
         every { arenaClient.harIkkeAktivSak(any()) } returns true
 
         val packet = lagPacket(journalPostId, naturligIdent, behandlendeEnhet, "NY_SØKNAD")
@@ -395,6 +395,34 @@ internal class JournalføringFerdigstillTest {
         slot.captured.behandlendeEnhetId shouldBe ENHET_FOR_HURTIG_AVSLAG_PERMITTERT
     }
 
+    @Test
+    fun `legg oppgaveId på pakken`() {
+        val actualOppgaveId = "abc"
+        val journalFøringFerdigstill =
+            JournalføringFerdigstill(
+                journalPostApi,
+                manuellJournalføringsOppgaveClient,
+                arenaClient,
+                mockk(),
+                FakeUnleash()
+            )
+        val journalPostId = "journalPostId"
+        val naturligIdent = "12345678910"
+        val behandlendeEnhet = "9999"
+
+        val slot = slot<OppgaveCommand>()
+
+        every { arenaClient.bestillOppgave(command = capture(slot)) } returns Result.success(ArenaIdParRespons(oppgaveId = OppgaveId(actualOppgaveId)))
+        every { arenaClient.harIkkeAktivSak(any()) } returns true
+
+        val packet = lagPacket(journalPostId, naturligIdent, behandlendeEnhet, "NY_SØKNAD")
+
+        val finishedPacket = journalFøringFerdigstill.handlePacket(packet)
+
+        finishedPacket.getStringValue("oppgaveId") shouldBe actualOppgaveId
+    }
+
+    @Test
     private fun testHenvendelseAngåendeEksisterendeSaksforhold(henvendelsestype: String) {
         val journalFøringFerdigstill =
             JournalføringFerdigstill(
@@ -410,7 +438,7 @@ internal class JournalføringFerdigstillTest {
 
         val slot = slot<OppgaveCommand>()
 
-        every { arenaClient.bestillOppgave(command = capture(slot)) } returns Result.success(null)
+        every { arenaClient.bestillOppgave(command = capture(slot)) } returns Result.success(ArenaIdParRespons(oppgaveId = OppgaveId("abc")))
         every { arenaClient.harIkkeAktivSak(any()) } returns true
 
         val packet = lagPacket(journalPostId, naturligIdent, behandlendeEnhet, henvendelsestype)

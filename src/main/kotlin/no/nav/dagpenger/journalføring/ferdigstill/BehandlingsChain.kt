@@ -7,6 +7,7 @@ import no.finn.unleash.Unleash
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.journalføring.ferdigstill.Metrics.inngangsvilkårResultatTellerInc
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.FAGSAK_ID
+import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.OPPGAVE_ID
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.JournalpostApi
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ManuellJournalføringsOppgaveClient
@@ -120,8 +121,9 @@ internal class NyttSaksforholdBehandlingsChain(
 
             when (result) {
                 is Result.Success -> {
-                    result.value?.let {
-                        packet.putValue(FAGSAK_ID, it.value)
+                    result.value.let { idPar ->
+                        packet.putValue(OPPGAVE_ID, idPar.oppgaveId.value)
+                        idPar.fagsakId?.let { packet.putValue(FAGSAK_ID, it.value) }
                     }
                     packet.putValue(PacketKeys.FERDIGSTILT_ARENA, true)
                 }

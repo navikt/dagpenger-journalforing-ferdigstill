@@ -8,7 +8,9 @@ import io.github.resilience4j.retry.RetryRegistry
 import mu.KotlinLogging
 import no.nav.dagpenger.journalføring.ferdigstill.AdapterException
 import no.nav.dagpenger.journalføring.ferdigstill.FagsakId
+import no.nav.dagpenger.journalføring.ferdigstill.ArenaIdParRespons
 import no.nav.dagpenger.journalføring.ferdigstill.Metrics
+import no.nav.dagpenger.journalføring.ferdigstill.OppgaveId
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSak
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaSakStatus
@@ -58,7 +60,7 @@ class SoapArenaClient(
 
     private val logger = KotlinLogging.logger {}
 
-    override fun bestillOppgave(command: OppgaveCommand): Result<FagsakId?, Exception> {
+    override fun bestillOppgave(command: OppgaveCommand): Result<ArenaIdParRespons, Exception> {
 
         val soapRequest = command.toWSBestillOppgaveRequest()
 
@@ -89,7 +91,10 @@ class SoapArenaClient(
 
         Metrics.automatiskJournalførtJaTellerInc(enhet = command.behandlendeEnhetId)
 
-        return response.arenaSakId?.let { Result.success(FagsakId(it)) } ?: Result.success(v = null)
+        val oppgaveId = OppgaveId(response.oppgaveId)
+        val fagsakId = response.arenaSakId?.let { FagsakId(it) }
+
+        return Result.success(ArenaIdParRespons(oppgaveId, fagsakId))
     }
 
     fun OppgaveCommand.toWSBestillOppgaveRequest(): WSBestillOppgaveRequest {
