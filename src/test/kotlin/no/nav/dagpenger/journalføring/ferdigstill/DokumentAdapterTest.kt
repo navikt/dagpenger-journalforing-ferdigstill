@@ -1,6 +1,6 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
-import io.kotlintest.shouldBe
+import io.kotest.matchers.shouldBe
 import io.kotlintest.shouldNotBe
 import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.dokumentJsonAdapter
 import org.junit.jupiter.api.Test

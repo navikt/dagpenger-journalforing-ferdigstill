@@ -1,6 +1,6 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
-import io.kotlintest.shouldBe
+import io.kotest.matchers.shouldBe
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.dokumentJsonAdapter
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Dokument

@@ -1,11 +1,12 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
 import com.github.kittinunf.result.Result
-import io.kotlintest.matchers.doubles.shouldBeGreaterThan
-import io.kotlintest.matchers.types.shouldBeTypeOf
-import io.kotlintest.matchers.withClue
-import io.kotlintest.shouldBe
-import io.kotlintest.specs.FreeSpec
+import io.kotest.assertions.withClue
+import io.kotest.core.spec.style.FreeSpec
+import io.kotest.matchers.comparables.shouldBeGreaterThan
+import io.kotest.matchers.doubles.shouldBeGreaterThan
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeTypeOf
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot

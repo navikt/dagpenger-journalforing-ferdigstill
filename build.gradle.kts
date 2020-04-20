@@ -104,7 +104,8 @@ dependencies {
 
     // testing
     testImplementation(Junit5.api)
-    testImplementation(Junit5.kotlinRunner)
+    testImplementation(KoTest.runner)
+    testImplementation(KoTest.assertions)
     testImplementation(kotlin("test"))
     testImplementation(kotlin("test-junit"))
     testImplementation(mockk)

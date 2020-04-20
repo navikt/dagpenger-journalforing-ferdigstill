@@ -5,7 +5,7 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
-import io.kotlintest.shouldBe
+import io.kotest.matchers.shouldBe
 import no.nav.dagpenger.events.moshiInstance
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll

@@ -1,7 +1,7 @@
 package no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.arena
 
 import com.github.kittinunf.result.Result
-import io.kotlintest.shouldBe
+import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
