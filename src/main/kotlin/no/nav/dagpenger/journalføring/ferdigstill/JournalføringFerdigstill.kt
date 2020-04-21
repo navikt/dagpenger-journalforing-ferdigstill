@@ -1,6 +1,8 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
 import com.squareup.moshi.Types
+import java.time.LocalDateTime
+import java.time.ZoneId
 import mu.KotlinLogging
 import no.finn.unleash.Unleash
 import no.nav.dagpenger.events.Packet
@@ -16,8 +18,6 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.Sak
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.SaksType
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.vilkårtester.Vilkårtester
 import org.apache.kafka.streams.kstream.Predicate
-import java.time.LocalDateTime
-import java.time.ZoneId
 
 private val logger = KotlinLogging.logger {}
 

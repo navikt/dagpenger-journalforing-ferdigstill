@@ -1,10 +1,10 @@
 package no.nav.dagpenger.journalføring.ferdigstill.adapter
 
-import org.junit.jupiter.api.Test
-import wiremock.org.apache.commons.lang3.RandomStringUtils
 import java.time.LocalDateTime
 import java.time.ZoneId
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.Test
+import wiremock.org.apache.commons.lang3.RandomStringUtils
 
 internal class ArenaTilleggsinformasjonTest {
     val dato = LocalDateTime.parse("2019-12-24T12:01:57").atZone(ZoneId.of("Europe/Oslo"))

@@ -6,12 +6,12 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
 import io.kotest.matchers.shouldBe
+import java.time.LocalDate
 import no.nav.dagpenger.events.moshiInstance
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.time.LocalDate
 
 class VilkårtesterIntegrationTest {
     companion object {

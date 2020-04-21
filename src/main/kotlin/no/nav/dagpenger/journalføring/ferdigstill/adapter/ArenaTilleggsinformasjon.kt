@@ -1,8 +1,8 @@
 package no.nav.dagpenger.journalføring.ferdigstill.adapter
 
-import mu.KotlinLogging
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger { }
 private const val maksTegn = 1999

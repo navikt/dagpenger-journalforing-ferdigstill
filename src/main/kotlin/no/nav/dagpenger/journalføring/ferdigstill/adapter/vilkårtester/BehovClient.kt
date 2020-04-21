@@ -2,8 +2,8 @@ package no.nav.dagpenger.journalføring.ferdigstill.adapter.vilkårtester
 
 import com.github.kittinunf.fuel.httpPost
 import com.github.kittinunf.fuel.moshi.responseObject
-import no.nav.dagpenger.events.moshiInstance
 import java.time.LocalDate
+import no.nav.dagpenger.events.moshiInstance
 
 class BehovClient(private val regelApiUrl: String, private val regelApiKey: String) {
     private val jsonAdapter = moshiInstance.adapter(BehovRequest::class.java)

@@ -4,14 +4,14 @@ import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.fuel.moshi.responseObject
 import io.prometheus.client.Counter
 import io.prometheus.client.Histogram
+import java.time.Duration
+import java.util.concurrent.Executors
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.time.delay
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import mu.KotlinLogging
-import java.time.Duration
-import java.util.concurrent.Executors
 
 private val LOGGER = KotlinLogging.logger {}
 private val api = Executors.newFixedThreadPool(4).asCoroutineDispatcher()

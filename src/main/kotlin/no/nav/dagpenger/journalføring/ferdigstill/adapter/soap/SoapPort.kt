@@ -1,11 +1,11 @@
 package no.nav.dagpenger.journalføring.ferdigstill.adapter.soap
 
+import javax.xml.namespace.QName
 import no.nav.cxf.metrics.MetricFeature
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BehandleArbeidOgAktivitetOppgaveV1
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean
 import org.apache.cxf.ws.addressing.WSAddressingFeature
-import javax.xml.namespace.QName
 
 object SoapPort {
 

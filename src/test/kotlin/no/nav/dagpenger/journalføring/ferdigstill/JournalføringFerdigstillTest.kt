@@ -3,7 +3,6 @@ package no.nav.dagpenger.journalføring.ferdigstill
 import com.github.kittinunf.result.Result
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FreeSpec
-import io.kotest.matchers.comparables.shouldBeGreaterThan
 import io.kotest.matchers.doubles.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeTypeOf
@@ -12,6 +11,8 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import io.prometheus.client.CollectorRegistry
+import java.time.LocalDateTime
+import java.time.ZoneId
 import no.finn.unleash.FakeUnleash
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.AKTØR_ID
@@ -35,8 +36,6 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.vilkårtester.Vilkår
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonErInaktiv
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonIkkeFunnet
 import org.junit.jupiter.api.Test
-import java.time.LocalDateTime
-import java.time.ZoneId
 
 internal class JournalføringFerdigstillTest {
 
@@ -602,6 +601,7 @@ internal class JournalføringFerdigstillTest {
         }
         verify(exactly = 0) { journalPostApi.ferdigstill(any()) }
     }
+
     @Test
     fun `Opprett manuell journalføringsoppgave når bestilling av arena-oppgave feiler for henvendelser angående eksisterende saksforhold`() {
         val journalFøringFerdigstill =

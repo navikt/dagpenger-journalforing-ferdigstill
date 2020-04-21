@@ -5,10 +5,13 @@ import io.github.resilience4j.core.IntervalFunction
 import io.github.resilience4j.retry.Retry
 import io.github.resilience4j.retry.RetryConfig
 import io.github.resilience4j.retry.RetryRegistry
+import java.time.Duration
+import java.util.GregorianCalendar
+import javax.xml.datatype.DatatypeFactory
 import mu.KotlinLogging
 import no.nav.dagpenger.journalføring.ferdigstill.AdapterException
-import no.nav.dagpenger.journalføring.ferdigstill.FagsakId
 import no.nav.dagpenger.journalføring.ferdigstill.ArenaIdParRespons
+import no.nav.dagpenger.journalføring.ferdigstill.FagsakId
 import no.nav.dagpenger.journalføring.ferdigstill.Metrics
 import no.nav.dagpenger.journalføring.ferdigstill.OppgaveId
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
@@ -32,9 +35,6 @@ import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.informasjo
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.meldinger.WSBestillOppgaveRequest
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest
-import java.time.Duration
-import java.util.GregorianCalendar
-import javax.xml.datatype.DatatypeFactory
 
 class SoapArenaClient(
     private val oppgaveV1: BehandleArbeidOgAktivitetOppgaveV1,

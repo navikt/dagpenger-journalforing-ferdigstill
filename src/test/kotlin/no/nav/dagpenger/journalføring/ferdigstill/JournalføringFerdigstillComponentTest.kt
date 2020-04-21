@@ -19,6 +19,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.mockk.every
 import io.mockk.mockk
+import java.util.Properties
 import no.finn.unleash.FakeUnleash
 import no.nav.common.JAASCredential
 import no.nav.common.KafkaEnvironment
@@ -42,7 +43,6 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
-import java.util.Properties
 
 internal class JournalforingFerdigstillComponentTest {
 

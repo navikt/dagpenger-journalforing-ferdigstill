@@ -7,15 +7,15 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
 import com.gregwoodfill.assert.shouldStrictlyEqualJson
 import io.mockk.mockk
+import java.time.LocalDate
+import java.time.ZonedDateTime
+import kotlin.test.assertFailsWith
 import no.nav.dagpenger.journalføring.ferdigstill.AdapterException
 import no.nav.dagpenger.oidc.StsOidcClient
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
-import java.time.LocalDate
-import java.time.ZonedDateTime
-import kotlin.test.assertFailsWith
 
 internal class GosysOppgaveClientTest {
 

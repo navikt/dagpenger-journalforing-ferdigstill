@@ -9,10 +9,10 @@ import com.github.kittinunf.fuel.httpPut
 import com.github.kittinunf.result.Result
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import java.util.regex.Pattern
 import mu.KotlinLogging
 import no.nav.dagpenger.journalføring.ferdigstill.AdapterException
 import no.nav.dagpenger.oidc.OidcClient
-import java.util.regex.Pattern
 
 private val logger = KotlinLogging.logger {}
 

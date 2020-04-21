@@ -5,9 +5,11 @@ import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import java.time.ZonedDateTime
+import kotlin.test.assertFailsWith
 import no.nav.dagpenger.journalføring.ferdigstill.AdapterException
-import no.nav.dagpenger.journalføring.ferdigstill.FagsakId
 import no.nav.dagpenger.journalføring.ferdigstill.ArenaIdParRespons
+import no.nav.dagpenger.journalføring.ferdigstill.FagsakId
 import no.nav.dagpenger.journalføring.ferdigstill.OppgaveId
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Bruker
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
@@ -20,8 +22,6 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSDagpengekontrakt
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse
 import org.junit.jupiter.api.Test
-import java.time.ZonedDateTime
-import kotlin.test.assertFailsWith
 
 internal class SoapArenaClientTest {
 
