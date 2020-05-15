@@ -172,7 +172,7 @@ object Micrometer {
 }
 
 object Moshi {
-    const val version = "1.8.0"
+    const val version = "1.9.2"
     const val moshi = "com.squareup.moshi:moshi:$version"
     const val moshiKotlin = "com.squareup.moshi:moshi-kotlin:$version"
     const val moshiAdapters = "com.squareup.moshi:moshi-adapters:$version"
