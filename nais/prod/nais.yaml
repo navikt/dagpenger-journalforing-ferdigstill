@@ -1,16 +1,35 @@
-apiVersion: "nais.io/v1alpha1"
-kind: "Application"
+apiVersion: nais.io/v1alpha1
+kind: Application
 metadata:
-  name: dagpenger-journalforing-ferdigstill
+  name: {{app}}
+  namespace: {{namespace}}
+  labels:
+    team: {{team}}
 spec:
+  image: {{ image }}
+  port: 8080
+  liveness:
+    path: /isAlive
+  readiness:
+    path: /isReady
+  prometheus:
+    enabled: true
+    path: /metrics
   replicas:
-    min: 6
-    max: 6
+    min: 3
+    max: 3
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1024Mi
+    requests:
+      cpu: 300m
+      memory: 512Mi
+  webproxy: true
+  secureLogs:
+    enabled: true
   vault:
+    enabled: true
     paths:
-      - kvPath: "serviceuser/data/prod/srvdagpenger-journ"
-        mountPath: "/secrets/serviceuser/srvdp-jrnf-ferdig"
-      - kvPath: "kv/prod/fss/dagpenger-journalforing-ferdigstill/default"
-        mountPath: "/var/run/secrets/nais.io/vault/"
-
-
+      - kvPath: "serviceuser/data/prod/{{prod_service_user}}"
+        mountPath: "/var/run/secrets/nais.io/service_user"

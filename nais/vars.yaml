@@ -1,0 +1,5 @@
+app: dagpenger-journalforing-ferdigstill
+namespace: teamdagpenger
+team: teamdagpenger
+dev_service_user: srvdp-jrnf-ferdig
+prod_service_user: srvdagpenger-journ
