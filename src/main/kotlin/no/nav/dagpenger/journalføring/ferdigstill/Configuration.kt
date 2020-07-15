@@ -10,6 +10,8 @@ import com.natpryce.konfig.intType
 import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
 import io.netty.util.NetUtil.getHostname
+import java.io.File
+import java.io.FileNotFoundException
 import java.net.InetAddress
 import java.net.UnknownHostException
 import no.finn.unleash.util.UnleashConfig
@@ -39,8 +41,6 @@ private val localProperties = ConfigurationMap(
         "behandlearbeidsytelsesak.v1.url" to "https://localhost/ail_ws/BehandleArbeidOgAktivitetOppgave_v1",
         "ytelseskontrakt.v3.url" to "https://localhost/ail_ws/Ytelseskontrakt_v3",
         "unleash.url" to "http://localhost:1010",
-        "username" to "user",
-        "password" to "secret",
         "kafka.processing.guarantee" to StreamsConfig.AT_LEAST_ONCE
 
     )
@@ -120,22 +120,22 @@ data class Configuration(
         ),
         val brokers: String = config()[Key("kafka.bootstrap.servers", stringType)],
         val credential: KafkaCredential = KafkaCredential(
-            username = config()[Key("username", stringType)],
-            password = config()[Key("password", stringType)]
+            username = Serviceuser.username,
+            password = Serviceuser.password
         ),
         val processingGuarantee: String = config()[Key("kafka.processing.guarantee", stringType)]
     )
 
     data class Sts(
         val baseUrl: String = config()[Key("sts.url", stringType)],
-        val username: String = config()[Key("username", stringType)],
-        val password: String = config()[Key("password", stringType)]
+        val username: String = Serviceuser.username,
+        val password: String = Serviceuser.password
     )
 
     data class SoapSTSClient(
         val endpoint: String = config()[Key("soapsecuritytokenservice.url", stringType)],
-        val username: String = config()[Key("username", stringType)],
-        val password: String = config()[Key("password", stringType)],
+        val username: String = Serviceuser.username,
+        val password: String = Serviceuser.password,
         val allowInsecureSoapRequests: Boolean = config()[Key("allow.insecure.soap.requests", booleanType)]
     )
 
@@ -160,6 +160,11 @@ data class Configuration(
     )
 }
 
+object Serviceuser {
+    val username = "/var/run/secrets/nais.io/service_user/username".readFile() ?: "nada"
+    val password = "/var/run/secrets/nais.io/service_user/password".readFile() ?: "nix"
+}
+
 enum class Profile {
     LOCAL, DEV, PROD
 }
@@ -172,3 +177,10 @@ fun getHostname(): String {
         "unknown"
     }
 }
+
+private fun String.readFile() =
+    try {
+        File(this).readText(Charsets.UTF_8)
+    } catch (err: FileNotFoundException) {
+        null
+    }
