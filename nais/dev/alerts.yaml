@@ -1,9 +1,0 @@
-apiVersion: "nais.io/v1"
-kind: "Alert"
-metadata:
-  name: dagpenger-journalforing-ferdigstill
-spec:
-  receivers:
-    slack:
-      channel: '#team-dagpenger-alert-non-prod'
-      prependText: '<!here> | '
