@@ -39,6 +39,8 @@ private val localProperties = ConfigurationMap(
         "behandlearbeidsytelsesak.v1.url" to "https://localhost/ail_ws/BehandleArbeidOgAktivitetOppgave_v1",
         "ytelseskontrakt.v3.url" to "https://localhost/ail_ws/Ytelseskontrakt_v3",
         "unleash.url" to "http://localhost:1010",
+        "username" to "user",
+        "password" to "secret",
         "kafka.processing.guarantee" to StreamsConfig.AT_LEAST_ONCE
 
     )

@@ -44,6 +44,15 @@ tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
 }
 
+configurations {
+    all {
+        resolutionStrategy {
+            force("com.fasterxml.jackson.core:jackson-databind:2.10.0")
+            force("com.fasterxml.jackson.core:jackson-core:2.10.0")
+        }
+    }
+}
+
 val cxfVersion = "3.3.4"
 val tjenestespesifikasjonerVersion = "1.2019.09.25-00.21-49b69f0625e0"
 val resilience4jVersion = "1.3.1"
