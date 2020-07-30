@@ -19,7 +19,6 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.mockk.every
 import io.mockk.mockk
-import java.util.Properties
 import no.finn.unleash.FakeUnleash
 import no.nav.common.JAASCredential
 import no.nav.common.KafkaEnvironment
@@ -43,6 +42,7 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
+import java.util.Properties
 
 internal class JournalforingFerdigstillComponentTest {
 
@@ -144,7 +144,7 @@ internal class JournalforingFerdigstillComponentTest {
                      "token_type": "Bearer",
                      "expires_in": 3600
                     } 
-                """.trimIndent()
+                        """.trimIndent()
                     )
                 )
                 .build()
@@ -173,7 +173,8 @@ internal class JournalforingFerdigstillComponentTest {
             arenaClientMock.bestillOppgave(any())
         } returns Result.of(ArenaIdParRespons(oppgaveId = OppgaveId("abc"), fagsakId = FagsakId("arenaSakId")))
 
-        val expectedFerdigstillJson = """{ "journalfoerendeEnhet" : "9999"}"""
+        val expectedFerdigstillJson =
+            """{ "journalfoerendeEnhet" : "9999"}"""
 
         val packet = Packet().apply {
             this.putValue(PacketKeys.NATURLIG_IDENT, "fnr")
@@ -188,7 +189,8 @@ internal class JournalforingFerdigstillComponentTest {
                     Dokument(
                         "id1",
                         "tittel1"
-                    ), Dokument("id1", "tittel1")
+                    ),
+                    Dokument("id1", "tittel1")
                 )
             )?.let { this.putValue(PacketKeys.DOKUMENTER, it) }
         }
@@ -211,7 +213,8 @@ internal class JournalforingFerdigstillComponentTest {
             )
 
             wireMockServer.verify(
-                1, patchRequestedFor(urlMatching("/rest/journalpostapi/v1/journalpost/$journalPostId/ferdigstill"))
+                1,
+                patchRequestedFor(urlMatching("/rest/journalpostapi/v1/journalpost/$journalPostId/ferdigstill"))
                     .withRequestBody(EqualToJsonPattern(expectedFerdigstillJson, true, false))
                     .withHeader("Content-Type", equalTo("application/json")).withHeader(
                         "Authorization",
@@ -223,24 +226,26 @@ internal class JournalforingFerdigstillComponentTest {
 
     private fun behovProducer(configuration: Configuration): KafkaProducer<String, Packet> {
         val topic = configuration.kafka.dagpengerJournalpostTopic
-        val producer: KafkaProducer<String, Packet> = KafkaProducer(Properties().apply {
-            put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, configuration.kafka.brokers)
-            put(ProducerConfig.CLIENT_ID_CONFIG, "dummy-behov-producer")
-            put(
-                ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
-                topic.keySerde.serializer().javaClass.name
-            )
-            put(
-                ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-                topic.valueSerde.serializer().javaClass.name
-            )
-            put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_PLAINTEXT")
-            put(SaslConfigs.SASL_MECHANISM, "PLAIN")
-            put(
-                SaslConfigs.SASL_JAAS_CONFIG,
-                "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${configuration.kafka.credential.username}\" password=\"${configuration.kafka.credential.password}\";"
-            )
-        })
+        val producer: KafkaProducer<String, Packet> = KafkaProducer(
+            Properties().apply {
+                put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, configuration.kafka.brokers)
+                put(ProducerConfig.CLIENT_ID_CONFIG, "dummy-behov-producer")
+                put(
+                    ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
+                    topic.keySerde.serializer().javaClass.name
+                )
+                put(
+                    ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
+                    topic.valueSerde.serializer().javaClass.name
+                )
+                put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_PLAINTEXT")
+                put(SaslConfigs.SASL_MECHANISM, "PLAIN")
+                put(
+                    SaslConfigs.SASL_JAAS_CONFIG,
+                    "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${configuration.kafka.credential.username}\" password=\"${configuration.kafka.credential.password}\";"
+                )
+            }
+        )
 
         return producer
     }

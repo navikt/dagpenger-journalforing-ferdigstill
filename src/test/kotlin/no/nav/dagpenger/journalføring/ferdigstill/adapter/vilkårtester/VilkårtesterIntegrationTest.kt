@@ -6,12 +6,12 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
 import io.kotest.matchers.shouldBe
-import java.time.LocalDate
 import no.nav.dagpenger.events.moshiInstance
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
 
 class VilkårtesterIntegrationTest {
     companion object {
@@ -86,19 +86,21 @@ class VilkårtesterIntegrationTest {
     }
 
     private fun setUpBehovstarterStub(aktørId: String, behovLocationUrl: String) {
-        val behovstarterResponse = """
+        val behovstarterResponse =
+            """
                 {
                         "status" : "PENDING"
                 }
             """.trimIndent()
 
-        val expectedRequest = """
+        val expectedRequest =
+            """
                     {
                         "aktorId": "$aktørId",
                         "vedtakId": -12345,
                         "beregningsdato": "${LocalDate.now()}"
                     }
-                """.trimIndent()
+            """.trimIndent()
 
         WireMock.stubFor(
             WireMock.post(WireMock.urlEqualTo("/behov"))

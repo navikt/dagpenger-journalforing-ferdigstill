@@ -1,10 +1,10 @@
 package no.nav.dagpenger.journalføring.ferdigstill.adapter
 
+import org.junit.jupiter.api.Test
+import wiremock.org.apache.commons.lang3.RandomStringUtils
 import java.time.LocalDateTime
 import java.time.ZoneId
 import kotlin.test.assertEquals
-import org.junit.jupiter.api.Test
-import wiremock.org.apache.commons.lang3.RandomStringUtils
 
 internal class ArenaTilleggsinformasjonTest {
     val dato = LocalDateTime.parse("2019-12-24T12:01:57").atZone(ZoneId.of("Europe/Oslo"))
@@ -18,7 +18,8 @@ internal class ArenaTilleggsinformasjonTest {
                 "- Vedlegg: Arbeidsavtale\n" +
                 "Registrert dato: 24.12.2019\n" +
                 "Dokumentet er skannet inn og journalført automatisk av digitale dagpenger. " +
-                "Gjennomfør rutinen \"Etterkontroll av automatisk journalførte dokumenter\".", tilleggsinformasjon
+                "Gjennomfør rutinen \"Etterkontroll av automatisk journalførte dokumenter\".",
+            tilleggsinformasjon
         )
     }
 
@@ -31,7 +32,8 @@ internal class ArenaTilleggsinformasjonTest {
             "Hoveddokument: Søknad\n" +
                 "Registrert dato: 24.12.2019\n" +
                 "Dokumentet er skannet inn og journalført automatisk av digitale dagpenger. " +
-                "Gjennomfør rutinen \"Etterkontroll av automatisk journalførte dokumenter\".", tilleggsinformasjon
+                "Gjennomfør rutinen \"Etterkontroll av automatisk journalførte dokumenter\".",
+            tilleggsinformasjon
         )
     }
 
@@ -44,7 +46,8 @@ internal class ArenaTilleggsinformasjonTest {
             "Hoveddokument: Søknad\n" +
                 "Registrert dato: 24.12.2019\n" +
                 "Dokumentet er skannet inn og journalført automatisk av digitale dagpenger. " +
-                "Gjennomfør rutinen \"Etterkontroll av automatisk journalførte dokumenter\".", tilleggsinformasjon
+                "Gjennomfør rutinen \"Etterkontroll av automatisk journalførte dokumenter\".",
+            tilleggsinformasjon
         )
     }
 }

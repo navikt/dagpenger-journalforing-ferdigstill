@@ -1,8 +1,6 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
 import com.squareup.moshi.Types
-import java.time.LocalDateTime
-import java.time.ZoneId
 import mu.KotlinLogging
 import no.finn.unleash.Unleash
 import no.nav.dagpenger.events.Packet
@@ -18,6 +16,8 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.Sak
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.SaksType
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.vilkårtester.Vilkårtester
 import org.apache.kafka.streams.kstream.Predicate
+import java.time.LocalDateTime
+import java.time.ZoneId
 
 private val logger = KotlinLogging.logger {}
 
@@ -50,8 +50,10 @@ internal object PacketMapper {
             packet.getStringValue(PacketKeys.AKTØR_ID),
             "AKTØR"
         ) else null
-    fun aktørFrom(packet: Packet) = Bruker(packet.getStringValue(PacketKeys.AKTØR_ID),
-        "AKTØR")
+    fun aktørFrom(packet: Packet) = Bruker(
+        packet.getStringValue(PacketKeys.AKTØR_ID),
+        "AKTØR"
+    )
     fun henvendelse(packet: Packet): Henvendelse = Henvendelse.fra(packet.getStringValue(PacketKeys.HENVENDELSESTYPE))
     fun harFagsakId(packet: Packet): Boolean = packet.hasField(PacketKeys.FAGSAK_ID)
     fun harIkkeFagsakId(packet: Packet): Boolean = !harFagsakId(packet)

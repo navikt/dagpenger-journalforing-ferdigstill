@@ -5,12 +5,12 @@ import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.httpPost
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import java.time.LocalDate
-import java.time.ZonedDateTime
 import mu.KotlinLogging
 import no.nav.dagpenger.events.LocalDateJsonAdapter
 import no.nav.dagpenger.journalføring.ferdigstill.AdapterException
 import no.nav.dagpenger.oidc.OidcClient
+import java.time.LocalDate
+import java.time.ZonedDateTime
 
 private val logger = KotlinLogging.logger {}
 
@@ -89,7 +89,8 @@ internal class GosysOppgaveClient(private val url: String, private val oidcClien
                 logger.error(
                     "Feilet oppretting av manuell journalføringsoppgave for $journalPostId response message: ${e.response.body().asString(
                         "application/json"
-                    )}", e.exception
+                    )}",
+                    e.exception
                 )
                 throw AdapterException(e.exception)
             }

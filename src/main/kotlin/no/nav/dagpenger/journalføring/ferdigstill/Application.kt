@@ -1,6 +1,5 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
-import java.util.Properties
 import mu.KotlinLogging
 import no.finn.unleash.DefaultUnleash
 import no.finn.unleash.Unleash
@@ -20,6 +19,7 @@ import no.nav.dagpenger.streams.streamConfig
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3
 import org.apache.kafka.streams.StreamsConfig
 import org.apache.logging.log4j.ThreadContext
+import java.util.Properties
 
 private val logger = KotlinLogging.logger {}
 

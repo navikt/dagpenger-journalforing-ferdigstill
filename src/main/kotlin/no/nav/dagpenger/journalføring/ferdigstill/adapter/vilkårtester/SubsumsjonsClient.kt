@@ -17,13 +17,16 @@ class SubsumsjonsClient(private val regelApiUrl: String, private val regelApiKey
                     .apiKey(regelApiKey)
             ) { responseObject(moshiDeserializerOf(jsonAdapter)) }
 
-        return result.fold({
-            it
-        }, { error ->
-            throw RegelApiSubsumsjonHttpClientException(
-                "Failed to fetch subsumsjon. Response message: ${response.responseMessage}. Error message: ${error.message}"
-            )
-        })
+        return result.fold(
+            {
+                it
+            },
+            { error ->
+                throw RegelApiSubsumsjonHttpClientException(
+                    "Failed to fetch subsumsjon. Response message: ${response.responseMessage}. Error message: ${error.message}"
+                )
+            }
+        )
     }
 }
 

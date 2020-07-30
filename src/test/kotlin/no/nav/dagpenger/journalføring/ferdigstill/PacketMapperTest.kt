@@ -10,39 +10,48 @@ internal class PacketMapperTest {
 
     @Test
     fun `Exctract journal post id from packet`() {
-        PacketMapper.journalpostIdFrom(Packet().apply {
-            this.putValue(PacketKeys.JOURNALPOST_ID, "journalPostId")
-        }) shouldBe "journalPostId"
+        PacketMapper.journalpostIdFrom(
+            Packet().apply {
+                this.putValue(PacketKeys.JOURNALPOST_ID, "journalPostId")
+            }
+        ) shouldBe "journalPostId"
     }
 
     @Test
     fun `Exctract avsender from packet`() {
-        PacketMapper.avsenderFrom(Packet().apply {
-            this.putValue(PacketKeys.AVSENDER_NAVN, "et navn")
-        }).navn shouldBe "et navn"
+        PacketMapper.avsenderFrom(
+            Packet().apply {
+                this.putValue(PacketKeys.AVSENDER_NAVN, "et navn")
+            }
+        ).navn shouldBe "et navn"
     }
 
     @Test
     fun `Exctract bruker from packet`() {
-        PacketMapper.bruker(Packet().apply {
-            this.putValue(PacketKeys.NATURLIG_IDENT, "fnr")
-        }).id shouldBe "fnr"
+        PacketMapper.bruker(
+            Packet().apply {
+                this.putValue(PacketKeys.NATURLIG_IDENT, "fnr")
+            }
+        ).id shouldBe "fnr"
     }
 
     @Test
     fun `Extract dokumenter from packet`() {
-        val dokumenter = PacketMapper.dokumenterFrom(Packet().apply {
-            dokumentJsonAdapter.toJsonValue(
-                listOf(
-                    Dokument(
-                        "id1",
-                        "tittel1"
-                    ), Dokument("id2", "tittel2")
-                )
-            )?.let {
-                this.putValue(PacketKeys.DOKUMENTER, it)
+        val dokumenter = PacketMapper.dokumenterFrom(
+            Packet().apply {
+                dokumentJsonAdapter.toJsonValue(
+                    listOf(
+                        Dokument(
+                            "id1",
+                            "tittel1"
+                        ),
+                        Dokument("id2", "tittel2")
+                    )
+                )?.let {
+                    this.putValue(PacketKeys.DOKUMENTER, it)
+                }
             }
-        })
+        )
 
         dokumenter.size shouldBe 2
 
