@@ -4,12 +4,12 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import io.mockk.mockk
-import kotlin.test.assertFailsWith
 import no.nav.dagpenger.journalføring.ferdigstill.AdapterException
 import no.nav.dagpenger.oidc.StsOidcClient
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import kotlin.test.assertFailsWith
 
 internal class JournalpostRestApiTest {
 

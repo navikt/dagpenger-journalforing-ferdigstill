@@ -11,8 +11,6 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import io.prometheus.client.CollectorRegistry
-import java.time.LocalDateTime
-import java.time.ZoneId
 import no.finn.unleash.FakeUnleash
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.AKTØR_ID
@@ -36,6 +34,8 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.vilkårtester.Vilkår
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonErInaktiv
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BestillOppgavePersonIkkeFunnet
 import org.junit.jupiter.api.Test
+import java.time.LocalDateTime
+import java.time.ZoneId
 
 internal class JournalføringFerdigstillTest {
 
@@ -48,16 +48,22 @@ internal class JournalføringFerdigstillTest {
         val application = Application(Configuration(), mockk(), FakeUnleash())
 
         application.filterPredicates().all {
-            it.test("", Packet().apply {
-                this.putValue(JOURNALPOST_ID, "journalPostId")
-                this.putValue("toggleBehandleNySøknad", true)
-            })
+            it.test(
+                "",
+                Packet().apply {
+                    this.putValue(JOURNALPOST_ID, "journalPostId")
+                    this.putValue("toggleBehandleNySøknad", true)
+                }
+            )
         } shouldBe true
 
         application.filterPredicates().all {
-            it.test("", Packet().apply {
-                this.putValue("noe annet", "blabla")
-            })
+            it.test(
+                "",
+                Packet().apply {
+                    this.putValue("noe annet", "blabla")
+                }
+            )
         } shouldBe false
     }
 
@@ -66,10 +72,13 @@ internal class JournalføringFerdigstillTest {
         val application = Application(Configuration(), mockk(), FakeUnleash())
 
         application.filterPredicates().all {
-            it.test("", Packet().apply {
-                this.putValue(JOURNALPOST_ID, "journalPostId")
-                this.putValue(PacketKeys.FERDIG_BEHANDLET, true)
-            })
+            it.test(
+                "",
+                Packet().apply {
+                    this.putValue(JOURNALPOST_ID, "journalPostId")
+                    this.putValue(PacketKeys.FERDIG_BEHANDLET, true)
+                }
+            )
         } shouldBe false
     }
 
@@ -126,7 +135,8 @@ internal class JournalføringFerdigstillTest {
         }
 
         CollectorRegistry.defaultRegistry.getSampleValue("dagpenger_journalpost_ferdigstilt") shouldBeGreaterThan 0.0
-        CollectorRegistry.defaultRegistry.getSampleValue("time_spent_in_chain_count",
+        CollectorRegistry.defaultRegistry.getSampleValue(
+            "time_spent_in_chain_count",
             listOf("chain_name").toTypedArray(),
             listOf("OppdaterJournalpostBehandlingsChain").toTypedArray()
         ) shouldBeGreaterThan 0.0
@@ -670,9 +680,12 @@ class IgnorerJournalpostTest : FreeSpec({
         setOf("477201031", "476557172", "475680871", "471479059", "471479060", "471478910").map { journalpost ->
             withClue("Skal droppe journalpost $journalpost ") {
                 application.filterPredicates().all {
-                    it.test("", Packet().apply {
-                        this.putValue(JOURNALPOST_ID, journalpost)
-                    })
+                    it.test(
+                        "",
+                        Packet().apply {
+                            this.putValue(JOURNALPOST_ID, journalpost)
+                        }
+                    )
                 } shouldBe false
             }
         }

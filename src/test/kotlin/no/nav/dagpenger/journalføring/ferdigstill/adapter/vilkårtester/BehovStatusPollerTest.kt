@@ -81,9 +81,10 @@ class BehovStatusPollerTest {
         Assertions.assertEquals("54321", response)
     }
 
-    val responseBody = """
+    val responseBody =
+        """
                 {
                         "status" : "PENDING"
                 }
-            """.trimIndent()
+        """.trimIndent()
 }

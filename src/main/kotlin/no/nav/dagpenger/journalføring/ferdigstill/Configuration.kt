@@ -10,10 +10,6 @@ import com.natpryce.konfig.intType
 import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
 import io.netty.util.NetUtil.getHostname
-import java.io.File
-import java.io.FileNotFoundException
-import java.net.InetAddress
-import java.net.UnknownHostException
 import no.finn.unleash.util.UnleashConfig
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.ktor.auth.ApiKeyVerifier
@@ -23,6 +19,10 @@ import no.nav.dagpenger.streams.PacketSerializer
 import no.nav.dagpenger.streams.Topic
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.StreamsConfig
+import java.io.File
+import java.io.FileNotFoundException
+import java.net.InetAddress
+import java.net.UnknownHostException
 
 private val localProperties = ConfigurationMap(
     mapOf(

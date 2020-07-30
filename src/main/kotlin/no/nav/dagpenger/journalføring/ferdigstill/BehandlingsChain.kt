@@ -206,7 +206,8 @@ internal class OppdaterJournalpostBehandlingsChain(val journalpostApi: Journalpo
                 journalpostId = packet.getStringValue(PacketKeys.JOURNALPOST_ID),
                 jp = oppdaterJournalpostPayloadFrom(
                     packet,
-                    packet.getNullableStringValue(FAGSAK_ID)?.let { FagsakId(it) })
+                    packet.getNullableStringValue(FAGSAK_ID)?.let { FagsakId(it) }
+                )
             )
             logger.info { "Oppdatert journalpost" }
         }

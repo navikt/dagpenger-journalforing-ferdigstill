@@ -1,9 +1,9 @@
 package no.nav.dagpenger.journalføring.ferdigstill.adapter.vilkårtester
 
 import com.github.kittinunf.fuel.httpPost
-import java.time.LocalDate
 import no.nav.dagpenger.events.moshiInstance
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.responseObject
+import java.time.LocalDate
 
 class BehovClient(private val regelApiUrl: String, private val regelApiKey: String) {
     private val jsonAdapter = moshiInstance.adapter(BehovRequest::class.java)
@@ -21,13 +21,16 @@ class BehovClient(private val regelApiUrl: String, private val regelApiKey: Stri
             ) {
                 responseObject<BehovStatusResponse>()
             }
-        return result.fold({
-            response.headers["Location"].first()
-        }, { fuelError ->
-            throw RegelApiBehovHttpClientException(
-                "Failed to run behov. Response message ${response.responseMessage}. Error message: ${fuelError.message}"
-            )
-        })
+        return result.fold(
+            {
+                response.headers["Location"].first()
+            },
+            { fuelError ->
+                throw RegelApiBehovHttpClientException(
+                    "Failed to run behov. Response message ${response.responseMessage}. Error message: ${fuelError.message}"
+                )
+            }
+        )
     }
 
     private fun createBehovRequest(aktørId: String): BehovRequest {
