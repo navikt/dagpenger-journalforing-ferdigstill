@@ -159,7 +159,10 @@ internal class EksisterendeSaksForholdBehandlingsChain(private val arena: ArenaC
     BehandlingsChain(neste) {
 
     private val eksisterendeHenvendelsesTyper = setOf(
-        KlageAnke, Utdanning, Etablering, Gjenopptak
+        KlageAnke,
+        Utdanning,
+        Etablering,
+        Gjenopptak
     )
 
     override fun kanBehandle(packet: Packet): Boolean =

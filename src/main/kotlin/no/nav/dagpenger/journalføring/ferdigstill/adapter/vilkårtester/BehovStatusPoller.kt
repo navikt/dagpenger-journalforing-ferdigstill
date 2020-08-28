@@ -53,7 +53,8 @@ class BehovStatusPoller(
                 )
             } else {
                 throw PollSubsumsjonStatusException(
-                    response.responseMessage, exception
+                    response.responseMessage,
+                    exception
                 )
             }
         }

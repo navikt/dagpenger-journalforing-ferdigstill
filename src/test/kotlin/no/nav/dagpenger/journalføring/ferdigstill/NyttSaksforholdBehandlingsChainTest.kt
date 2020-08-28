@@ -17,7 +17,9 @@ internal class NyttSaksforholdBehandlingsChainTest {
         val nesteKjede: BehandlingsChain = mockk()
 
         val nyArenaSakKjede = NyttSaksforholdBehandlingsChain(
-            arena = arenaMock, toggle = FakeUnleash(), neste = nesteKjede
+            arena = arenaMock,
+            toggle = FakeUnleash(),
+            neste = nesteKjede
 
         )
         val packet = Packet().apply {

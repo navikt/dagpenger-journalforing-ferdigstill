@@ -37,7 +37,8 @@ internal class Application(
     override fun onPacket(packet: Packet): Packet {
         try {
             ThreadContext.put(
-                "x_journalpost_id", packet.getStringValue(PacketKeys.JOURNALPOST_ID)
+                "x_journalpost_id",
+                packet.getStringValue(PacketKeys.JOURNALPOST_ID)
             )
             logger.info { "Processing: $packet" }
 

@@ -82,7 +82,8 @@ class KafkaFeilhåndteringTest {
                 )
             )?.let {
                 this.putValue(
-                    PacketKeys.DOKUMENTER, it
+                    PacketKeys.DOKUMENTER,
+                    it
                 )
             }
         }
@@ -132,7 +133,8 @@ class KafkaFeilhåndteringTest {
                 )
             )?.let {
                 this.putValue(
-                    PacketKeys.DOKUMENTER, it
+                    PacketKeys.DOKUMENTER,
+                    it
                 )
             }
         }
