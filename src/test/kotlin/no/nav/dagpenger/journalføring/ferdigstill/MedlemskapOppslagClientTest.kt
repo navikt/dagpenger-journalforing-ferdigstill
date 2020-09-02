@@ -8,13 +8,12 @@ import com.github.tomakehurst.wiremock.common.ConsoleNotifier
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import io.kotest.matchers.shouldBe
 import io.ktor.http.HttpHeaders
+import java.io.Closeable
+import java.time.LocalDate
 import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.journalføring.ferdigstill.MedlemskapOppslagClientTest.MockServer.azureAdClient
 import no.nav.dagpenger.journalføring.ferdigstill.azuread.AzureAdClient
-
 import org.junit.jupiter.api.Test
-import java.io.Closeable
-import java.time.LocalDate
 
 class MedlemskapOppslagClientTest {
     private object MockServer : Closeable {
