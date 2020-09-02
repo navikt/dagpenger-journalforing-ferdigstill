@@ -1,0 +1,149 @@
+{
+  "tidspunkt": "2020-02-17T13:40:42.103606",
+  "versjonTjeneste": "TODO",
+  "versjonRegler": "v1",
+  "datagrunnlag": {
+    "periode": {
+      "fom": "2020-01-01",
+      "tom": "2018-01-01"
+    },
+    "brukerinput": {
+      "arbeidUtenforNorge": false
+    },
+    "personhistorikk": {
+      "statsborgerskap": [
+        {
+          "landkode": "NOR",
+          "fom": "1983-08-27",
+          "tom": null
+        }
+      ],
+      "personstatuser": [
+        {
+          "personstatus": "BOSA",
+          "fom": "1983-08-27",
+          "tom": null
+        }
+      ],
+      "bostedsadresser": [
+        {
+          "adresselinje": "Ukjent adresse",
+          "landkode": "NOR",
+          "fom": "1983-08-27",
+          "tom": null
+        }
+      ],
+      "postadresser": [],
+      "midlertidigAdresser": []
+    },
+    "medlemskapsunntak": [],
+    "arbeidsforhold": [
+      {
+        "periode": {
+          "fom": "2000-02-13",
+          "tom": null
+        },
+        "utenlandsopphold": null,
+        "arbeidsgiver": {
+          "type": "ordinaertArbeidsforhold",
+          "identifikator": "928497704",
+          "landkode": "NOR"
+        },
+        "arbeidsfolholdstype": "NORMALT",
+        "arbeidsavtaler": [
+          {
+            "periode": {
+              "fom": "2020-02-13",
+              "tom": null
+            },
+            "yrkeskode": "2130109",
+            "skipsregister": null,
+            "stillingsprosent": 100
+          }
+        ]
+      }
+    ],
+    "inntekt": [],
+    "oppgaver": [],
+    "dokument": []
+  },
+  "resultat": {
+    "identifikator": "LOVME",
+    "avklaring": "Er bruker medlem?",
+    "begrunnelse": "Bruker er medlem",
+    "svar": "JA",
+    "delresultat": [
+      {
+        "identifikator": "OPPLYSNINGER",
+        "avklaring": "Finnes det registrerte opplysninger på bruker?",
+        "begrunnelse": "Alle de følgende ble NEI",
+        "svar": "NEI",
+        "delresultat": [
+          {
+            "identifikator": "OPPLYSNINGER-MEDL",
+            "avklaring": "Finnes det registrerte opplysninger i MEDL?",
+            "begrunnelse": "",
+            "svar": "NEI",
+            "delresultat": []
+          },
+          {
+            "identifikator": "OPPLYSNINGER-JOARK",
+            "avklaring": "Finnes det dokumenter i JOARK på medlemskapsområdet?",
+            "begrunnelse": "",
+            "svar": "NEI",
+            "delresultat": []
+          },
+          {
+            "identifikator": "OPPLYSNINGER-GOSYS",
+            "avklaring": "Finnes det åpne oppgaver i GOSYS på medlemskapsområdet?",
+            "begrunnelse": "",
+            "svar": "NEI",
+            "delresultat": []
+          }
+        ]
+      },
+      {
+        "identifikator": "GRUNNFORORDNING-EØS",
+        "avklaring": "Er brukeren statsborger i et EØS land?",
+        "begrunnelse": "",
+        "svar": "JA",
+        "delresultat": []
+      },
+      {
+        "identifikator": "ARB-1",
+        "avklaring": "Har bruker et registrert arbeidsforhold?",
+        "begrunnelse": "",
+        "svar": "JA",
+        "delresultat": []
+      },
+      {
+        "identifikator": "ARB-2",
+        "avklaring": "Jobber bruker for en norsk arbeidsgiver?",
+        "begrunnelse": "",
+        "svar": "JA",
+        "delresultat": []
+      },
+      {
+        "identifikator": "ARB-3",
+        "avklaring": "Er bruker pilot eller kabinansatt?",
+        "begrunnelse": "",
+        "svar": "NEI",
+        "delresultat": []
+      },
+      {
+        "identifikator": "ARB-4",
+        "avklaring": "Har bruker et maritimt arbeidsforhold?",
+        "begrunnelse": "",
+        "svar": "NEI",
+        "delresultat": []
+      },
+      {
+        "identifikator": "LOV-1",
+        "avklaring": "Har bruker oppgitt å ha jobbet utenfor Norge?",
+        "begrunnelse": "",
+        "svar": "NEI",
+        "delresultat": []
+      }
+    ]
+  }
+}
