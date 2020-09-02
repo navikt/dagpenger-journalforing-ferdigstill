@@ -42,6 +42,19 @@ fun BehandlingsChain.instrument(handler: () -> Packet): Packet {
     return handler().also { timer.observeDuration() }
 }
 
+internal class HentMedlemskapChain(
+    neste: BehandlingsChain?
+) : BehandlingsChain(neste) {
+    override fun håndter(packet: Packet): Packet {
+        packet.putValue(PacketKeys.MEDLEMSKAP, "TODO")
+        return packet
+    }
+
+    override fun kanBehandle(packet: Packet): Boolean {
+        TODO("Not yet implemented")
+    }
+}
+
 internal class OppfyllerMinsteinntektBehandlingsChain(
     private val vilkårtester: Vilkårtester,
     private val toggle: Unleash,
