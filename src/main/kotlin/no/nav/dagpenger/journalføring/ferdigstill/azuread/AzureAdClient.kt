@@ -10,13 +10,13 @@ import io.ktor.client.features.logging.Logger
 import io.ktor.client.features.logging.Logging
 import io.ktor.client.request.forms.submitForm
 import io.ktor.http.Parameters
-import kotlinx.coroutines.runBlocking
-import mu.KotlinLogging
-import no.nav.dagpenger.medlemskap.oppslag.Configuration
-import org.apache.http.impl.conn.SystemDefaultRoutePlanner
 import java.net.ProxySelector
 import java.time.Duration
 import java.time.LocalDateTime
+import kotlinx.coroutines.runBlocking
+import mu.KotlinLogging
+import no.nav.dagpenger.journalføring.ferdigstill.Configuration
+import org.apache.http.impl.conn.SystemDefaultRoutePlanner
 
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 

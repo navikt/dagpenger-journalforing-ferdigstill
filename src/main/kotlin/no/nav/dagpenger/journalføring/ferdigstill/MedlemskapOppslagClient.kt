@@ -16,9 +16,9 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.http.contentType
 import io.ktor.util.KtorExperimentalAPI
+import java.time.LocalDate
 import mu.KotlinLogging
 import mu.withLoggingContext
-import java.time.LocalDate
 
 private val sikkerlogg = KotlinLogging.logger("tjenestekall.medlemskap.oppslag.client")
 

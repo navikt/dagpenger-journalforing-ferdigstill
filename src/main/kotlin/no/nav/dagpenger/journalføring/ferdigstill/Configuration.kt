@@ -103,7 +103,8 @@ data class Configuration(
     val behandleArbeidsytelseSakConfig: BehandleArbeidsytelseSakConfig = BehandleArbeidsytelseSakConfig(),
     val ytelseskontraktV3Config: YtelseskontraktV3Config = YtelseskontraktV3Config(),
     val soapSTSClient: SoapSTSClient = SoapSTSClient(),
-    val sts: Sts = Sts()
+    val sts: Sts = Sts(),
+    val azureAd: AzureAd = AzureAd()
 ) {
     class Auth(
         regelApiSecret: String = config()[Key("regel.api.secret", stringType)],
@@ -157,6 +158,19 @@ data class Configuration(
 
     data class YtelseskontraktV3Config(
         val endpoint: String = config()[Key("ytelseskontrakt.v3.url", stringType)]
+    )
+
+    data class AzureAd(
+        val clientId: String = config()[Key("azure.client.id", stringType)],
+        val clientSecret: String = config()[Key("azure.client.secret", stringType)],
+        val tenant: String = config()[Key("azure.tenant", stringType)],
+        val authorityEndpoint: String = config()[Key("azure.authority.endpoint", stringType)].removeSuffix("/"),
+        val tokenEndpoint: String = "$authorityEndpoint/$tenant/oauth2/v2.0/token"
+    )
+
+    data class MedlemskapOppslag(
+        val url: String = config()[Key("medlemskap.oppslag.url", stringType)],
+        val clientId: String = config()[Key("medlemskap.oppslag.client.id", stringType)]
     )
 }
 

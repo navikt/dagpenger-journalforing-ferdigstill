@@ -2,6 +2,7 @@ package no.nav.dagpenger.journalføring.ferdigstill
 
 import com.github.kittinunf.result.Result
 import io.prometheus.client.Histogram
+import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.finn.unleash.Unleash
 import no.nav.dagpenger.events.Packet
@@ -16,6 +17,7 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderHenvendelseAngåendeEksisterendeSaksforholdCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.createArenaTilleggsinformasjon
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.vilkårtester.Vilkårtester
+import java.time.LocalDate
 
 private val logger = KotlinLogging.logger {}
 
@@ -43,10 +45,12 @@ fun BehandlingsChain.instrument(handler: () -> Packet): Packet {
 }
 
 internal class HentMedlemskapChain(
-    neste: BehandlingsChain?
+    neste: BehandlingsChain?,
+    private val medlemskapOppslagClient: MedlemskapOppslagClient
 ) : BehandlingsChain(neste) {
     override fun håndter(packet: Packet): Packet {
-        packet.putValue(PacketKeys.MEDLEMSKAP, "TODO")
+        val medlemskapsevaluering = runBlocking { medlemskapOppslagClient.hentMedlemskapsevaluering(fnr = packet.getStringValue(PacketKeys.NATURLIG_IDENT), arbeidUtenforNorge = false, fom = LocalDate.now().minusDays(1), tom = LocalDate.now(), behovId = packet.getCorrelationId()) }
+        packet.putValue(PacketKeys.MEDLEMSKAP, medlemskapsevaluering.resultat.svar)
         return packet
     }
 
