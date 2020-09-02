@@ -8,8 +8,19 @@
                             stackTraceEnabled="true"/>
         </Console>
         <Prometheus name="metrics"/>
+        <RollingFile name="securelog" filename="/secure-logs/secure.log" filePattern="/secure-logs/secure.log.%i" append="true">
+            <LogstashLayout stackTraceEnabled="true"/>
+            <ThresholdFilter level="debug" onMatch="ACCEPT" onMismatch="DENY"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="25MB" />
+            </Policies>
+            <DefaultRolloverStrategy max="5"/>
+        </RollingFile>
     </Appenders>
     <Loggers>
+        <Logger name="tjenestekall" level="debug" includeLocation="true">
+            <AppenderRef ref="securelog"/>
+        </Logger>
         <Logger name="io.ktor.auth.jwt" level="trace">
             <AppenderRef ref="ConsoleAppender"/>
         </Logger>

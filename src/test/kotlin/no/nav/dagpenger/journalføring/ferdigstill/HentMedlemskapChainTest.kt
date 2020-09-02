@@ -1,7 +1,9 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
+import io.kotest.matchers.shouldBe
 import no.nav.dagpenger.events.Packet
 import org.junit.jupiter.api.Test
+import kotlin.test.assertTrue
 
 class HentMedlemskapChainTest {
 
@@ -15,5 +17,7 @@ class HentMedlemskapChainTest {
         }
 
         hentMedlemskapChain.håndter(packet)
+        packet.hasField(PacketKeys.MEDLEMSKAP) shouldBe true
+        packet.getBoolean(PacketKeys.MEDLEMSKAP) shouldBe true
     }
 }
