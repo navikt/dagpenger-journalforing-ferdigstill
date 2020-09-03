@@ -69,6 +69,9 @@ dependencies {
     // feature toggle
     implementation("no.finn.unleash:unleash-client-java:3.2.9")
 
+    // Rapid and rivers
+    implementation(RapidAndRivers)
+
     // httpclient
     // We need PATCH. SEE https://github.com/kittinunf/fuel/pull/562
     implementation("com.github.kittinunf.fuel:fuel") {
