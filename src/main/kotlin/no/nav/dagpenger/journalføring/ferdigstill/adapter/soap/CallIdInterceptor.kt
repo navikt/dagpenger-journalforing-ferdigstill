@@ -11,6 +11,7 @@ import org.apache.cxf.phase.Phase
 import org.slf4j.LoggerFactory
 import javax.xml.bind.JAXBException
 import javax.xml.namespace.QName
+import kotlin.jvm.Throws
 
 private val log = LoggerFactory.getLogger(CallIdInterceptor::class.java)
 private val ulid = ULID()
