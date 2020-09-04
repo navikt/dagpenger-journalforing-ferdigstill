@@ -1,4 +1,5 @@
 package no.nav.dagpenger.journalføring.ferdigstill
+import no.nav.helse.rapids_rivers.RapidsConnection
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -7,6 +8,9 @@ class MedlemskapBehovRiver {
     fun hentSvar(fnr: String, beregningsdato: LocalDate, vedtakId: String): Medlemskapsevaluering {
         TODO("not implemented")
     }
+
+    /// val medlemskap = BehovRiver(rapidsConnection, listOf(Behov.Medlemskap),(JsonMessage) -> String)
+    /// val soknadfakta = BehovRiver(rapidsConnection, listOf(Behov.Verneplikt, Behov.Registrering),(JsonMessage) -> String)
 }
 
 data class Medlemskapsevaluering(

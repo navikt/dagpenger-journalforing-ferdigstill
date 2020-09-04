@@ -60,8 +60,13 @@ val resultVersion = "3.0.0"
 
 fun tjenestespesifikasjon(name: String) = "no.nav.tjenestespesifikasjoner:$name:$tjenestespesifikasjonerVersion"
 
+val cache2kVersion = "1.2.4.Final"
+
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
+
+    implementation("org.cache2k:cache2k-api:$cache2kVersion")
+    runtimeOnly("org.cache2k:cache2k-core:$cache2kVersion")
 
     // ktor utils
     implementation("com.github.navikt:dp-biblioteker:2019.11.14-12.52.2f5a90180072")

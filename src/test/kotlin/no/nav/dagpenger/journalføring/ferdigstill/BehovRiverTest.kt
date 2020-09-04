@@ -1,12 +1,9 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
 import io.kotest.matchers.shouldBe
-import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Test
-
-
 
 class BehovRiverTest {
 
@@ -26,8 +23,6 @@ class BehovRiverTest {
         river.hentTestSvar("tull") shouldBe "bla"
     }
 }
-
-
 
 @Language("JSON")
 private fun json(id: String): String =
