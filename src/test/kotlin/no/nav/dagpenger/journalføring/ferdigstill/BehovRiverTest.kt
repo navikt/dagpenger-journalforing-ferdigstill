@@ -1,49 +1,66 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import java.time.Duration.ofMillis
+import java.time.Duration.ofSeconds
 
 class BehovRiverTest {
 
     private val rapid = TestRapid()
 
-    /*
-    class TestBehovRiver(private val rapidsConnection: TestRapid) : BehovRiver(rapidsConnection, listOf(Behov.Medlemskap)) {
-        fun hentTestSvar(tull: String): String {
-            val id = opprettBehov(mutableMapOf("tull" to tull))
-            rapidsConnection.sendTestMessage(json(ULID().nextULID()))
-            rapidsConnection.sendTestMessage(json(ULID().nextULID()))
-            rapidsConnection.sendTestMessage(json(ULID().nextULID()))
-            rapidsConnection.sendTestMessage(json(ULID().nextULID()))
-            rapidsConnection.sendTestMessage(json(id))
-            return hentSvar(id)["@løsning"]["Medlemskap"]["tull"].asText()
-        }
-    }
-
     @Test
-    fun `Skal kunne opprette behov`() {
-        val river = TestBehovRiver(rapid)
-
-        river.hentTestSvar("tull") shouldBe "bla"
-    }
-     */
-
-    @Test
-    fun `Skal kunne opprette behov`() {
-        val river = BehovRiver(rapid, listOf(Behov.Medlemskap)) {
-            message: JsonMessage ->
-            message["@løsning"]["Medlemskap"]["tull"].asText()
-        }
+    fun `Skal kunne opprette behov`() = runBlocking {
+        val river = BehovRiver(rapid, listOf(Behov.Medlemskap))
         val id = river.opprettBehov(mutableMapOf("tull" to "noe"))
 
         rapid.sendTestMessage(json(id))
 
-        val noe = river.hentSvar(id)
+        val noe = river.hentSvar(id) {
+            message: JsonMessage ->
+            message["@løsning"]["Medlemskap"]["tull"].asText()
+        }
 
         noe shouldBe "bla"
+    }
+
+    @Test
+    fun `Kaste NoSuchElementException der svar ikke kommer`() {
+        val river = BehovRiver(rapid, listOf(Behov.Medlemskap), 3, ofMillis(2))
+        val id = river.opprettBehov(mutableMapOf("tull" to "noe"))
+
+        assertThrows<NoSuchElementException> {
+            runBlocking {
+                river.hentSvar(id) { message: JsonMessage ->
+                    message["@løsning"]["Medlemskap"]["tull"].asText()
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `Returnere svar der svaret er forsinket`() = runBlocking {
+        val river = BehovRiver(rapid, listOf(Behov.Medlemskap), 3, ofSeconds(2))
+        val id = river.opprettBehov(mutableMapOf("tull" to "noe"))
+
+        val s = async {
+            river.hentSvar(id) { message: JsonMessage ->
+                message["@løsning"]["Medlemskap"]["tull"].asText()
+            }
+        }
+
+        delay(1000)
+
+        rapid.sendTestMessage(json(id))
+
+        s.await() shouldBe "bla"
     }
 }
 

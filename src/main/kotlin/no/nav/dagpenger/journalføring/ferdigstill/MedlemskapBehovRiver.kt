@@ -1,29 +1,31 @@
 package no.nav.dagpenger.journalføring.ferdigstill
+import no.nav.helse.rapids_rivers.JsonMessage
 import java.time.LocalDate
-import java.time.LocalDateTime
 
-class MedlemskapBehovRiver() {
+class MedlemskapBehovRiver(val behovRiver: BehovRiver) {
 
-    fun hentSvar(fnr: String, beregningsdato: LocalDate, vedtakId: String): Medlemskapsevaluering {
-        TODO("not implemented")
+    suspend fun hentSvar(fnr: String, beregningsdato: LocalDate, journalpostId: String): Medlemskapstatus {
+        val id = behovRiver.opprettBehov(
+            mapOf(
+                "fødselsnummer" to fnr,
+                "beregningsdato" to beregningsdato.toString(),
+                "vedtakid" to journalpostId
+            )
+        )
+
+        return behovRiver.hentSvar(id) {
+            message: JsonMessage ->
+            message["@løsning"]["Medlemskap"]["resultat"]["svar"].asText().let {
+                when (it) {
+                    "JA" -> Medlemskapstatus.JA
+                    "NEI" -> Medlemskapstatus.NEI
+                    else -> Medlemskapstatus.VET_IKKE
+                }
+            }
+        }
     }
-
-    // / val medlemskap = BehovRiver(rapidsConnection, listOf(Behov.Medlemskap),(JsonMessage) -> String)
-    // / val soknadfakta = BehovRiver(rapidsConnection, listOf(Behov.Verneplikt, Behov.Registrering),(JsonMessage) -> String)
 }
 
-data class Medlemskapsevaluering(
-    val tidspunkt: LocalDateTime,
-    val versjonTjeneste: String,
-    val versjonRegler: String,
-    val datagrunnlag: Map<String, Any>,
-    val resultat: Medlemskapresultat
-)
-
-data class Medlemskapresultat(
-    val identifikator: String?,
-    val avklaring: String,
-    val begrunnelse: String,
-    val svar: String,
-    val delresultat: List<Medlemskapresultat>
-)
+enum class Medlemskapstatus {
+    JA, NEI, VET_IKKE
+}

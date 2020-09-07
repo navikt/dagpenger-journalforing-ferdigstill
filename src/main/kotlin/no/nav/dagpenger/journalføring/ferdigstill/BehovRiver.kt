@@ -1,11 +1,16 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
 import de.huxhorn.sulky.ulid.ULID
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.retryWhen
+import kotlinx.coroutines.flow.single
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import org.cache2k.Cache2kBuilder
+import java.time.Duration
 import java.util.concurrent.TimeUnit
 
 enum class Behov {
@@ -14,10 +19,11 @@ enum class Behov {
 
 private val ulid = ULID()
 
-class BehovRiver<T>(
+class BehovRiver(
     private val rapidsConnection: RapidsConnection,
     private val behov: List<Behov>,
-    private val parseSvar: (JsonMessage) -> T
+    private val attempts: Int = 3,
+    private val delay: Duration = Duration.ofSeconds(2)
 ) : River.PacketListener {
 
     init {
@@ -57,10 +63,20 @@ class BehovRiver<T>(
         return id
     }
 
-    internal fun hentSvar(id: String): T {
-        packetCache[id].let {
-            return parseSvar(it)
+    suspend fun <T> hentSvar(id: String, parseSvar: (JsonMessage) -> T): T {
+        val s = flow {
+            if (packetCache.containsKey(id)) emit(parseSvar(packetCache[id]))
+            else throw NoSuchElementException("Fant ikke id")
+        }.retryWhen { cause, attempt ->
+            if (cause is NoSuchElementException && attempt < attempts) {
+                delay(delay.toMillis())
+                return@retryWhen true
+            } else {
+                return@retryWhen false
+            }
         }
+
+        return s.single()
     }
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
