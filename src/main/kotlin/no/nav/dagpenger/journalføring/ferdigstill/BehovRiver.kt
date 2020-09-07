@@ -62,7 +62,7 @@ abstract class BehovRiver(
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         val id = packet["@id"].asText()
-        if (idCache.containsAndRemove(id)) {
+        if (idCache.containsKey(id)) {
             packetCache.put(id, packet)
         }
     }
