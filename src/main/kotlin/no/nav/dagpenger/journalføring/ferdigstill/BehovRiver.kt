@@ -5,6 +5,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.flow.single
+import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
@@ -18,6 +19,9 @@ enum class Behov {
 }
 
 private val ulid = ULID()
+
+private val logger = KotlinLogging.logger {}
+private val sikkerLogger = KotlinLogging.logger("tjenestekall")
 
 class BehovRiver(
     private val rapidsConnection: RapidsConnection,
@@ -37,14 +41,14 @@ class BehovRiver(
 
     private val packetCache =
         object : Cache2kBuilder<String, JsonMessage>() {}
-            .name("behov-cache")
+            .name("behov-cache-${ulid.nextULID()}")
             .expireAfterWrite(5, TimeUnit.MINUTES)
             .entryCapacity(5000)
             .build()
 
     private val idCache =
         object : Cache2kBuilder<String, JsonMessage>() {}
-            .name("id-cache")
+            .name("id-cache-${ulid.nextULID()}")
             .expireAfterWrite(5, TimeUnit.MINUTES)
             .entryCapacity(5000)
             .build()
@@ -64,9 +68,9 @@ class BehovRiver(
     }
 
     suspend fun <T> hentSvar(id: String, parseSvar: (JsonMessage) -> T): T {
-        val s = flow {
+        val svar = flow {
             if (packetCache.containsKey(id)) emit(parseSvar(packetCache[id]))
-            else throw NoSuchElementException("Fant ikke id")
+            else throw NoSuchElementException("Fant svar på behov med id $id")
         }.retryWhen { cause, attempt ->
             if (cause is NoSuchElementException && attempt < attempts) {
                 delay(delay.toMillis())
@@ -76,7 +80,7 @@ class BehovRiver(
             }
         }
 
-        return s.single()
+        return svar.single()
     }
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
@@ -87,10 +91,11 @@ class BehovRiver(
     }
 
     override fun onError(problems: MessageProblems, context: RapidsConnection.MessageContext) {
-        throw RuntimeException(problems.toExtendedReport())
+        logger.debug { "kunne ikke gjenkjenne melding:\t${problems}\n" }
+        sikkerLogger.debug { "ukjent melding:\nProblemer:\t${problems.toExtendedReport()}\n" }
     }
 
     override fun onSevere(error: MessageProblems.MessageException, context: RapidsConnection.MessageContext) {
-        throw RuntimeException(error)
+        logger.error(error) { "Feil i behov river" }
     }
 }
