@@ -14,9 +14,10 @@ enum class Behov {
 
 private val ulid = ULID()
 
-abstract class BehovRiver(
+class BehovRiver<T>(
     private val rapidsConnection: RapidsConnection,
-    private val behov: List<Behov>
+    private val behov: List<Behov>,
+    private val parseSvar: (JsonMessage) -> T
 ) : River.PacketListener {
 
     init {
@@ -56,8 +57,10 @@ abstract class BehovRiver(
         return id
     }
 
-    internal fun hentSvar(id: String): JsonMessage {
-        return packetCache[id] ?: throw RuntimeException("Fant ikke behov")
+    internal fun hentSvar(id: String): T {
+        packetCache[id].let {
+            return parseSvar(it)
+        }
     }
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {

@@ -1,7 +1,7 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
-import de.huxhorn.sulky.ulid.ULID
 import io.kotest.matchers.shouldBe
+import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Test
@@ -10,6 +10,7 @@ class BehovRiverTest {
 
     private val rapid = TestRapid()
 
+    /*
     class TestBehovRiver(private val rapidsConnection: TestRapid) : BehovRiver(rapidsConnection, listOf(Behov.Medlemskap)) {
         fun hentTestSvar(tull: String): String {
             val id = opprettBehov(mutableMapOf("tull" to tull))
@@ -21,11 +22,28 @@ class BehovRiverTest {
             return hentSvar(id)["@løsning"]["Medlemskap"]["tull"].asText()
         }
     }
+
     @Test
     fun `Skal kunne opprette behov`() {
         val river = TestBehovRiver(rapid)
 
         river.hentTestSvar("tull") shouldBe "bla"
+    }
+     */
+
+    @Test
+    fun `Skal kunne opprette behov`() {
+        val river = BehovRiver(rapid, listOf(Behov.Medlemskap)) {
+            message: JsonMessage ->
+            message["@løsning"]["Medlemskap"]["tull"].asText()
+        }
+        val id = river.opprettBehov(mutableMapOf("tull" to "noe"))
+
+        rapid.sendTestMessage(json(id))
+
+        val noe = river.hentSvar(id)
+
+        noe shouldBe "bla"
     }
 }
 

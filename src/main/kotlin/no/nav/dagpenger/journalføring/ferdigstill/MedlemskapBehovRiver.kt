@@ -2,7 +2,7 @@ package no.nav.dagpenger.journalføring.ferdigstill
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-class MedlemskapBehovRiver {
+class MedlemskapBehovRiver() {
 
     fun hentSvar(fnr: String, beregningsdato: LocalDate, vedtakId: String): Medlemskapsevaluering {
         TODO("not implemented")
