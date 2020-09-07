@@ -1,5 +1,6 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
+import de.huxhorn.sulky.ulid.ULID
 import io.kotest.matchers.shouldBe
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import org.intellij.lang.annotations.Language
@@ -12,6 +13,10 @@ class BehovRiverTest {
     class TestBehovRiver(private val rapidsConnection: TestRapid) : BehovRiver(rapidsConnection, listOf(Behov.Medlemskap)) {
         fun hentTestSvar(tull: String): String {
             val id = opprettBehov(mutableMapOf("tull" to tull))
+            rapidsConnection.sendTestMessage(json(ULID().nextULID()))
+            rapidsConnection.sendTestMessage(json(ULID().nextULID()))
+            rapidsConnection.sendTestMessage(json(ULID().nextULID()))
+            rapidsConnection.sendTestMessage(json(ULID().nextULID()))
             rapidsConnection.sendTestMessage(json(id))
             return hentSvar(id)["@løsning"]["Medlemskap"]["tull"].asText()
         }
