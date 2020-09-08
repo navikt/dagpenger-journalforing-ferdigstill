@@ -67,7 +67,7 @@ internal class OppfyllerMinsteinntektBehandlingsChain(
                         val medlemskap = it.hentSvar(
                             fnr = packet.getStringValue(PacketKeys.NATURLIG_IDENT),
                             beregningsdato = LocalDate.now(),
-                            journalpostId = journalpostIdFrom(packet)
+                            journalpostId = PacketMapper.journalpostIdFrom(packet)
                         )
                         packet.putValue(PacketKeys.MEDLEMSKAP_STATUS, medlemskap)
                     }

@@ -24,6 +24,8 @@ import java.io.FileNotFoundException
 import java.net.InetAddress
 import java.net.UnknownHostException
 
+private const val TOPIC = "privat-dagpenger-behov-v2"
+
 private val localProperties = ConfigurationMap(
     mapOf(
         "application.httpPort" to "8080",
@@ -34,6 +36,8 @@ private val localProperties = ConfigurationMap(
         "journalPostApi.url" to "http://localhost",
         "gosysApi.url" to "http://localhost",
         "kafka.bootstrap.servers" to "localhost:9092",
+        "kafka.topic" to TOPIC,
+        "kafka.reset.policy" to "earliest",
         "regel.api.secret" to "secret",
         "regel.api.key" to "regelKey",
         "sts.url" to "http://localhost",
@@ -41,7 +45,9 @@ private val localProperties = ConfigurationMap(
         "behandlearbeidsytelsesak.v1.url" to "https://localhost/ail_ws/BehandleArbeidOgAktivitetOppgave_v1",
         "ytelseskontrakt.v3.url" to "https://localhost/ail_ws/Ytelseskontrakt_v3",
         "unleash.url" to "http://localhost:1010",
-        "kafka.processing.guarantee" to StreamsConfig.AT_LEAST_ONCE
+        "kafka.processing.guarantee" to StreamsConfig.AT_LEAST_ONCE,
+        "nav.truststore.path" to "/dev/null",
+        "nav.truststore.password" to "verysecret"
 
     )
 )
@@ -55,6 +61,8 @@ private val devProperties = ConfigurationMap(
         "journalPostApi.url" to "http://dokarkiv.q1.svc.nais.local",
         "gosysApi.url" to "http://oppgave.default.svc.nais.local",
         "kafka.bootstrap.servers" to "b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443",
+        "kafka.topic" to TOPIC,
+        "kafka.reset.policy" to "earliest",
         "sts.url" to "http://security-token-service.default.svc.nais.local",
         "soapsecuritytokenservice.url" to "https://sts-q1.preprod.local/SecurityTokenServiceProvider/",
         "behandlearbeidsytelsesak.v1.url" to "https://arena-q1.adeo.no/ail_ws/BehandleArbeidOgAktivitetOppgave_v1",
@@ -73,6 +81,8 @@ private val prodProperties = ConfigurationMap(
         "journalPostApi.url" to "http://dokarkiv.default.svc.nais.local",
         "gosysApi.url" to "http://oppgave.default.svc.nais.local",
         "kafka.bootstrap.servers" to "a01apvl00145.adeo.no:8443,a01apvl00146.adeo.no:8443,a01apvl00147.adeo.no:8443,a01apvl00148.adeo.no:8443,a01apvl00149.adeo.no:8443,a01apvl00150.adeo.no:8443",
+        "kafka.topic" to TOPIC,
+        "kafka.reset.policy" to "earliest",
         "sts.url" to "http://security-token-service.default.svc.nais.local",
         "soapsecuritytokenservice.url" to "https://sts.adeo.no/SecurityTokenServiceProvider/",
         "behandlearbeidsytelsesak.v1.url" to "https://arena.adeo.no/ail_ws/BehandleArbeidOgAktivitetOppgave_v1",
