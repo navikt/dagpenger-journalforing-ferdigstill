@@ -94,6 +94,7 @@ internal class JournalføringFerdigstillTest {
             manuellJournalføringsOppgaveClient,
             arenaClient,
             mockk(),
+            mockk(),
             FakeUnleash()
         ).apply {
             val generellPacket = Packet().apply {
@@ -150,6 +151,7 @@ internal class JournalføringFerdigstillTest {
                 manuellJournalføringsOppgaveClient,
                 arenaClient,
                 mockk(),
+                mockk(),
                 FakeUnleash()
             )
         val journalPostId = "journalPostId"
@@ -192,6 +194,7 @@ internal class JournalføringFerdigstillTest {
                 journalPostApi,
                 manuellJournalføringsOppgaveClient,
                 arenaClient,
+                mockk(),
                 mockk(),
                 FakeUnleash()
             )
@@ -264,6 +267,7 @@ internal class JournalføringFerdigstillTest {
                 manuellJournalføringsOppgaveClient,
                 arenaClient,
                 vilkårtester,
+                mockk(),
                 FakeUnleash().apply {
                     enable("dagpenger-journalforing-ferdigstill.vilkaartesting")
                     disable("dagpenger-journalforing-ferdigstill.bruk_hurtig_enhet")
@@ -303,6 +307,7 @@ internal class JournalføringFerdigstillTest {
                 manuellJournalføringsOppgaveClient,
                 arenaClient,
                 vilkårtester,
+                mockk(),
                 FakeUnleash().apply {
                     enable("dagpenger-journalforing-ferdigstill.vilkaartesting")
                     disable("dagpenger-journalforing-ferdigstill.bruk_hurtig_enhet")
@@ -342,6 +347,7 @@ internal class JournalføringFerdigstillTest {
                 manuellJournalføringsOppgaveClient,
                 arenaClient,
                 vilkårtester,
+                mockk(),
                 FakeUnleash().apply { enableAll() }
             )
         val journalPostId = "journalPostId"
@@ -378,6 +384,7 @@ internal class JournalføringFerdigstillTest {
                 manuellJournalføringsOppgaveClient,
                 arenaClient,
                 vilkårtester,
+                mockk(),
                 FakeUnleash().apply { enableAll() }
             )
         val journalPostId = "journalPostId"
@@ -414,6 +421,7 @@ internal class JournalføringFerdigstillTest {
                 manuellJournalføringsOppgaveClient,
                 arenaClient,
                 mockk(),
+                mockk(),
                 FakeUnleash()
             )
         val journalPostId = "journalPostId"
@@ -439,6 +447,7 @@ internal class JournalføringFerdigstillTest {
                 journalPostApi,
                 manuellJournalføringsOppgaveClient,
                 arenaClient,
+                mockk(),
                 mockk(),
                 FakeUnleash()
             )
@@ -500,6 +509,7 @@ internal class JournalføringFerdigstillTest {
                 manuellJournalføringsOppgaveClient,
                 arenaClient,
                 mockk(),
+                mockk(),
                 FakeUnleash()
             )
         val journalPostId = "journalPostId"
@@ -540,6 +550,7 @@ internal class JournalføringFerdigstillTest {
                 journalPostApi,
                 manuellJournalføringsOppgaveClient,
                 arenaClient,
+                mockk(),
                 mockk(),
                 FakeUnleash()
             )
@@ -619,6 +630,7 @@ internal class JournalføringFerdigstillTest {
                 journalPostApi,
                 manuellJournalføringsOppgaveClient,
                 arenaClient,
+                mockk(),
                 mockk(),
                 FakeUnleash()
             )

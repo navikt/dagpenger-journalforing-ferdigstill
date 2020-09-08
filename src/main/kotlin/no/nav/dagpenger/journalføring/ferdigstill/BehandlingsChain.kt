@@ -2,6 +2,7 @@ package no.nav.dagpenger.journalføring.ferdigstill
 
 import com.github.kittinunf.result.Result
 import io.prometheus.client.Histogram
+import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.finn.unleash.Unleash
 import no.nav.dagpenger.events.Packet
@@ -16,6 +17,7 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderHenvendelseAngåendeEksisterendeSaksforholdCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.createArenaTilleggsinformasjon
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.vilkårtester.Vilkårtester
+import java.time.LocalDate
 
 private val logger = KotlinLogging.logger {}
 
@@ -44,12 +46,11 @@ fun BehandlingsChain.instrument(handler: () -> Packet): Packet {
 
 internal class OppfyllerMinsteinntektBehandlingsChain(
     private val vilkårtester: Vilkårtester,
-    private val toggle: Unleash,
+    private val medlemskapBehovRiver: MedlemskapBehovRiver? = null,
     neste: BehandlingsChain?
 ) : BehandlingsChain(neste) {
     override fun kanBehandle(packet: Packet) =
-        toggle.isEnabled("dagpenger-journalforing-ferdigstill.vilkaartesting") &&
-            PacketMapper.hasNaturligIdent(packet) &&
+        PacketMapper.hasNaturligIdent(packet) &&
             PacketMapper.hasAktørId(packet) &&
             PacketMapper.harIkkeFagsakId(packet) &&
             PacketMapper.henvendelse(packet) == NyttSaksforhold &&
@@ -60,6 +61,17 @@ internal class OppfyllerMinsteinntektBehandlingsChain(
             try {
                 val minsteArbeidsinntektVilkår =
                     vilkårtester.hentMinsteArbeidsinntektVilkår(PacketMapper.aktørFrom(packet).id)
+
+                runBlocking {
+                    medlemskapBehovRiver?.let {
+                        val medlemskap = it.hentSvar(
+                            fnr = packet.getStringValue(PacketKeys.NATURLIG_IDENT),
+                            beregningsdato = LocalDate.now(),
+                            journalpostId = journalpostIdFrom(packet)
+                        )
+                        packet.putValue(PacketKeys.MEDLEMSKAP_STATUS, medlemskap)
+                    }
+                }
 
                 minsteArbeidsinntektVilkår?.let {
                     packet.putValue(PacketKeys.OPPFYLLER_MINSTEINNTEKT, it.harBeståttMinsteArbeidsinntektVilkår)
