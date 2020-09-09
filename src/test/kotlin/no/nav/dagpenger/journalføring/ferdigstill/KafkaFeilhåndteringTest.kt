@@ -51,7 +51,7 @@ class KafkaFeilhåndteringTest {
     @Test
     fun `skal fortsette der den slapp når noe feiler`() {
         val journalFøringFerdigstill =
-            JournalføringFerdigstill(journalpostApi, manuellJournalføringsOppgaveClient, arenaClient, mockk(), FakeUnleash())
+            JournalføringFerdigstill(journalpostApi, manuellJournalføringsOppgaveClient, arenaClient, mockk(), mockk(), FakeUnleash())
         val application = Application(configuration, journalFøringFerdigstill, FakeUnleash())
 
         val journalPostId = "journalPostId"

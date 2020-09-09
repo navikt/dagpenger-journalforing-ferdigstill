@@ -91,6 +91,7 @@ internal class JournalforingFerdigstillComponentTest {
             manuellJournalføringsOppgaveClient = mockk(relaxed = true),
             arenaClient = arenaClientMock,
             vilkårtester = mockk(),
+            medlemskapBehovRiver = mockk(),
             unleash = FakeUnleash()
         )
 

@@ -99,6 +99,7 @@ internal class JournalføringFerdigstill(
     manuellJournalføringsOppgaveClient: ManuellJournalføringsOppgaveClient,
     arenaClient: ArenaClient,
     vilkårtester: Vilkårtester,
+    medlemskapBehovRiver: MedlemskapBehovRiver,
     unleash: Unleash
 ) {
 
@@ -109,7 +110,11 @@ internal class JournalføringFerdigstill(
     val oppdaterChain = OppdaterJournalpostBehandlingsChain(journalPostApi, ferdigstillOppgaveChain)
     val eksisterendeSakChain = EksisterendeSaksForholdBehandlingsChain(arenaClient, oppdaterChain)
     val nySakChain = NyttSaksforholdBehandlingsChain(arenaClient, unleash, eksisterendeSakChain)
-    val vilkårtestingChain = OppfyllerMinsteinntektBehandlingsChain(vilkårtester, unleash, nySakChain)
+    val vilkårtestingChain = OppfyllerMinsteinntektBehandlingsChain(
+        vilkårtester,
+        medlemskapBehovRiver = medlemskapBehovRiver,
+        nySakChain
+    )
 
     fun handlePacket(packet: Packet): Packet {
         try {

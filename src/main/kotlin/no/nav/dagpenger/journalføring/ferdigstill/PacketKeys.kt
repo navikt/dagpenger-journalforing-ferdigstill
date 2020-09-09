@@ -16,4 +16,5 @@ internal object PacketKeys {
     const val HENVENDELSESTYPE: String = "henvendelsestype"
     const val KORONAREGELVERK_MINSTEINNTEKT_BRUKT: String = "koronaregelverkMinsteinntektBrukt"
     const val OPPGAVE_ID: String = "oppgaveId"
+    const val MEDLEMSKAP_STATUS: String = "medlemskapStatus"
 }
