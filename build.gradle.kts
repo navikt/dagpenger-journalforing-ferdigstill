@@ -130,7 +130,7 @@ dependencies {
     testImplementation(KafkaEmbedded.env)
     testImplementation(Kafka.streamTestUtils)
     testImplementation(Wiremock.standalone)
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.3.9")
+    testImplementation(Kotlin.Coroutines.module("test"))
 
     testRuntimeOnly(Junit5.engine)
 
