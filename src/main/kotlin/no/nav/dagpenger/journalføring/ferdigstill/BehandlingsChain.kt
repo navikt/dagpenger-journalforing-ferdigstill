@@ -2,6 +2,8 @@ package no.nav.dagpenger.journalføring.ferdigstill
 
 import com.github.kittinunf.result.Result
 import io.prometheus.client.Histogram
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.finn.unleash.Unleash
@@ -46,7 +48,7 @@ fun BehandlingsChain.instrument(handler: () -> Packet): Packet {
 
 internal class OppfyllerMinsteinntektBehandlingsChain(
     private val vilkårtester: Vilkårtester,
-    private val medlemskapBehovRiver: MedlemskapBehovRiver? = null,
+    private val medlemskapBehovRiver: MedlemskapBehovRiver,
     neste: BehandlingsChain?
 ) : BehandlingsChain(neste) {
     override fun kanBehandle(packet: Packet) =
@@ -59,24 +61,31 @@ internal class OppfyllerMinsteinntektBehandlingsChain(
     override fun håndter(packet: Packet): Packet = instrument {
         if (kanBehandle(packet)) {
             try {
-                val minsteArbeidsinntektVilkår =
-                    vilkårtester.hentMinsteArbeidsinntektVilkår(PacketMapper.aktørFrom(packet).id)
+                runBlocking(IO) {
+                    val minsteArbeidsinntektVilkår = async {
+                        vilkårtester.hentMinsteArbeidsinntektVilkår(PacketMapper.aktørFrom(packet).id)
+                    }
 
-                runBlocking {
-                    medlemskapBehovRiver?.let {
-                        val medlemskap = it.hentSvar(
+                    val medlemskap = async {
+                        medlemskapBehovRiver.hentSvar(
                             fnr = packet.getStringValue(PacketKeys.NATURLIG_IDENT),
                             beregningsdato = LocalDate.now(),
                             journalpostId = PacketMapper.journalpostIdFrom(packet)
                         )
-                        packet.putValue(PacketKeys.MEDLEMSKAP_STATUS, medlemskap)
                     }
-                }
 
-                minsteArbeidsinntektVilkår?.let {
-                    packet.putValue(PacketKeys.OPPFYLLER_MINSTEINNTEKT, it.harBeståttMinsteArbeidsinntektVilkår)
-                    packet.putValue(PacketKeys.KORONAREGELVERK_MINSTEINNTEKT_BRUKT, it.koronaRegelverkBrukt)
-                    inngangsvilkårResultatTellerInc(it.harBeståttMinsteArbeidsinntektVilkår)
+                    kotlin.runCatching { medlemskap.await() }
+                        .onFailure {
+                            logger.warn(it) { "Kunne ikke hente medlemskapstatus" }
+                        }.onSuccess {
+                            packet.putValue(PacketKeys.MEDLEMSKAP_STATUS, it)
+                        }
+
+                    minsteArbeidsinntektVilkår.await()?.let {
+                        packet.putValue(PacketKeys.OPPFYLLER_MINSTEINNTEKT, it.harBeståttMinsteArbeidsinntektVilkår)
+                        packet.putValue(PacketKeys.KORONAREGELVERK_MINSTEINNTEKT_BRUKT, it.koronaRegelverkBrukt)
+                        inngangsvilkårResultatTellerInc(it.harBeståttMinsteArbeidsinntektVilkår)
+                    }
                 }
             } catch (e: Exception) {
                 logger.warn(e) { "Kunne ikke vurdere minste arbeidsinntekt" }

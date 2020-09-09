@@ -282,7 +282,7 @@ internal class JournalføringFerdigstillTest {
         val slot = slot<OppgaveCommand>()
 
         coEvery { medlemskapBehovRiver.hentSvar(any(), any(), any()) } returns Medlemskapstatus.JA
-        every { vilkårtester.hentMinsteArbeidsinntektVilkår(any()) } returns MinsteArbeidsinntektVilkår(false, false)
+        coEvery { vilkårtester.hentMinsteArbeidsinntektVilkår(any()) } returns MinsteArbeidsinntektVilkår(false, false)
         every { arenaClient.bestillOppgave(command = capture(slot)) } returns Result.of(ArenaIdParRespons(oppgaveId = OppgaveId("abc"), fagsakId = FagsakId("as")))
         every { arenaClient.harIkkeAktivSak(any()) } returns true
 
@@ -324,7 +324,7 @@ internal class JournalføringFerdigstillTest {
         val slot = slot<OppgaveCommand>()
 
         coEvery { medlemskapBehovRiver.hentSvar(any(), any(), any()) } returns Medlemskapstatus.JA
-        every { vilkårtester.hentMinsteArbeidsinntektVilkår(any()) } returns MinsteArbeidsinntektVilkår(false, true)
+        coEvery { vilkårtester.hentMinsteArbeidsinntektVilkår(any()) } returns MinsteArbeidsinntektVilkår(false, true)
         every { arenaClient.bestillOppgave(command = capture(slot)) } returns Result.of(ArenaIdParRespons(oppgaveId = OppgaveId("abc"), fagsakId = FagsakId("as")))
         every { arenaClient.harIkkeAktivSak(any()) } returns true
 
@@ -363,7 +363,7 @@ internal class JournalføringFerdigstillTest {
         val slot = slot<OppgaveCommand>()
 
         coEvery { medlemskapBehovRiver.hentSvar(any(), any(), any()) } returns Medlemskapstatus.JA
-        every { vilkårtester.hentMinsteArbeidsinntektVilkår(any()) } returns MinsteArbeidsinntektVilkår(false, false)
+        coEvery { vilkårtester.hentMinsteArbeidsinntektVilkår(any()) } returns MinsteArbeidsinntektVilkår(false, false)
         every { arenaClient.bestillOppgave(command = capture(slot)) } returns Result.of(ArenaIdParRespons(oppgaveId = OppgaveId("abc"), fagsakId = FagsakId("123")))
         every { arenaClient.harIkkeAktivSak(any()) } returns true
 
@@ -402,7 +402,7 @@ internal class JournalføringFerdigstillTest {
         val slot = slot<OppgaveCommand>()
 
         coEvery { medlemskapBehovRiver.hentSvar(any(), any(), any()) } returns Medlemskapstatus.JA
-        every { vilkårtester.hentMinsteArbeidsinntektVilkår(any()) } returns MinsteArbeidsinntektVilkår(false, false)
+        coEvery { vilkårtester.hentMinsteArbeidsinntektVilkår(any()) } returns MinsteArbeidsinntektVilkår(false, false)
         every { arenaClient.bestillOppgave(command = capture(slot)) } returns Result.of(ArenaIdParRespons(oppgaveId = OppgaveId("abc"), fagsakId = FagsakId("123")))
         every { arenaClient.harIkkeAktivSak(any()) } returns true
 
