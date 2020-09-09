@@ -3,6 +3,7 @@ package no.nav.dagpenger.journalføring.ferdigstill
 import com.github.kittinunf.result.Result
 import io.prometheus.client.Histogram
 import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
@@ -63,7 +64,7 @@ internal class OppfyllerMinsteinntektBehandlingsChain(
     override fun håndter(packet: Packet): Packet = instrument {
         if (kanBehandle(packet)) {
             try {
-                runBlocking(IO) {
+                runBlocking(SupervisorJob() + IO) {
                     val minsteArbeidsinntektVilkår = async {
                         vilkårtester.hentMinsteArbeidsinntektVilkår(PacketMapper.aktørFrom(packet).id)
                     }
