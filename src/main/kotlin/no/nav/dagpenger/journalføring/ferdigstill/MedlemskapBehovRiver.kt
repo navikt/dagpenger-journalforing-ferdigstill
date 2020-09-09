@@ -9,7 +9,7 @@ class MedlemskapBehovRiver(val behovRiver: BehovRiver) {
             mapOf(
                 "fødselsnummer" to fnr,
                 "beregningsdato" to beregningsdato.toString(),
-                "vedtakid" to journalpostId
+                "vedtakId" to journalpostId
             )
         )
 

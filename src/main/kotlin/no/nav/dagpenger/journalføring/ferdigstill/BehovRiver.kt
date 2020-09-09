@@ -55,22 +55,23 @@ class BehovRiver(
 
     internal fun opprettBehov(parametre: Map<String, String>): String {
         val id = ulid.nextULID()
-        val behov = JsonMessage.newMessage(
+        val forespurtBehov = JsonMessage.newMessage(
             mapOf(
                 "@id" to id,
                 "@behov" to behov.map { it.name },
                 "@event_name" to "behov"
             ) + parametre
         )
-        rapidsConnection.publish(behov.toJson())
-        idCache.put(id, behov)
+        rapidsConnection.publish(forespurtBehov.toJson())
+        logger.info { "Produsert behov ${behov.joinToString { ", " }} med id $id" }
+        idCache.put(id, forespurtBehov)
         return id
     }
 
     suspend fun <T> hentSvar(id: String, parseSvar: (JsonMessage) -> T): T {
         val svar = flow {
             if (packetCache.containsKey(id)) emit(parseSvar(packetCache[id]))
-            else throw NoSuchElementException("Fant svar på behov med id $id")
+            else throw NoSuchElementException("Fant ikke svar på behov med id $id")
         }.retryWhen { cause, attempt ->
             if (cause is NoSuchElementException && attempt < attempts) {
                 delay(delay.toMillis())
