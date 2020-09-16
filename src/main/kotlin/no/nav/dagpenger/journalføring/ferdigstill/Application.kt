@@ -14,12 +14,8 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.configureFor
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.stsClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.vilkårtester.Vilkårtester
 import no.nav.dagpenger.oidc.StsOidcClient
-import no.nav.dagpenger.streams.HealthCheck
-import no.nav.dagpenger.streams.HealthStatus
 import no.nav.dagpenger.streams.River
 import no.nav.dagpenger.streams.streamConfig
-import no.nav.helse.rapids_rivers.RapidApplication
-import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3
 import org.apache.kafka.streams.StreamsConfig
 import org.apache.logging.log4j.ThreadContext
@@ -104,19 +100,6 @@ fun main() {
         configuration.gosysApiUrl,
         stsOidcClient
     )
-
-    val rapidsConnection = RapidApplication.Builder(
-        RapidApplication.RapidApplicationConfig.fromEnv(configuration.rapidApplication)
-    ).build()
-    rapidsConnection.register(RapidHealthCheck)
-
-    val medlemskapBehovRiver = MedlemskapBehovRiver(
-        BehovRiver(
-            rapidsConnection = rapidsConnection,
-            behov = listOf(Behov.Medlemskap)
-        )
-    )
-
     val vilkårtester = Vilkårtester(configuration.application.regelApiBaseUrl, configuration.auth.regelApiKey)
     val journalFøringFerdigstill = JournalføringFerdigstill(
         JournalpostRestApi(
@@ -126,37 +109,10 @@ fun main() {
         gosysOppgaveClient,
         arenaClient,
         vilkårtester,
-        medlemskapBehovRiver,
         unleash
     )
 
     Application(configuration, journalFøringFerdigstill, unleash).start()
-    rapidsConnection.start()
 }
 
 class ReadCountException : RuntimeException()
-
-object RapidHealthCheck : RapidsConnection.StatusListener, HealthCheck {
-    var healthy: Boolean = false
-
-    override fun onStartup(rapidsConnection: RapidsConnection) {
-        healthy = true
-    }
-
-    override fun onReady(rapidsConnection: RapidsConnection) {
-        healthy = true
-    }
-
-    override fun onNotReady(rapidsConnection: RapidsConnection) {
-        healthy = false
-    }
-
-    override fun onShutdown(rapidsConnection: RapidsConnection) {
-        healthy = false
-    }
-
-    override fun status(): HealthStatus = when (healthy) {
-        true -> HealthStatus.UP
-        false -> HealthStatus.DOWN
-    }
-}

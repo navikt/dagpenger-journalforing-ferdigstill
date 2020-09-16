@@ -6,7 +6,6 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.doubles.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeTypeOf
-import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
@@ -95,7 +94,6 @@ internal class JournalføringFerdigstillTest {
             manuellJournalføringsOppgaveClient,
             arenaClient,
             mockk(),
-            mockk(),
             FakeUnleash()
         ).apply {
             val generellPacket = Packet().apply {
@@ -152,7 +150,6 @@ internal class JournalføringFerdigstillTest {
                 manuellJournalføringsOppgaveClient,
                 arenaClient,
                 mockk(),
-                mockk(),
                 FakeUnleash()
             )
         val journalPostId = "journalPostId"
@@ -195,7 +192,6 @@ internal class JournalføringFerdigstillTest {
                 journalPostApi,
                 manuellJournalføringsOppgaveClient,
                 arenaClient,
-                mockk(),
                 mockk(),
                 FakeUnleash()
             )
@@ -262,14 +258,12 @@ internal class JournalføringFerdigstillTest {
     @Test
     fun `Ved kandidat for avslag basert på minsteinntekt spesifiseres dette i oppgavebeskrivelsen`() {
         val vilkårtester = mockk<Vilkårtester>()
-        val medlemskapBehovRiver = mockk<MedlemskapBehovRiver>()
         val journalFøringFerdigstill =
             JournalføringFerdigstill(
                 journalPostApi,
                 manuellJournalføringsOppgaveClient,
                 arenaClient,
                 vilkårtester,
-                medlemskapBehovRiver,
                 FakeUnleash().apply {
                     enable("dagpenger-journalforing-ferdigstill.vilkaartesting")
                     disable("dagpenger-journalforing-ferdigstill.bruk_hurtig_enhet")
@@ -281,8 +275,7 @@ internal class JournalføringFerdigstillTest {
 
         val slot = slot<OppgaveCommand>()
 
-        coEvery { medlemskapBehovRiver.hentSvar(any(), any(), any()) } returns Medlemskapstatus.JA
-        coEvery { vilkårtester.hentMinsteArbeidsinntektVilkår(any()) } returns MinsteArbeidsinntektVilkår(false, false)
+        every { vilkårtester.hentMinsteArbeidsinntektVilkår(any()) } returns MinsteArbeidsinntektVilkår(false, false)
         every { arenaClient.bestillOppgave(command = capture(slot)) } returns Result.of(ArenaIdParRespons(oppgaveId = OppgaveId("abc"), fagsakId = FagsakId("as")))
         every { arenaClient.harIkkeAktivSak(any()) } returns true
 
@@ -304,14 +297,12 @@ internal class JournalføringFerdigstillTest {
     @Test
     fun `Ved kandidat for avslag basert på minsteinntekt med koronaregler spesifiseres dette i oppgavebeskrivelsen`() {
         val vilkårtester = mockk<Vilkårtester>()
-        val medlemskapBehovRiver = mockk<MedlemskapBehovRiver>()
         val journalFøringFerdigstill =
             JournalføringFerdigstill(
                 journalPostApi,
                 manuellJournalføringsOppgaveClient,
                 arenaClient,
                 vilkårtester,
-                medlemskapBehovRiver,
                 FakeUnleash().apply {
                     enable("dagpenger-journalforing-ferdigstill.vilkaartesting")
                     disable("dagpenger-journalforing-ferdigstill.bruk_hurtig_enhet")
@@ -323,8 +314,7 @@ internal class JournalføringFerdigstillTest {
 
         val slot = slot<OppgaveCommand>()
 
-        coEvery { medlemskapBehovRiver.hentSvar(any(), any(), any()) } returns Medlemskapstatus.JA
-        coEvery { vilkårtester.hentMinsteArbeidsinntektVilkår(any()) } returns MinsteArbeidsinntektVilkår(false, true)
+        every { vilkårtester.hentMinsteArbeidsinntektVilkår(any()) } returns MinsteArbeidsinntektVilkår(false, true)
         every { arenaClient.bestillOppgave(command = capture(slot)) } returns Result.of(ArenaIdParRespons(oppgaveId = OppgaveId("abc"), fagsakId = FagsakId("as")))
         every { arenaClient.harIkkeAktivSak(any()) } returns true
 
@@ -346,14 +336,12 @@ internal class JournalføringFerdigstillTest {
     @Test
     fun `Ved kandidat for avslag basert på minsteinntekt uten permittering havner på egen kø`() {
         val vilkårtester = mockk<Vilkårtester>()
-        val medlemskapBehovRiver = mockk<MedlemskapBehovRiver>()
         val journalFøringFerdigstill =
             JournalføringFerdigstill(
                 journalPostApi,
                 manuellJournalføringsOppgaveClient,
                 arenaClient,
                 vilkårtester,
-                medlemskapBehovRiver,
                 FakeUnleash().apply { enableAll() }
             )
         val journalPostId = "journalPostId"
@@ -362,8 +350,7 @@ internal class JournalføringFerdigstillTest {
 
         val slot = slot<OppgaveCommand>()
 
-        coEvery { medlemskapBehovRiver.hentSvar(any(), any(), any()) } returns Medlemskapstatus.JA
-        coEvery { vilkårtester.hentMinsteArbeidsinntektVilkår(any()) } returns MinsteArbeidsinntektVilkår(false, false)
+        every { vilkårtester.hentMinsteArbeidsinntektVilkår(any()) } returns MinsteArbeidsinntektVilkår(false, false)
         every { arenaClient.bestillOppgave(command = capture(slot)) } returns Result.of(ArenaIdParRespons(oppgaveId = OppgaveId("abc"), fagsakId = FagsakId("123")))
         every { arenaClient.harIkkeAktivSak(any()) } returns true
 
@@ -385,14 +372,12 @@ internal class JournalføringFerdigstillTest {
     @Test
     fun `Ved kandidat for avslag basert på minsteinntekt med permitterting havner på egen kø`() {
         val vilkårtester = mockk<Vilkårtester>()
-        val medlemskapBehovRiver = mockk<MedlemskapBehovRiver>()
         val journalFøringFerdigstill =
             JournalføringFerdigstill(
                 journalPostApi,
                 manuellJournalføringsOppgaveClient,
                 arenaClient,
                 vilkårtester,
-                medlemskapBehovRiver,
                 FakeUnleash().apply { enableAll() }
             )
         val journalPostId = "journalPostId"
@@ -401,8 +386,7 @@ internal class JournalføringFerdigstillTest {
 
         val slot = slot<OppgaveCommand>()
 
-        coEvery { medlemskapBehovRiver.hentSvar(any(), any(), any()) } returns Medlemskapstatus.JA
-        coEvery { vilkårtester.hentMinsteArbeidsinntektVilkår(any()) } returns MinsteArbeidsinntektVilkår(false, false)
+        every { vilkårtester.hentMinsteArbeidsinntektVilkår(any()) } returns MinsteArbeidsinntektVilkår(false, false)
         every { arenaClient.bestillOppgave(command = capture(slot)) } returns Result.of(ArenaIdParRespons(oppgaveId = OppgaveId("abc"), fagsakId = FagsakId("123")))
         every { arenaClient.harIkkeAktivSak(any()) } returns true
 
@@ -430,7 +414,6 @@ internal class JournalføringFerdigstillTest {
                 manuellJournalføringsOppgaveClient,
                 arenaClient,
                 mockk(),
-                mockk(),
                 FakeUnleash()
             )
         val journalPostId = "journalPostId"
@@ -456,7 +439,6 @@ internal class JournalføringFerdigstillTest {
                 journalPostApi,
                 manuellJournalføringsOppgaveClient,
                 arenaClient,
-                mockk(),
                 mockk(),
                 FakeUnleash()
             )
@@ -518,7 +500,6 @@ internal class JournalføringFerdigstillTest {
                 manuellJournalføringsOppgaveClient,
                 arenaClient,
                 mockk(),
-                mockk(),
                 FakeUnleash()
             )
         val journalPostId = "journalPostId"
@@ -559,7 +540,6 @@ internal class JournalføringFerdigstillTest {
                 journalPostApi,
                 manuellJournalføringsOppgaveClient,
                 arenaClient,
-                mockk(),
                 mockk(),
                 FakeUnleash()
             )
@@ -639,7 +619,6 @@ internal class JournalføringFerdigstillTest {
                 journalPostApi,
                 manuellJournalføringsOppgaveClient,
                 arenaClient,
-                mockk(),
                 mockk(),
                 FakeUnleash()
             )

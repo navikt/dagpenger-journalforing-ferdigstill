@@ -6,7 +6,6 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
 import io.kotest.matchers.shouldBe
-import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.events.moshiInstance
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -39,7 +38,7 @@ class VilkårtesterIntegrationTest {
     }
 
     @Test
-    fun ` henter bestått minsteinntekt for aktørid`() = runBlocking {
+    fun ` henter bestått minsteinntekt for aktørid`() {
         val aktørId = "666"
         val behovId = "123"
         val behovLocationUrl = "/behov/status/$behovId"
