@@ -37,22 +37,4 @@ internal object Metrics {
 
     fun inngangsvilkårResultatTellerInc(oppfyllerKrav: Boolean) =
         inngangsvilkårResultatTeller.labels(oppfyllerKrav.toString()).inc()
-
-    private val medlemskapstatusResultatTeller = Counter
-        .build()
-        .name("medlemskapstatus_resultat_journalfort")
-        .help("Antall søknader som oppfyller / ikke oppfyller medlemskapstatus vi tester")
-        .labelNames("status")
-        .register()
-
-    fun medlemskapstatusTeller(medlemskapstatus: Medlemskapstatus) = medlemskapstatusResultatTeller.labels(medlemskapstatus.name).inc()
-
-    private val inngangsvilkårMedlemskapResultatTeller = Counter
-        .build()
-        .name("inngangsvilkaar_medlemskapstatus_resultat_journalfort")
-        .help("Antall søknader som oppfyller / ikke oppfyller medlemskapstatus og inngangsvilkår vi tester")
-        .labelNames("oppflyller")
-        .register()
-
-    fun oppfyllerIkkeMinsteinnektMenOppfyllerMedlemskap(oppfyller: Boolean) = inngangsvilkårMedlemskapResultatTeller.labels(oppfyller.toString()).inc()
 }

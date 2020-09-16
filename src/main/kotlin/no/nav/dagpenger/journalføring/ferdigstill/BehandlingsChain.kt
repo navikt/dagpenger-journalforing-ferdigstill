@@ -9,8 +9,6 @@ import mu.KotlinLogging
 import no.finn.unleash.Unleash
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.journalføring.ferdigstill.Metrics.inngangsvilkårResultatTellerInc
-import no.nav.dagpenger.journalføring.ferdigstill.Metrics.medlemskapstatusTeller
-import no.nav.dagpenger.journalføring.ferdigstill.Metrics.oppfyllerIkkeMinsteinnektMenOppfyllerMedlemskap
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.FAGSAK_ID
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.OPPGAVE_ID
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
@@ -81,7 +79,6 @@ internal class OppfyllerMinsteinntektBehandlingsChain(
                             logger.warn(it) { "Kunne ikke hente medlemskapstatus" }
                         }.onSuccess {
                             packet.putValue(PacketKeys.MEDLEMSKAP_STATUS, it)
-                            medlemskapstatusTeller(it)
                         }
 
                     minsteArbeidsinntektVilkår.await()?.let {
@@ -128,13 +125,6 @@ internal class NyttSaksforholdBehandlingsChain(
             val kanAvslåsPåMinsteinntekt = packet.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) == false
             val koronaRegelverkMinsteinntektBrukt =
                 packet.getNullableBoolean(PacketKeys.KORONAREGELVERK_MINSTEINNTEKT_BRUKT) == true
-            val medlemskapstatus = packet.getNullableStringValue(PacketKeys.MEDLEMSKAP_STATUS)?.let { Medlemskapstatus.valueOf(it) }
-            medlemskapstatus?.let {
-                when (it) {
-                    Medlemskapstatus.JA -> oppfyllerIkkeMinsteinnektMenOppfyllerMedlemskap(kanAvslåsPåMinsteinntekt)
-                    else -> oppfyllerIkkeMinsteinnektMenOppfyllerMedlemskap(false)
-                }
-            }
 
             val result = arena.bestillOppgave(
                 StartVedtakCommand(
