@@ -64,12 +64,12 @@ internal class OppfyllerMinsteinntektBehandlingsChain(
     override fun håndter(packet: Packet): Packet = instrument {
         if (kanBehandle(packet)) {
             try {
-                runBlocking(SupervisorJob()) {
-                    val minsteArbeidsinntektVilkår = async(IO) {
+                runBlocking(SupervisorJob() + IO) {
+                    val minsteArbeidsinntektVilkår = async {
                         vilkårtester.hentMinsteArbeidsinntektVilkår(PacketMapper.aktørFrom(packet).id)
                     }
 
-                    val medlemskap = async(IO) {
+                    val medlemskap = async {
                         medlemskapBehovRiver.hentSvar(
                             fnr = packet.getStringValue(PacketKeys.NATURLIG_IDENT),
                             beregningsdato = LocalDate.now(),

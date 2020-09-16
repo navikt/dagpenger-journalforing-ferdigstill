@@ -27,7 +27,7 @@ class BehovRiver(
     private val rapidsConnection: RapidsConnection,
     private val behov: List<Behov>,
     private val attempts: Int = 3,
-    private val delay: Duration = Duration.ofSeconds(3)
+    private val delay: Duration = Duration.ofSeconds(2)
 ) : River.PacketListener {
 
     init {
@@ -63,7 +63,7 @@ class BehovRiver(
             ) + parametre
         )
         rapidsConnection.publish(forespurtBehov.toJson())
-        logger.info { "Produsert behov ${behov.joinToString(separator = ", ")} med id $id" }
+        logger.info { "Produsert behov ${behov.joinToString { ", " }} med id $id" }
         idCache.put(id, forespurtBehov)
         return id
     }
@@ -73,7 +73,7 @@ class BehovRiver(
             if (packetCache.containsKey(id)) emit(parseSvar(packetCache[id]))
             else throw NoSuchElementException("Fant ikke svar på behov med id $id")
         }.retryWhen { cause, attempt ->
-            if (cause is NoSuchElementException && attempt <= attempts) {
+            if (cause is NoSuchElementException && attempt < attempts) {
                 delay(delay.toMillis())
                 return@retryWhen true
             } else {
@@ -87,7 +87,6 @@ class BehovRiver(
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         val id = packet["@id"].asText()
         if (idCache.containsKey(id)) {
-            logger.info { "Fått svar på behov $id" }
             packetCache.put(id, packet)
         }
     }
