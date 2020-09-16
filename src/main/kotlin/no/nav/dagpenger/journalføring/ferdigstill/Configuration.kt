@@ -129,7 +129,7 @@ data class Configuration(
         "KAFKA_RAPID_TOPIC" to config()[Key("kafka.topic", stringType)],
         "KAFKA_RESET_POLICY" to config()[Key("kafka.reset.policy", stringType)],
         "NAV_TRUSTSTORE_PATH" to config()[Key("nav.truststore.path", stringType)],
-        "NAV_TRUSTSTORE_PASSWORD" to config()[Key("nav.truststore.password", stringType)],
+        "NAV_TRUSTSTORE_PASSWORD" to config()[Key("nav.truststore.password", stringType)]
         "HTTP_PORT" to "8099" // to avoid clash with dp river http port
     ) + System.getenv().filter { it.key.startsWith("NAIS_") }
 
