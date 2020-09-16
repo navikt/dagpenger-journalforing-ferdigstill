@@ -27,7 +27,7 @@ private val sikkerLogger = KotlinLogging.logger("tjenestekall")
 class BehovRiver(
     private val rapidsConnection: RapidsConnection,
     private val behov: List<Behov>,
-    private val attempts: Int = 6,
+    private val attempts: Int = 3,
     private val delay: Duration = Duration.ofSeconds(3)
 ) : River.PacketListener {
 
