@@ -96,6 +96,6 @@ class BehovRiver(
     }
 
     override fun onSevere(error: MessageProblems.MessageException, context: RapidsConnection.MessageContext) {
-        sikkerLogger.debug("ukjent melding:\n\t${error.message}\n\nProblemer:\n${error.problems.toExtendedReport()}")
+        logger.error(error) { "Feil i behov river" }
     }
 }
