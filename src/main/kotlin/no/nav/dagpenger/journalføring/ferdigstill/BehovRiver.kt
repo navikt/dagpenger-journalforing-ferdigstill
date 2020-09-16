@@ -12,7 +12,6 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import org.cache2k.Cache2kBuilder
 import java.time.Duration
-import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
 
 enum class Behov {
@@ -59,7 +58,6 @@ class BehovRiver(
         val forespurtBehov = JsonMessage.newMessage(
             mapOf(
                 "@id" to id,
-                "@opprettet" to LocalDateTime.now(),
                 "@behov" to behov.map { it.name },
                 "@event_name" to "behov"
             ) + parametre
