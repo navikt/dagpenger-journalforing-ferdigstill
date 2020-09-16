@@ -2,16 +2,10 @@ package no.nav.dagpenger.journalføring.ferdigstill
 
 import com.github.kittinunf.result.Result
 import io.prometheus.client.Histogram
-import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.async
-import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.finn.unleash.Unleash
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.journalføring.ferdigstill.Metrics.inngangsvilkårResultatTellerInc
-import no.nav.dagpenger.journalføring.ferdigstill.Metrics.medlemskapstatusTeller
-import no.nav.dagpenger.journalføring.ferdigstill.Metrics.oppfyllerIkkeMinsteinnektMenOppfyllerMedlemskap
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.FAGSAK_ID
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.OPPGAVE_ID
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
@@ -22,7 +16,6 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderHenvendelseAngåendeEksisterendeSaksforholdCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.createArenaTilleggsinformasjon
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.vilkårtester.Vilkårtester
-import java.time.LocalDate
 
 private val logger = KotlinLogging.logger {}
 
@@ -51,11 +44,12 @@ fun BehandlingsChain.instrument(handler: () -> Packet): Packet {
 
 internal class OppfyllerMinsteinntektBehandlingsChain(
     private val vilkårtester: Vilkårtester,
-    private val medlemskapBehovRiver: MedlemskapBehovRiver,
+    private val toggle: Unleash,
     neste: BehandlingsChain?
 ) : BehandlingsChain(neste) {
     override fun kanBehandle(packet: Packet) =
-        PacketMapper.hasNaturligIdent(packet) &&
+        toggle.isEnabled("dagpenger-journalforing-ferdigstill.vilkaartesting") &&
+            PacketMapper.hasNaturligIdent(packet) &&
             PacketMapper.hasAktørId(packet) &&
             PacketMapper.harIkkeFagsakId(packet) &&
             PacketMapper.henvendelse(packet) == NyttSaksforhold &&
@@ -64,32 +58,13 @@ internal class OppfyllerMinsteinntektBehandlingsChain(
     override fun håndter(packet: Packet): Packet = instrument {
         if (kanBehandle(packet)) {
             try {
-                runBlocking(IO) {
-                    val minsteArbeidsinntektVilkår = async(context = SupervisorJob()) {
-                        vilkårtester.hentMinsteArbeidsinntektVilkår(PacketMapper.aktørFrom(packet).id)
-                    }
+                val minsteArbeidsinntektVilkår =
+                    vilkårtester.hentMinsteArbeidsinntektVilkår(PacketMapper.aktørFrom(packet).id)
 
-                    val medlemskap = async(context = SupervisorJob()) {
-                        medlemskapBehovRiver.hentSvar(
-                            fnr = packet.getStringValue(PacketKeys.NATURLIG_IDENT),
-                            beregningsdato = LocalDate.now(),
-                            journalpostId = PacketMapper.journalpostIdFrom(packet)
-                        )
-                    }
-
-                    kotlin.runCatching { medlemskap.await() }
-                        .onFailure {
-                            logger.warn(it) { "Kunne ikke hente medlemskapstatus" }
-                        }.onSuccess {
-                            packet.putValue(PacketKeys.MEDLEMSKAP_STATUS, it)
-                            medlemskapstatusTeller(it)
-                        }
-
-                    minsteArbeidsinntektVilkår.await()?.let {
-                        packet.putValue(PacketKeys.OPPFYLLER_MINSTEINNTEKT, it.harBeståttMinsteArbeidsinntektVilkår)
-                        packet.putValue(PacketKeys.KORONAREGELVERK_MINSTEINNTEKT_BRUKT, it.koronaRegelverkBrukt)
-                        inngangsvilkårResultatTellerInc(it.harBeståttMinsteArbeidsinntektVilkår)
-                    }
+                minsteArbeidsinntektVilkår?.let {
+                    packet.putValue(PacketKeys.OPPFYLLER_MINSTEINNTEKT, it.harBeståttMinsteArbeidsinntektVilkår)
+                    packet.putValue(PacketKeys.KORONAREGELVERK_MINSTEINNTEKT_BRUKT, it.koronaRegelverkBrukt)
+                    inngangsvilkårResultatTellerInc(it.harBeståttMinsteArbeidsinntektVilkår)
                 }
             } catch (e: Exception) {
                 logger.warn(e) { "Kunne ikke vurdere minste arbeidsinntekt" }
@@ -129,13 +104,6 @@ internal class NyttSaksforholdBehandlingsChain(
             val kanAvslåsPåMinsteinntekt = packet.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) == false
             val koronaRegelverkMinsteinntektBrukt =
                 packet.getNullableBoolean(PacketKeys.KORONAREGELVERK_MINSTEINNTEKT_BRUKT) == true
-            val medlemskapstatus = packet.getNullableStringValue(PacketKeys.MEDLEMSKAP_STATUS)?.let { Medlemskapstatus.valueOf(it) }
-            medlemskapstatus?.let {
-                when (it) {
-                    Medlemskapstatus.JA -> oppfyllerIkkeMinsteinnektMenOppfyllerMedlemskap(kanAvslåsPåMinsteinntekt)
-                    else -> oppfyllerIkkeMinsteinnektMenOppfyllerMedlemskap(false)
-                }
-            }
 
             val result = arena.bestillOppgave(
                 StartVedtakCommand(

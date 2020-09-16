@@ -60,22 +60,14 @@ val resultVersion = "3.0.0"
 
 fun tjenestespesifikasjon(name: String) = "no.nav.tjenestespesifikasjoner:$name:$tjenestespesifikasjonerVersion"
 
-val cache2kVersion = "1.2.4.Final"
-
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-
-    implementation("org.cache2k:cache2k-api:$cache2kVersion")
-    runtimeOnly("org.cache2k:cache2k-core:$cache2kVersion")
 
     // ktor utils
     implementation("com.github.navikt:dp-biblioteker:2019.11.14-12.52.2f5a90180072")
 
     // feature toggle
     implementation("no.finn.unleash:unleash-client-java:3.2.9")
-
-    // Rapid and rivers
-    implementation(RapidAndRivers)
 
     // httpclient
     // We need PATCH. SEE https://github.com/kittinunf/fuel/pull/562
@@ -105,12 +97,12 @@ dependencies {
     implementation(Konfig.konfig)
     implementation(Ktor.serverNetty)
 
-    // Logging
+    // logging
     implementation(Kotlin.Logging.kotlinLogging)
-    // logback (brought in by rapid-rivers)
-    implementation("ch.qos.logback:logback-classic:1.2.3")
-
-    // ulids
+    implementation(Log4j2.api)
+    implementation(Log4j2.core)
+    implementation(Log4j2.slf4j)
+    implementation(Log4j2.Logstash.logstashLayout)
     implementation(Ulid.ulid)
 
     // resilience
@@ -130,7 +122,6 @@ dependencies {
     testImplementation(KafkaEmbedded.env)
     testImplementation(Kafka.streamTestUtils)
     testImplementation(Wiremock.standalone)
-    testImplementation(Kotlin.Coroutines.module("test"))
 
     testRuntimeOnly(Junit5.engine)
 
