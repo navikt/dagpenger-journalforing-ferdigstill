@@ -3,6 +3,7 @@ package no.nav.dagpenger.journalføring.ferdigstill
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.dokumentJsonAdapter
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Dokument
@@ -12,6 +13,8 @@ internal class PacketMapperTest {
 
     @Test
     fun `Finn riktig oppgave beskrivelse`() {
+
+        mockkStatic("no.nav.dagpenger.journalføring.ferdigstill.AvsluttendeArbeidsforholdKt")
 
         val packet = mockk<Packet>(relaxed = true).also {
             every { it.harAvsluttetArbeidsforholdFraKonkurs() } returns true
