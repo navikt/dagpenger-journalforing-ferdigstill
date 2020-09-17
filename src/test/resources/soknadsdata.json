@@ -1,0 +1,2616 @@
+{
+  "soknadId": 10636,
+  "soknadsType": "dagpenger.ordinaer",
+  "skjemaNummer": "NAV 04-01.03",
+  "versjon": null,
+  "uuid": "e047f322-f0df-403c-b9cc-fad54050af88",
+  "brukerBehandlingId": "1000S63MA",
+  "behandlingskjedeId": null,
+  "fakta": [
+    {
+      "faktumId": 776456,
+      "soknadId": 10636,
+      "parrentFaktum": null,
+      "key": "bolker",
+      "value": null,
+      "faktumEgenskaper": [
+        {
+          "faktumId": 776456,
+          "soknadId": 10636,
+          "key": "personalia",
+          "value": "true",
+          "systemEgenskap": 0
+        },
+        {
+          "faktumId": 776456,
+          "soknadId": 10636,
+          "key": "egennaering",
+          "value": "true",
+          "systemEgenskap": 0
+        },
+        {
+          "faktumId": 776456,
+          "soknadId": 10636,
+          "key": "utdanning",
+          "value": "true",
+          "systemEgenskap": 0
+        },
+        {
+          "faktumId": 776456,
+          "soknadId": 10636,
+          "key": "verneplikt",
+          "value": "true",
+          "systemEgenskap": 0
+        },
+        {
+          "faktumId": 776456,
+          "soknadId": 10636,
+          "key": "reellarbeidssoker",
+          "value": "true",
+          "systemEgenskap": 0
+        },
+        {
+          "faktumId": 776456,
+          "soknadId": 10636,
+          "key": "arbeidsforhold",
+          "value": "true",
+          "systemEgenskap": 0
+        },
+        {
+          "faktumId": 776456,
+          "soknadId": 10636,
+          "key": "tilleggsopplysninger",
+          "value": "true",
+          "systemEgenskap": 0
+        },
+        {
+          "faktumId": 776456,
+          "soknadId": 10636,
+          "key": "ytelser",
+          "value": "true",
+          "systemEgenskap": 0
+        },
+        {
+          "faktumId": 776456,
+          "soknadId": 10636,
+          "key": "barnetillegg",
+          "value": "true",
+          "systemEgenskap": 0
+        }
+      ],
+      "properties": {
+        "personalia": "true",
+        "tilleggsopplysninger": "true",
+        "utdanning": "true",
+        "reellarbeidssoker": "true",
+        "barnetillegg": "true",
+        "egennaering": "true",
+        "arbeidsforhold": "true",
+        "ytelser": "true",
+        "verneplikt": "true"
+      },
+      "type": "BRUKERREGISTRERT"
+    },
+    {
+      "faktumId": 776457,
+      "soknadId": 10636,
+      "parrentFaktum": null,
+      "key": "personalia",
+      "value": null,
+      "faktumEgenskaper": [
+        {
+          "faktumId": 776457,
+          "soknadId": 10636,
+          "key": "erUtenlandskBankkonto",
+          "value": "false",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776457,
+          "soknadId": 10636,
+          "key": "fnr",
+          "value": "1234567890",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776457,
+          "soknadId": 10636,
+          "key": "kjonn",
+          "value": "k",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776457,
+          "soknadId": 10636,
+          "key": "statsborgerskapType",
+          "value": "ikkeEos",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776457,
+          "soknadId": 10636,
+          "key": "sekundarAdresseType",
+          "value": null,
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776457,
+          "soknadId": 10636,
+          "key": "utenlandskKontoLand",
+          "value": null,
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776457,
+          "soknadId": 10636,
+          "key": "epost",
+          "value": "noreply@nav.no",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776457,
+          "soknadId": 10636,
+          "key": "utenlandskKontoBanknavn",
+          "value": null,
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776457,
+          "soknadId": 10636,
+          "key": "gjeldendeAdresseGyldigFra",
+          "value": null,
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776457,
+          "soknadId": 10636,
+          "key": "diskresjonskode",
+          "value": null,
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776457,
+          "soknadId": 10636,
+          "key": "gjeldendeAdresseType",
+          "value": "BOSTEDSADRESSE",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776457,
+          "soknadId": 10636,
+          "key": "fornavn",
+          "value": "ASIHA-MASK",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776457,
+          "soknadId": 10636,
+          "key": "gjeldendeAdresse",
+          "value": "SIKRINGSALSVEIEN 19, 4550 FARSUND",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776457,
+          "soknadId": 10636,
+          "key": "statsborgerskap",
+          "value": "AFG",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776457,
+          "soknadId": 10636,
+          "key": "gjeldendeAdresseGyldigTil",
+          "value": null,
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776457,
+          "soknadId": 10636,
+          "key": "kontonummer",
+          "value": "28012971453",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776457,
+          "soknadId": 10636,
+          "key": "gjeldendeAdresseLandkode",
+          "value": null,
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776457,
+          "soknadId": 10636,
+          "key": "mellomnavn",
+          "value": null,
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776457,
+          "soknadId": 10636,
+          "key": "sekundarAdresseGyldigFra",
+          "value": null,
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776457,
+          "soknadId": 10636,
+          "key": "sekundarAdresseGyldigTil",
+          "value": null,
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776457,
+          "soknadId": 10636,
+          "key": "sekundarAdresse",
+          "value": null,
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776457,
+          "soknadId": 10636,
+          "key": "alder",
+          "value": "39",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776457,
+          "soknadId": 10636,
+          "key": "etternavn",
+          "value": "ABDIBOTAN",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776457,
+          "soknadId": 10636,
+          "key": "navn",
+          "value": "navn navn",
+          "systemEgenskap": 1
+        }
+      ],
+      "properties": {
+        "gjeldendeAdresseLandkode": null,
+        "statsborgerskapType": "ikkeEos",
+        "statsborgerskap": "AFG",
+        "mellomnavn": null,
+        "utenlandskKontoBanknavn": null,
+        "erUtenlandskBankkonto": "false",
+        "kjonn": "k",
+        "epost": "noreply@nav.no",
+        "sekundarAdresseType": null,
+        "gjeldendeAdresse": "SIKRINGSALSVEIEN 19, 4550 FARSUND",
+        "fnr": "1234567890",
+        "fornavn": "navn",
+        "alder": "39",
+        "sekundarAdresseGyldigTil": null,
+        "utenlandskKontoLand": null,
+        "kontonummer": "28012971453",
+        "sekundarAdresse": null,
+        "sekundarAdresseGyldigFra": null,
+        "etternavn": "ETTERNAVN",
+        "gjeldendeAdresseType": "BOSTEDSADRESSE",
+        "diskresjonskode": null,
+        "navn": "navn",
+        "gjeldendeAdresseGyldigTil": null,
+        "gjeldendeAdresseGyldigFra": null
+      },
+      "type": "SYSTEMREGISTRERT"
+    },
+    {
+      "faktumId": 776458,
+      "soknadId": 10636,
+      "parrentFaktum": null,
+      "key": "utslagskriterier.fortsettlikevel",
+      "value": "true",
+      "faktumEgenskaper": [],
+      "properties": {},
+      "type": "BRUKERREGISTRERT"
+    },
+    {
+      "faktumId": 776459,
+      "soknadId": 10636,
+      "parrentFaktum": null,
+      "key": "utslagskriterier.dagpenger.utbetaling",
+      "value": "nei",
+      "faktumEgenskaper": [],
+      "properties": {},
+      "type": "BRUKERREGISTRERT"
+    },
+    {
+      "faktumId": 776460,
+      "soknadId": 10636,
+      "parrentFaktum": null,
+      "key": "informasjonsside",
+      "value": null,
+      "faktumEgenskaper": [
+        {
+          "faktumId": 776460,
+          "soknadId": 10636,
+          "key": "1",
+          "value": "<h3>For å ha rett til dagpenger må du</h3> <ul> <li>være registrert som arbeidssøker</li> <li> sende meldekort hver 14. dag selv om du ikke har fått svar på søknaden </li> <li>være aktiv arbeidssøker</li> <li>som hovedregel oppholde deg i Norge</li> </ul> <h3>Vedlegg</h3> <p> Vedleggene du får beskjed om å sende inn kan du legge ved søknaden. Hvis du har vedlegg på papir kan du ta <a target=\"_blank\" href=\"https://www.nav.no/no/NAV+og+samfunn/Kontakt+NAV/Relatert+informasjon/Ta+bilde+av+vedleggene+med+mobilen.424119.cms\" title=\"Lenke til artikkel som beskriver hvordan man kan ta bilde av vedlegg med telefonen\" >bilde med for eksempel mobiltelefon</a >. De kan også ettersendes elektronisk. </p> <h3>Personvern</h3> <p> For å kunne behandle søknaden din, henter vi opplysninger fra flere offentlige og private virksomheter, blant annet folkeregister- og inntektsopplysninger fra Skatteetaten.</p> <p> Vi kan også sende opplysninger til andre offentlige og private virksomheter som Statens lånekasse, pensjonskasser, Skatteetaten m.fl. </p> <p> <a href=\"https://www.nav.no/personvern\" target=\"_blank\" title=\"Les om hvordan NAV behandler personopplysninger\" >Les om hvordan NAV behandler personopplysninger</a > </p>",
+          "systemEgenskap": 0
+        },
+        {
+          "faktumId": 776460,
+          "soknadId": 10636,
+          "key": "0",
+          "value": "Viktig informasjon",
+          "systemEgenskap": 0
+        }
+      ],
+      "properties": {
+        "0": "Viktig informasjon",
+        "1": "<h3>For å ha rett til dagpenger må du</h3> <ul> <li>være registrert som arbeidssøker</li> <li> sende meldekort hver 14. dag selv om du ikke har fått svar på søknaden </li> <li>være aktiv arbeidssøker</li> <li>som hovedregel oppholde deg i Norge</li> </ul> <h3>Vedlegg</h3> <p> Vedleggene du får beskjed om å sende inn kan du legge ved søknaden. Hvis du har vedlegg på papir kan du ta <a target=\"_blank\" href=\"https://www.nav.no/no/NAV+og+samfunn/Kontakt+NAV/Relatert+informasjon/Ta+bilde+av+vedleggene+med+mobilen.424119.cms\" title=\"Lenke til artikkel som beskriver hvordan man kan ta bilde av vedlegg med telefonen\" >bilde med for eksempel mobiltelefon</a >. De kan også ettersendes elektronisk. </p> <h3>Personvern</h3> <p> For å kunne behandle søknaden din, henter vi opplysninger fra flere offentlige og private virksomheter, blant annet folkeregister- og inntektsopplysninger fra Skatteetaten.</p> <p> Vi kan også sende opplysninger til andre offentlige og private virksomheter som Statens lånekasse, pensjonskasser, Skatteetaten m.fl. </p> <p> <a href=\"https://www.nav.no/personvern\" target=\"_blank\" title=\"Les om hvordan NAV behandler personopplysninger\" >Les om hvordan NAV behandler personopplysninger</a > </p>"
+      },
+      "type": "BRUKERREGISTRERT"
+    },
+    {
+      "faktumId": 776461,
+      "soknadId": 10636,
+      "parrentFaktum": null,
+      "key": "informasjonsside.lestbrosjyre",
+      "value": "true",
+      "faktumEgenskaper": [],
+      "properties": {},
+      "type": "BRUKERREGISTRERT"
+    },
+    {
+      "faktumId": 776462,
+      "soknadId": 10636,
+      "parrentFaktum": null,
+      "key": "reellarbeidssoker.villigdeltid",
+      "value": "true",
+      "faktumEgenskaper": [],
+      "properties": {},
+      "type": "BRUKERREGISTRERT"
+    },
+    {
+      "faktumId": 776463,
+      "soknadId": 10636,
+      "parrentFaktum": null,
+      "key": "reellarbeidssoker.villigpendle",
+      "value": "true",
+      "faktumEgenskaper": [],
+      "properties": {},
+      "type": "BRUKERREGISTRERT"
+    },
+    {
+      "faktumId": 776464,
+      "soknadId": 10636,
+      "parrentFaktum": null,
+      "key": "reellarbeidssoker.villighelse",
+      "value": "true",
+      "faktumEgenskaper": [],
+      "properties": {},
+      "type": "BRUKERREGISTRERT"
+    },
+    {
+      "faktumId": 776465,
+      "soknadId": 10636,
+      "parrentFaktum": null,
+      "key": "reellarbeidssoker.villigjobb",
+      "value": "true",
+      "faktumEgenskaper": [],
+      "properties": {},
+      "type": "BRUKERREGISTRERT"
+    },
+    {
+      "faktumId": 776466,
+      "soknadId": 10636,
+      "parrentFaktum": null,
+      "key": "arbeidsforhold.datodagpenger",
+      "value": "2020-03-19",
+      "faktumEgenskaper": [],
+      "properties": {},
+      "type": "BRUKERREGISTRERT"
+    },
+    {
+      "faktumId": 776467,
+      "soknadId": 10636,
+      "parrentFaktum": null,
+      "key": "arbeidsforhold.arbeidstilstand",
+      "value": "fastArbeidstid",
+      "faktumEgenskaper": [],
+      "properties": {},
+      "type": "BRUKERREGISTRERT"
+    },
+    {
+      "faktumId": 776468,
+      "soknadId": 10636,
+      "parrentFaktum": null,
+      "key": "arbeidsforhold.grensearbeider",
+      "value": "true",
+      "faktumEgenskaper": [],
+      "properties": {},
+      "type": "BRUKERREGISTRERT"
+    },
+    {
+      "faktumId": 776469,
+      "soknadId": 10636,
+      "parrentFaktum": null,
+      "key": "egennaering.driveregennaering",
+      "value": "false",
+      "faktumEgenskaper": [],
+      "properties": {},
+      "type": "BRUKERREGISTRERT"
+    },
+    {
+      "faktumId": 776470,
+      "soknadId": 10636,
+      "parrentFaktum": null,
+      "key": "egennaering.gardsbruk",
+      "value": "false",
+      "faktumEgenskaper": [],
+      "properties": {},
+      "type": "BRUKERREGISTRERT"
+    },
+    {
+      "faktumId": 776471,
+      "soknadId": 10636,
+      "parrentFaktum": null,
+      "key": "egennaering.fangstogfiske",
+      "value": "false",
+      "faktumEgenskaper": [],
+      "properties": {},
+      "type": "BRUKERREGISTRERT"
+    },
+    {
+      "faktumId": 776472,
+      "soknadId": 10636,
+      "parrentFaktum": null,
+      "key": "ikkeavtjentverneplikt",
+      "value": "true",
+      "faktumEgenskaper": [],
+      "properties": {},
+      "type": "BRUKERREGISTRERT"
+    },
+    {
+      "faktumId": 776473,
+      "soknadId": 10636,
+      "parrentFaktum": null,
+      "key": "utdanning",
+      "value": "ikkeUtdanning",
+      "faktumEgenskaper": [],
+      "properties": {},
+      "type": "BRUKERREGISTRERT"
+    },
+    {
+      "faktumId": 776474,
+      "soknadId": 10636,
+      "parrentFaktum": null,
+      "key": "andreytelser.ytelser",
+      "value": null,
+      "faktumEgenskaper": [],
+      "properties": {},
+      "type": "BRUKERREGISTRERT"
+    },
+    {
+      "faktumId": 776475,
+      "soknadId": 10636,
+      "parrentFaktum": null,
+      "key": "andreytelser.ikkeavtale",
+      "value": "true",
+      "faktumEgenskaper": [],
+      "properties": {},
+      "type": "BRUKERREGISTRERT"
+    },
+    {
+      "faktumId": 776476,
+      "soknadId": 10636,
+      "parrentFaktum": null,
+      "key": "barn.leggtil",
+      "value": null,
+      "faktumEgenskaper": [],
+      "properties": {},
+      "type": "BRUKERREGISTRERT"
+    },
+    {
+      "faktumId": 776477,
+      "soknadId": 10636,
+      "parrentFaktum": null,
+      "key": "tilleggsopplysninger.fritekst",
+      "value": null,
+      "faktumEgenskaper": [],
+      "properties": {},
+      "type": "BRUKERREGISTRERT"
+    },
+    {
+      "faktumId": 776535,
+      "soknadId": 10636,
+      "parrentFaktum": 776474,
+      "key": "andreytelser.ytelser.offentligtjenestepensjon",
+      "value": "false",
+      "faktumEgenskaper": [],
+      "properties": {},
+      "type": "BRUKERREGISTRERT"
+    },
+    {
+      "faktumId": 776537,
+      "soknadId": 10636,
+      "parrentFaktum": 776474,
+      "key": "andreytelser.ytelser.privattjenestepensjon",
+      "value": "false",
+      "faktumEgenskaper": [],
+      "properties": {},
+      "type": "BRUKERREGISTRERT"
+    },
+    {
+      "faktumId": 776539,
+      "soknadId": 10636,
+      "parrentFaktum": 776474,
+      "key": "andreytelser.ytelser.stonadfisker",
+      "value": "false",
+      "faktumEgenskaper": [],
+      "properties": {},
+      "type": "BRUKERREGISTRERT"
+    },
+    {
+      "faktumId": 776541,
+      "soknadId": 10636,
+      "parrentFaktum": 776474,
+      "key": "andreytelser.ytelser.garantilott",
+      "value": "false",
+      "faktumEgenskaper": [],
+      "properties": {},
+      "type": "BRUKERREGISTRERT"
+    },
+    {
+      "faktumId": 776543,
+      "soknadId": 10636,
+      "parrentFaktum": 776474,
+      "key": "andreytelser.ytelser.etterlonn",
+      "value": "false",
+      "faktumEgenskaper": [],
+      "properties": {},
+      "type": "BRUKERREGISTRERT"
+    },
+    {
+      "faktumId": 776545,
+      "soknadId": 10636,
+      "parrentFaktum": 776474,
+      "key": "andreytelser.ytelser.vartpenger",
+      "value": "false",
+      "faktumEgenskaper": [],
+      "properties": {},
+      "type": "BRUKERREGISTRERT"
+    },
+    {
+      "faktumId": 776547,
+      "soknadId": 10636,
+      "parrentFaktum": 776474,
+      "key": "andreytelser.ytelser.dagpengereos",
+      "value": "false",
+      "faktumEgenskaper": [],
+      "properties": {},
+      "type": "BRUKERREGISTRERT"
+    },
+    {
+      "faktumId": 776549,
+      "soknadId": 10636,
+      "parrentFaktum": 776474,
+      "key": "andreytelser.ytelser.annenytelse",
+      "value": "false",
+      "faktumEgenskaper": [],
+      "properties": {},
+      "type": "BRUKERREGISTRERT"
+    },
+    {
+      "faktumId": 776552,
+      "soknadId": 10636,
+      "parrentFaktum": 776474,
+      "key": "andreytelser.ytelser.ingenytelse",
+      "value": "true",
+      "faktumEgenskaper": [],
+      "properties": {},
+      "type": "BRUKERREGISTRERT"
+    },
+    {
+      "faktumId": 776560,
+      "soknadId": 10636,
+      "parrentFaktum": null,
+      "key": "skjema.sprak",
+      "value": "nb_NO",
+      "faktumEgenskaper": [],
+      "properties": {},
+      "type": "BRUKERREGISTRERT"
+    },
+    {
+      "faktumId": 776561,
+      "soknadId": 10636,
+      "parrentFaktum": null,
+      "key": "barn",
+      "value": null,
+      "faktumEgenskaper": [
+        {
+          "faktumId": 776561,
+          "soknadId": 10636,
+          "key": "mellomnavn",
+          "value": null,
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776561,
+          "soknadId": 10636,
+          "key": "land",
+          "value": "NOR",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776561,
+          "soknadId": 10636,
+          "key": "etternavn",
+          "value": "etternavn",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776561,
+          "soknadId": 10636,
+          "key": "fnr",
+          "value": "1234567890",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776561,
+          "soknadId": 10636,
+          "key": "barnetillegg",
+          "value": "true",
+          "systemEgenskap": 0
+        },
+        {
+          "faktumId": 776561,
+          "soknadId": 10636,
+          "key": "ikkebarneinntekt",
+          "value": "true",
+          "systemEgenskap": 0
+        },
+        {
+          "faktumId": 776561,
+          "soknadId": 10636,
+          "key": "fornavn",
+          "value": "navn",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776561,
+          "soknadId": 10636,
+          "key": "sammensattnavn",
+          "value": "navn navn",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776561,
+          "soknadId": 10636,
+          "key": "alder",
+          "value": "4",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776561,
+          "soknadId": 10636,
+          "key": "uniqueKey",
+          "value": "fnr",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776561,
+          "soknadId": 10636,
+          "key": "kjonn",
+          "value": "m",
+          "systemEgenskap": 1
+        }
+      ],
+      "properties": {
+        "etternavn": "ETTERNAVN",
+        "mellomnavn": null,
+        "ikkebarneinntekt": "true",
+        "kjonn": "m",
+        "barnetillegg": "true",
+        "sammensattnavn": "SAMMENSATTNAVN",
+        "uniqueKey": "fnr",
+        "land": "NOR",
+        "fnr": "1234567890",
+        "fornavn": "navn",
+        "alder": "4"
+      },
+      "type": "SYSTEMREGISTRERT"
+    },
+    {
+      "faktumId": 776562,
+      "soknadId": 10636,
+      "parrentFaktum": null,
+      "key": "barn",
+      "value": null,
+      "faktumEgenskaper": [
+        {
+          "faktumId": 776562,
+          "soknadId": 10636,
+          "key": "fnr",
+          "value": "1234567890",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776562,
+          "soknadId": 10636,
+          "key": "ikkebarneinntekt",
+          "value": "true",
+          "systemEgenskap": 0
+        },
+        {
+          "faktumId": 776562,
+          "soknadId": 10636,
+          "key": "alder",
+          "value": "10",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776562,
+          "soknadId": 10636,
+          "key": "kjonn",
+          "value": "m",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776562,
+          "soknadId": 10636,
+          "key": "fornavn",
+          "value": "navn",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776562,
+          "soknadId": 10636,
+          "key": "sammensattnavn",
+          "value": "navn",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776562,
+          "soknadId": 10636,
+          "key": "uniqueKey",
+          "value": "fnr",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776562,
+          "soknadId": 10636,
+          "key": "land",
+          "value": "NOR",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776562,
+          "soknadId": 10636,
+          "key": "mellomnavn",
+          "value": null,
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776562,
+          "soknadId": 10636,
+          "key": "barnetillegg",
+          "value": "true",
+          "systemEgenskap": 0
+        },
+        {
+          "faktumId": 776562,
+          "soknadId": 10636,
+          "key": "etternavn",
+          "value": "navn",
+          "systemEgenskap": 1
+        }
+      ],
+      "properties": {
+        "etternavn": "ETTERNAVN",
+        "mellomnavn": null,
+        "ikkebarneinntekt": "true",
+        "kjonn": "m",
+        "barnetillegg": "true",
+        "sammensattnavn": "navn",
+        "uniqueKey": "fnr",
+        "land": "NOR",
+        "fnr": "1234567890",
+        "fornavn": "navn",
+        "alder": "10"
+      },
+      "type": "SYSTEMREGISTRERT"
+    },
+    {
+      "faktumId": 776563,
+      "soknadId": 10636,
+      "parrentFaktum": null,
+      "key": "barn",
+      "value": null,
+      "faktumEgenskaper": [
+        {
+          "faktumId": 776563,
+          "soknadId": 10636,
+          "key": "land",
+          "value": "NOR",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776563,
+          "soknadId": 10636,
+          "key": "etternavn",
+          "value": "navn",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776563,
+          "soknadId": 10636,
+          "key": "fnr",
+          "value": "1234567890",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776563,
+          "soknadId": 10636,
+          "key": "fornavn",
+          "value": "navn",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776563,
+          "soknadId": 10636,
+          "key": "barnetillegg",
+          "value": "true",
+          "systemEgenskap": 0
+        },
+        {
+          "faktumId": 776563,
+          "soknadId": 10636,
+          "key": "alder",
+          "value": "14",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776563,
+          "soknadId": 10636,
+          "key": "sammensattnavn",
+          "value": "navn navn",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776563,
+          "soknadId": 10636,
+          "key": "kjonn",
+          "value": "m",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776563,
+          "soknadId": 10636,
+          "key": "ikkebarneinntekt",
+          "value": "true",
+          "systemEgenskap": 0
+        },
+        {
+          "faktumId": 776563,
+          "soknadId": 10636,
+          "key": "mellomnavn",
+          "value": null,
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776563,
+          "soknadId": 10636,
+          "key": "uniqueKey",
+          "value": "fnr",
+          "systemEgenskap": 1
+        }
+      ],
+      "properties": {
+        "etternavn": "ETTERNAVN",
+        "mellomnavn": null,
+        "ikkebarneinntekt": "true",
+        "kjonn": "m",
+        "barnetillegg": "true",
+        "sammensattnavn": "navn navn",
+        "uniqueKey": "fnr",
+        "land": "NOR",
+        "fnr": "1234567890",
+        "fornavn": "navn",
+        "alder": "14"
+      },
+      "type": "SYSTEMREGISTRERT"
+    },
+    {
+      "faktumId": 776564,
+      "soknadId": 10636,
+      "parrentFaktum": null,
+      "key": "barn",
+      "value": null,
+      "faktumEgenskaper": [
+        {
+          "faktumId": 776564,
+          "soknadId": 10636,
+          "key": "kjonn",
+          "value": "m",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776564,
+          "soknadId": 10636,
+          "key": "alder",
+          "value": "15",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776564,
+          "soknadId": 10636,
+          "key": "mellomnavn",
+          "value": null,
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776564,
+          "soknadId": 10636,
+          "key": "ikkebarneinntekt",
+          "value": "true",
+          "systemEgenskap": 0
+        },
+        {
+          "faktumId": 776564,
+          "soknadId": 10636,
+          "key": "sammensattnavn",
+          "value": "navn navn",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776564,
+          "soknadId": 10636,
+          "key": "fnr",
+          "value": "1234567890",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776564,
+          "soknadId": 10636,
+          "key": "fornavn",
+          "value": "navn",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776564,
+          "soknadId": 10636,
+          "key": "uniqueKey",
+          "value": "fnr",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776564,
+          "soknadId": 10636,
+          "key": "land",
+          "value": "NOR",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776564,
+          "soknadId": 10636,
+          "key": "etternavn",
+          "value": "navn",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776564,
+          "soknadId": 10636,
+          "key": "barnetillegg",
+          "value": "true",
+          "systemEgenskap": 0
+        }
+      ],
+      "properties": {
+        "etternavn": "ETTERNAVN",
+        "mellomnavn": null,
+        "ikkebarneinntekt": "true",
+        "kjonn": "m",
+        "barnetillegg": "true",
+        "sammensattnavn": "navn navn",
+        "uniqueKey": "fnr",
+        "land": "NOR",
+        "fnr": "1234567890",
+        "fornavn": "navn",
+        "alder": "15"
+      },
+      "type": "SYSTEMREGISTRERT"
+    },
+    {
+      "faktumId": 776565,
+      "soknadId": 10636,
+      "parrentFaktum": null,
+      "key": "barn",
+      "value": null,
+      "faktumEgenskaper": [
+        {
+          "faktumId": 776565,
+          "soknadId": 10636,
+          "key": "ikkebarneinntekt",
+          "value": "true",
+          "systemEgenskap": 0
+        },
+        {
+          "faktumId": 776565,
+          "soknadId": 10636,
+          "key": "kjonn",
+          "value": "m",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776565,
+          "soknadId": 10636,
+          "key": "sammensattnavn",
+          "value": "navn navn",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776565,
+          "soknadId": 10636,
+          "key": "barnetillegg",
+          "value": "true",
+          "systemEgenskap": 0
+        },
+        {
+          "faktumId": 776565,
+          "soknadId": 10636,
+          "key": "etternavn",
+          "value": "navn",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776565,
+          "soknadId": 10636,
+          "key": "fnr",
+          "value": "27060378334",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776565,
+          "soknadId": 10636,
+          "key": "mellomnavn",
+          "value": null,
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776565,
+          "soknadId": 10636,
+          "key": "uniqueKey",
+          "value": "fnr",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776565,
+          "soknadId": 10636,
+          "key": "fornavn",
+          "value": "navn",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776565,
+          "soknadId": 10636,
+          "key": "alder",
+          "value": "16",
+          "systemEgenskap": 1
+        },
+        {
+          "faktumId": 776565,
+          "soknadId": 10636,
+          "key": "land",
+          "value": "NOR",
+          "systemEgenskap": 1
+        }
+      ],
+      "properties": {
+        "etternavn": "ETTERNAVN",
+        "mellomnavn": null,
+        "ikkebarneinntekt": "true",
+        "kjonn": "m",
+        "barnetillegg": "true",
+        "sammensattnavn": "NAVN NAVN",
+        "uniqueKey": "fnr",
+        "land": "NOR",
+        "fnr": "1234567890",
+        "fornavn": "navn",
+        "alder": "16"
+      },
+      "type": "SYSTEMREGISTRERT"
+    },
+    {
+      "faktumId": 7765661,
+      "soknadId": 10636,
+      "parrentFaktum": null,
+      "key": "arbeidsforhold",
+      "value": null,
+      "faktumEgenskaper": [
+        {
+          "faktumId": 7765661,
+          "soknadId": 10636,
+          "key": "datofra",
+          "value": "2000-01-01",
+          "systemEgenskap": 0
+        },
+        {
+          "faktumId": 7765661,
+          "soknadId": 10636,
+          "key": "type",
+          "value": "permittert",
+          "systemEgenskap": 0
+        },
+        {
+          "faktumId": 7765661,
+          "soknadId": 10636,
+          "key": "rotasjonskiftturnus",
+          "value": "nei",
+          "systemEgenskap": 0
+        },
+        {
+          "faktumId": 7765661,
+          "soknadId": 10636,
+          "key": "lonnspliktigperiodedatofra",
+          "value": "2020-03-19",
+          "systemEgenskap": 0
+        },
+        {
+          "faktumId": 7765661,
+          "soknadId": 10636,
+          "key": "land",
+          "value": "NOR",
+          "systemEgenskap": 0
+        },
+        {
+          "faktumId": 7765661,
+          "soknadId": 10636,
+          "key": "skalHaT8VedleggForKontraktUtgaatt",
+          "value": "false",
+          "systemEgenskap": 0
+        },
+        {
+          "faktumId": 7765661,
+          "soknadId": 10636,
+          "key": "eosland",
+          "value": "false",
+          "systemEgenskap": 0
+        },
+        {
+          "faktumId": 7765661,
+          "soknadId": 10636,
+          "key": "arbeidsgivernavn",
+          "value": "Rakettforskeren",
+          "systemEgenskap": 0
+        },
+        {
+          "faktumId": 7765661,
+          "soknadId": 10636,
+          "key": "lonnspliktigperiodedatotil",
+          "value": "2020-03-20",
+          "systemEgenskap": 0
+        }
+      ],
+      "properties": {
+        "arbeidsgivernavn": "Deltidsjobben",
+        "eosland": "false",
+        "lonnspliktigperiodedatofra": "2020-03-19",
+        "skalHaT8VedleggForKontraktUtgaatt": "false",
+        "datofra": "2000-01-01",
+        "lonnspliktigperiodedatotil": "2020-03-20",
+        "rotasjonskiftturnus": "ja",
+        "land": "SWE",
+        "type": "sagtoppavarbeidsgiver"
+      },
+      "type": "BRUKERREGISTRERT"
+    },
+    {
+      "faktumId": 776566,
+      "soknadId": 10636,
+      "parrentFaktum": null,
+      "key": "arbeidsforhold",
+      "value": null,
+      "faktumEgenskaer": [
+        {
+          "faktumId": 776566,
+          "soknadId": 10636,
+          "key": "datofra",
+          "value": "2000-01-01",
+          "systemEgenskap": 0
+        },
+        {
+          "faktumId": 776566,
+          "soknadId": 10636,
+          "key": "type",
+          "value": "permittert",
+          "systemEgenskap": 0
+        },
+        {
+          "faktumId": 776566,
+          "soknadId": 10636,
+          "key": "rotasjonskiftturnus",
+          "value": "nei",
+          "systemEgenskap": 0
+        },
+        {
+          "faktumId": 776566,
+          "soknadId": 10636,
+          "key": "lonnspliktigperiodedatofra",
+          "value": "2020-03-19",
+          "systemEgenskap": 0
+        },
+        {
+          "faktumId": 776566,
+          "soknadId": 10636,
+          "key": "land",
+          "value": "NOR",
+          "systemEgenskap": 0
+        },
+        {
+          "faktumId": 776566,
+          "soknadId": 10636,
+          "key": "skalHaT8VedleggForKontraktUtgaatt",
+          "value": "false",
+          "systemEgenskap": 0
+        },
+        {
+          "faktumId": 776566,
+          "soknadId": 10636,
+          "key": "eosland",
+          "value": "false",
+          "systemEgenskap": 0
+        },
+        {
+          "faktumId": 776566,
+          "soknadId": 10636,
+          "key": "arbeidsgivernavn",
+          "value": "Rakettforskeren",
+          "systemEgenskap": 0
+        },
+        {
+          "faktumId": 776566,
+          "soknadId": 10636,
+          "key": "lonnspliktigperiodedatotil",
+          "value": "2020-03-20",
+          "systemEgenskap": 0
+        }
+      ],
+      "properties": {
+        "arbeidsgivernavn": "Rakettforskeren",
+        "eosland": "false",
+        "lonnspliktigperiodedatofra": "2020-03-19",
+        "skalHaT8VedleggForKontraktUtgaatt": "false",
+        "datofra": "2000-01-01",
+        "lonnspliktigperiodedatotil": "2020-03-20",
+        "rotasjonskiftturnus": "nei",
+        "land": "NOR",
+        "type": "permittert"
+      },
+      "type": "BRUKERREGISTRERT"
+    },
+    {
+      "faktumId": 776567,
+      "soknadId": 10636,
+      "parrentFaktum": 776566,
+      "key": "arbeidsforhold.permitteringsperiode",
+      "value": null,
+      "faktumEgenskaper": [
+        {
+          "faktumId": 776567,
+          "soknadId": 10636,
+          "key": "permitteringProsent",
+          "value": "50",
+          "systemEgenskap": 0
+        },
+        {
+          "faktumId": 776567,
+          "soknadId": 10636,
+          "key": "permiteringsperiodedatofra",
+          "value": "2020-03-23",
+          "systemEgenskap": 0
+        },
+        {
+          "faktumId": 776567,
+          "soknadId": 10636,
+          "key": "permitteringsperiodeTittel",
+          "value": "Rakettforskeren (23. mars 2020 - pågående)",
+          "systemEgenskap": 0
+        }
+      ],
+      "properties": {
+        "permiteringsperiodedatofra": "2020-03-23",
+        "permitteringsperiodeTittel": "Rakettforskeren (23. mars 2020 - pågående)",
+        "permitteringProsent": "100"
+      },
+      "type": "BRUKERREGISTRERT"
+    }
+  ],
+  "status": "UNDER_ARBEID",
+  "aktoerId": "21038099999",
+  "opprettetDato": "2020-03-19T17:58:47.846Z",
+  "sistLagret": "2020-03-19T18:01:39.729Z",
+  "delstegStatus": "VEDLEGG_VALIDERT",
+  "vedlegg": [
+    {
+      "vedleggId": 18495,
+      "soknadId": 10636,
+      "faktumId": 776566,
+      "skjemaNummer": "T6",
+      "soknadId": 10636,
+      "soknadsType": "dagpenger.ordinaer",
+      "skjemaNummer": "NAV 04-01.03",
+      "versjon": null,
+      "uuid": "e047f322-f0df-403c-b9cc-fad54050af88",
+      "brukerBehandlingId": "1000S63MA",
+      "behandlingskjedeId": null,
+      "fakta": [
+        {
+          "faktumId": 776456,
+          "soknadId": 10636,
+          "parrentFaktum": null,
+          "key": "bolkarbeidsforholder",
+          "value": null,
+          "faktumEgenskaper": [
+            {
+              "faktumId": 776456,
+              "soknadId": 10636,
+              "key": "personalia",
+              "value": "true",
+              "systemEgenskap": 0
+            },
+            {
+              "faktumId": 776456,
+              "soknadId": 10636,
+              "key": "egennaering",
+              "value": "true",
+              "systemEgenskap": 0
+            },
+            {
+              "faktumId": 776456,
+              "soknadId": 10636,
+              "key": "utdanning",
+              "value": "true",
+              "systemEgenskap": 0
+            },
+            {
+              "faktumId": 776456,
+              "soknadId": 10636,
+              "key": "verneplikt",
+              "value": "true",
+              "systemEgenskap": 0
+            },
+            {
+              "faktumId": 776456,
+              "soknadId": 10636,
+              "key": "reellarbeidssoker",
+              "value": "true",
+              "systemEgenskap": 0
+            },
+            {
+              "faktumId": 776456,
+              "soknadId": 10636,
+              "key": "arbeidsforhold",
+              "value": "true",
+              "systemEgenskap": 0
+            },
+            {
+              "faktumId": 776456,
+              "soknadId": 10636,
+              "key": "tilleggsopplysninger",
+              "value": "true",
+              "systemEgenskap": 0
+            },
+            {
+              "faktumId": 776456,
+              "soknadId": 10636,
+              "key": "ytelser",
+              "value": "true",
+              "systemEgenskap": 0
+            },
+            {
+              "faktumId": 776456,
+              "soknadId": 10636,
+              "key": "barnetillegg",
+              "value": "true",
+              "systemEgenskap": 0
+            }
+          ],
+          "properties": {
+            "personalia": "true",
+            "tilleggsopplysninger": "true",
+            "utdanning": "true",
+            "reellarbeidssoker": "true",
+            "barnetillegg": "true",
+            "egennaering": "true",
+            "arbeidsforhold": "true",
+            "ytelser": "true",
+            "verneplikt": "true"
+          },
+          "type": "BRUKERREGISTRERT"
+        },
+        {
+          "faktumId": 776457,
+          "soknadId": 10636,
+          "parrentFaktum": null,
+          "key": "personalia",
+          "value": null,
+          "faktumEgenskaper": [
+            {
+              "faktumId": 776457,
+              "soknadId": 10636,
+              "key": "erUtenlandskBankkonto",
+              "value": "false",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776457,
+              "soknadId": 10636,
+              "key": "fnr",
+              "value": "1234567890",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776457,
+              "soknadId": 10636,
+              "key": "kjonn",
+              "value": "k",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776457,
+              "soknadId": 10636,
+              "key": "statsborgerskapType",
+              "value": "ikkeEos",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776457,
+              "soknadId": 10636,
+              "key": "sekundarAdresseType",
+              "value": null,
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776457,
+              "soknadId": 10636,
+              "key": "utenlandskKontoLand",
+              "value": null,
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776457,
+              "soknadId": 10636,
+              "key": "epost",
+              "value": "noreply@nav.no",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776457,
+              "soknadId": 10636,
+              "key": "utenlandskKontoBanknavn",
+              "value": null,
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776457,
+              "soknadId": 10636,
+              "key": "gjeldendeAdresseGyldigFra",
+              "value": null,
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776457,
+              "soknadId": 10636,
+              "key": "diskresjonskode",
+              "value": null,
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776457,
+              "soknadId": 10636,
+              "key": "gjeldendeAdresseType",
+              "value": "BOSTEDSADRESSE",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776457,
+              "soknadId": 10636,
+              "key": "fornavn",
+              "value": "NAVN",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776457,
+              "soknadId": 10636,
+              "key": "gjeldendeAdresse",
+              "value": "ADRESSE 19, 4550 FARSUND",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776457,
+              "soknadId": 10636,
+              "key": "statsborgerskap",
+              "value": "AFG",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776457,
+              "soknadId": 10636,
+              "key": "gjeldendeAdresseGyldigTil",
+              "value": null,
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776457,
+              "soknadId": 10636,
+              "key": "kontonummer",
+              "value": "28012971453",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776457,
+              "soknadId": 10636,
+              "key": "gjeldendeAdresseLandkode",
+              "value": null,
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776457,
+              "soknadId": 10636,
+              "key": "mellomnavn",
+              "value": null,
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776457,
+              "soknadId": 10636,
+              "key": "sekundarAdresseGyldigFra",
+              "value": null,
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776457,
+              "soknadId": 10636,
+              "key": "sekundarAdresseGyldigTil",
+              "value": null,
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776457,
+              "soknadId": 10636,
+              "key": "sekundarAdresse",
+              "value": null,
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776457,
+              "soknadId": 10636,
+              "key": "alder",
+              "value": "39",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776457,
+              "soknadId": 10636,
+              "key": "etternavn",
+              "value": "navn",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776457,
+              "soknadId": 10636,
+              "key": "navn",
+              "value": "navn navn",
+              "systemEgenskap": 1
+            }
+          ],
+          "properties": {
+            "gjeldendeAdresseLandkode": null,
+            "statsborgerskapType": "ikkeEos",
+            "statsborgerskap": "AFG",
+            "mellomnavn": null,
+            "utenlandskKontoBanknavn": null,
+            "erUtenlandskBankkonto": "false",
+            "kjonn": "k",
+            "epost": "noreply@nav.no",
+            "sekundarAdresseType": null,
+            "gjeldendeAdresse": "ADDRESSE 19, 4550 FARSUND",
+            "fnr": "1234567890",
+            "fornavn": "navn",
+            "alder": "39",
+            "sekundarAdresseGyldigTil": null,
+            "utenlandskKontoLand": null,
+            "kontonummer": "28012971453",
+            "sekundarAdresse": null,
+            "sekundarAdresseGyldigFra": null,
+            "etternavn": "ETTERNAVN",
+            "gjeldendeAdresseType": "BOSTEDSADRESSE",
+            "diskresjonskode": null,
+            "navn": "navn navn",
+            "gjeldendeAdresseGyldigTil": null,
+            "gjeldendeAdresseGyldigFra": null
+          },
+          "type": "SYSTEMREGISTRERT"
+        },
+        {
+          "faktumId": 776458,
+          "soknadId": 10636,
+          "parrentFaktum": null,
+          "key": "utslagskriterier.fortsettlikevel",
+          "value": "true",
+          "faktumEgenskaper": [],
+          "properties": {},
+          "type": "BRUKERREGISTRERT"
+        },
+        {
+          "faktumId": 776459,
+          "soknadId": 10636,
+          "parrentFaktum": null,
+          "key": "utslagskriterier.dagpenger.utbetaling",
+          "value": "nei",
+          "faktumEgenskaper": [],
+          "properties": {},
+          "type": "BRUKERREGISTRERT"
+        },
+        {
+          "faktumId": 776460,
+          "soknadId": 10636,
+          "parrentFaktum": null,
+          "key": "informasjonsside",
+          "value": null,
+          "faktumEgenskaper": [
+            {
+              "faktumId": 776460,
+              "soknadId": 10636,
+              "key": "1",
+              "value": "<h3>For å ha rett til dagpenger må du</h3> <ul> <li>være registrert som arbeidssøker</li> <li> sende meldekort hver 14. dag selv om du ikke har fått svar på søknaden </li> <li>være aktiv arbeidssøker</li> <li>som hovedregel oppholde deg i Norge</li> </ul> <h3>Vedlegg</h3> <p> Vedleggene du får beskjed om å sende inn kan du legge ved søknaden. Hvis du har vedlegg på papir kan du ta <a target=\"_blank\" href=\"https://www.nav.no/no/NAV+og+samfunn/Kontakt+NAV/Relatert+informasjon/Ta+bilde+av+vedleggene+med+mobilen.424119.cms\" title=\"Lenke til artikkel som beskriver hvordan man kan ta bilde av vedlegg med telefonen\" >bilde med for eksempel mobiltelefon</a >. De kan også ettersendes elektronisk. </p> <h3>Personvern</h3> <p> For å kunne behandle søknaden din, henter vi opplysninger fra flere offentlige og private virksomheter, blant annet folkeregister- og inntektsopplysninger fra Skatteetaten.</p> <p> Vi kan også sende opplysninger til andre offentlige og private virksomheter som Statens lånekasse, pensjonskasser, Skatteetaten m.fl. </p> <p> <a href=\"https://www.nav.no/personvern\" target=\"_blank\" title=\"Les om hvordan NAV behandler personopplysninger\" >Les om hvordan NAV behandler personopplysninger</a > </p>",
+              "systemEgenskap": 0
+            },
+            {
+              "faktumId": 776460,
+              "soknadId": 10636,
+              "key": "0",
+              "value": "Viktig informasjon",
+              "systemEgenskap": 0
+            }
+          ],
+          "properties": {
+            "0": "Viktig informasjon",
+            "1": "<h3>For å ha rett til dagpenger må du</h3> <ul> <li>være registrert som arbeidssøker</li> <li> sende meldekort hver 14. dag selv om du ikke har fått svar på søknaden </li> <li>være aktiv arbeidssøker</li> <li>som hovedregel oppholde deg i Norge</li> </ul> <h3>Vedlegg</h3> <p> Vedleggene du får beskjed om å sende inn kan du legge ved søknaden. Hvis du har vedlegg på papir kan du ta <a target=\"_blank\" href=\"https://www.nav.no/no/NAV+og+samfunn/Kontakt+NAV/Relatert+informasjon/Ta+bilde+av+vedleggene+med+mobilen.424119.cms\" title=\"Lenke til artikkel som beskriver hvordan man kan ta bilde av vedlegg med telefonen\" >bilde med for eksempel mobiltelefon</a >. De kan også ettersendes elektronisk. </p> <h3>Personvern</h3> <p> For å kunne behandle søknaden din, henter vi opplysninger fra flere offentlige og private virksomheter, blant annet folkeregister- og inntektsopplysninger fra Skatteetaten.</p> <p> Vi kan også sende opplysninger til andre offentlige og private virksomheter som Statens lånekasse, pensjonskasser, Skatteetaten m.fl. </p> <p> <a href=\"https://www.nav.no/personvern\" target=\"_blank\" title=\"Les om hvordan NAV behandler personopplysninger\" >Les om hvordan NAV behandler personopplysninger</a > </p>"
+          },
+          "type": "BRUKERREGISTRERT"
+        },
+        {
+          "faktumId": 776461,
+          "soknadId": 10636,
+          "parrentFaktum": null,
+          "key": "informasjonsside.lestbrosjyre",
+          "value": "true",
+          "faktumEgenskaper": [],
+          "properties": {},
+          "type": "BRUKERREGISTRERT"
+        },
+        {
+          "faktumId": 776462,
+          "soknadId": 10636,
+          "parrentFaktum": null,
+          "key": "reellarbeidssoker.villigdeltid",
+          "value": "true",
+          "faktumEgenskaper": [],
+          "properties": {},
+          "type": "BRUKERREGISTRERT"
+        },
+        {
+          "faktumId": 776463,
+          "soknadId": 10636,
+          "parrentFaktum": null,
+          "key": "reellarbeidssoker.villigpendle",
+          "value": "true",
+          "faktumEgenskaper": [],
+          "properties": {},
+          "type": "BRUKERREGISTRERT"
+        },
+        {
+          "faktumId": 776464,
+          "soknadId": 10636,
+          "parrentFaktum": null,
+          "key": "reellarbeidssoker.villighelse",
+          "value": "true",
+          "faktumEgenskaper": [],
+          "properties": {},
+          "type": "BRUKERREGISTRERT"
+        },
+        {
+          "faktumId": 776465,
+          "soknadId": 10636,
+          "parrentFaktum": null,
+          "key": "reellarbeidssoker.villigjobb",
+          "value": "true",
+          "faktumEgenskaper": [],
+          "properties": {},
+          "type": "BRUKERREGISTRERT"
+        },
+        {
+          "faktumId": 776466,
+          "soknadId": 10636,
+          "parrentFaktum": null,
+          "key": "arbeidsforhold.datodagpenger",
+          "value": "2020-03-19",
+          "faktumEgenskaper": [],
+          "properties": {},
+          "type": "BRUKERREGISTRERT"
+        },
+        {
+          "faktumId": 776467,
+          "soknadId": 10636,
+          "parrentFaktum": null,
+          "key": "arbeidsforhold.arbeidstilstand",
+          "value": "fastArbeidstid",
+          "faktumEgenskaper": [],
+          "properties": {},
+          "type": "BRUKERREGISTRERT"
+        },
+        {
+          "faktumId": 776468,
+          "soknadId": 10636,
+          "parrentFaktum": null,
+          "key": "arbeidsforhold.grensearbeider",
+          "value": "true",
+          "faktumEgenskaper": [],
+          "properties": {},
+          "type": "BRUKERREGISTRERT"
+        },
+        {
+          "faktumId": 776469,
+          "soknadId": 10636,
+          "parrentFaktum": null,
+          "key": "egennaering.driveregennaering",
+          "value": "true",
+          "faktumEgenskaper": [],
+          "properties": {},
+          "type": "BRUKERREGISTRERT"
+        },
+        {
+          "faktumId": 776470,
+          "soknadId": 10636,
+          "parrentFaktum": null,
+          "key": "egennaering.gardsbruk",
+          "value": "true",
+          "faktumEgenskaper": [],
+          "properties": {},
+          "type": "BRUKERREGISTRERT"
+        },
+        {
+          "faktumId": 776471,
+          "soknadId": 10636,
+          "parrentFaktum": null,
+          "key": "egennaering.fangstogfiske",
+          "value": "true",
+          "faktumEgenskaper": [],
+          "properties": {},
+          "type": "BRUKERREGISTRERT"
+        },
+        {
+          "faktumId": 776472,
+          "soknadId": 10636,
+          "parrentFaktum": null,
+          "key": "ikkeavtjentverneplikt",
+          "value": "true",
+          "faktumEgenskaper": [],
+          "properties": {},
+          "type": "BRUKERREGISTRERT"
+        },
+        {
+          "faktumId": 776473,
+          "soknadId": 10636,
+          "parrentFaktum": null,
+          "key": "utdanning",
+          "value": "ikkeUtdanning",
+          "faktumEgenskaper": [],
+          "properties": {},
+          "type": "BRUKERREGISTRERT"
+        },
+        {
+          "faktumId": 776474,
+          "soknadId": 10636,
+          "parrentFaktum": null,
+          "key": "andreytelser.ytelser",
+          "value": null,
+          "faktumEgenskaper": [],
+          "properties": {},
+          "type": "BRUKERREGISTRERT"
+        },
+        {
+          "faktumId": 776475,
+          "soknadId": 10636,
+          "parrentFaktum": null,
+          "key": "andreytelser.ikkeavtale",
+          "value": "true",
+          "faktumEgenskaper": [],
+          "properties": {},
+          "type": "BRUKERREGISTRERT"
+        },
+        {
+          "faktumId": 776476,
+          "soknadId": 10636,
+          "parrentFaktum": null,
+          "key": "barn.leggtil",
+          "value": null,
+          "faktumEgenskaper": [],
+          "properties": {},
+          "type": "BRUKERREGISTRERT"
+        },
+        {
+          "faktumId": 776477,
+          "soknadId": 10636,
+          "parrentFaktum": null,
+          "key": "tilleggsopplysninger.fritekst",
+          "value": null,
+          "faktumEgenskaper": [],
+          "properties": {},
+          "type": "BRUKERREGISTRERT"
+        },
+        {
+          "faktumId": 776535,
+          "soknadId": 10636,
+          "parrentFaktum": 776474,
+          "key": "andreytelser.ytelser.offentligtjenestepensjon",
+          "value": "false",
+          "faktumEgenskaper": [],
+          "properties": {},
+          "type": "BRUKERREGISTRERT"
+        },
+        {
+          "faktumId": 776537,
+          "soknadId": 10636,
+          "parrentFaktum": 776474,
+          "key": "andreytelser.ytelser.privattjenestepensjon",
+          "value": "false",
+          "faktumEgenskaper": [],
+          "properties": {},
+          "type": "BRUKERREGISTRERT"
+        },
+        {
+          "faktumId": 776539,
+          "soknadId": 10636,
+          "parrentFaktum": 776474,
+          "key": "andreytelser.ytelser.stonadfisker",
+          "value": "false",
+          "faktumEgenskaper": [],
+          "properties": {},
+          "type": "BRUKERREGISTRERT"
+        },
+        {
+          "faktumId": 776541,
+          "soknadId": 10636,
+          "parrentFaktum": 776474,
+          "key": "andreytelser.ytelser.garantilott",
+          "value": "false",
+          "faktumEgenskaper": [],
+          "properties": {},
+          "type": "BRUKERREGISTRERT"
+        },
+        {
+          "faktumId": 776543,
+          "soknadId": 10636,
+          "parrentFaktum": 776474,
+          "key": "andreytelser.ytelser.etterlonn",
+          "value": "false",
+          "faktumEgenskaper": [],
+          "properties": {},
+          "type": "BRUKERREGISTRERT"
+        },
+        {
+          "faktumId": 776545,
+          "soknadId": 10636,
+          "parrentFaktum": 776474,
+          "key": "andreytelser.ytelser.vartpenger",
+          "value": "false",
+          "faktumEgenskaper": [],
+          "properties": {},
+          "type": "BRUKERREGISTRERT"
+        },
+        {
+          "faktumId": 776547,
+          "soknadId": 10636,
+          "parrentFaktum": 776474,
+          "key": "andreytelser.ytelser.dagpengereos",
+          "value": "false",
+          "faktumEgenskaper": [],
+          "properties": {},
+          "type": "BRUKERREGISTRERT"
+        },
+        {
+          "faktumId": 776549,
+          "soknadId": 10636,
+          "parrentFaktum": 776474,
+          "key": "andreytelser.ytelser.annenytelse",
+          "value": "false",
+          "faktumEgenskaper": [],
+          "properties": {},
+          "type": "BRUKERREGISTRERT"
+        },
+        {
+          "faktumId": 776552,
+          "soknadId": 10636,
+          "parrentFaktum": 776474,
+          "key": "andreytelser.ytelser.ingenytelse",
+          "value": "true",
+          "faktumEgenskaper": [],
+          "properties": {},
+          "type": "BRUKERREGISTRERT"
+        },
+        {
+          "faktumId": 776560,
+          "soknadId": 10636,
+          "parrentFaktum": null,
+          "key": "skjema.sprak",
+          "value": "nb_NO",
+          "faktumEgenskaper": [],
+          "properties": {},
+          "type": "BRUKERREGISTRERT"
+        },
+        {
+          "faktumId": 776561,
+          "soknadId": 10636,
+          "parrentFaktum": null,
+          "key": "barn",
+          "value": null,
+          "faktumEgenskaper": [
+            {
+              "faktumId": 776561,
+              "soknadId": 10636,
+              "key": "mellomnavn",
+              "value": null,
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776561,
+              "soknadId": 10636,
+              "key": "land",
+              "value": "NOR",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776561,
+              "soknadId": 10636,
+              "key": "etternavn",
+              "value": "LIBAB",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776561,
+              "soknadId": 10636,
+              "key": "fnr",
+              "value": "1234567890",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776561,
+              "soknadId": 10636,
+              "key": "barnetillegg",
+              "value": "true",
+              "systemEgenskap": 0
+            },
+            {
+              "faktumId": 776561,
+              "soknadId": 10636,
+              "key": "ikkebarneinntekt",
+              "value": "true",
+              "systemEgenskap": 0
+            },
+            {
+              "faktumId": 776561,
+              "soknadId": 10636,
+              "key": "fornavn",
+              "value": "navn",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776561,
+              "soknadId": 10636,
+              "key": "sammensattnavn",
+              "value": "SUNDARESH-MASK LIBAB",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776561,
+              "soknadId": 10636,
+              "key": "alder",
+              "value": "4",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776561,
+              "soknadId": 10636,
+              "key": "uniqueKey",
+              "value": "fnr",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776561,
+              "soknadId": 10636,
+              "key": "kjonn",
+              "value": "m",
+              "systemEgenskap": 1
+            }
+          ],
+          "properties": {
+            "etternavn": "ETTERNAVN",
+            "mellomnavn": null,
+            "ikkebarneinntekt": "true",
+            "kjonn": "m",
+            "barnetillegg": "true",
+            "sammensattnavn": "navn navn",
+            "uniqueKey": "fnr",
+            "land": "NOR",
+            "fnr": "1234567890",
+            "fornavn": "navn",
+            "alder": "4"
+          },
+          "type": "SYSTEMREGISTRERT"
+        },
+        {
+          "faktumId": 776562,
+          "soknadId": 10636,
+          "parrentFaktum": null,
+          "key": "barn",
+          "value": null,
+          "faktumEgenskaper": [
+            {
+              "faktumId": 776562,
+              "soknadId": 10636,
+              "key": "fnr",
+              "value": "1234567890",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776562,
+              "soknadId": 10636,
+              "key": "ikkebarneinntekt",
+              "value": "true",
+              "systemEgenskap": 0
+            },
+            {
+              "faktumId": 776562,
+              "soknadId": 10636,
+              "key": "alder",
+              "value": "10",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776562,
+              "soknadId": 10636,
+              "key": "kjonn",
+              "value": "m",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776562,
+              "soknadId": 10636,
+              "key": "fornavn",
+              "value": "navn",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776562,
+              "soknadId": 10636,
+              "key": "sammensattnavn",
+              "value": "MÄRT-MASK FEDORENKO",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776562,
+              "soknadId": 10636,
+              "key": "uniqueKey",
+              "value": "fnr",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776562,
+              "soknadId": 10636,
+              "key": "land",
+              "value": "NOR",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776562,
+              "soknadId": 10636,
+              "key": "mellomnavn",
+              "value": null,
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776562,
+              "soknadId": 10636,
+              "key": "barnetillegg",
+              "value": "true",
+              "systemEgenskap": 0
+            },
+            {
+              "faktumId": 776562,
+              "soknadId": 10636,
+              "key": "etternavn",
+              "value": "FEDORENKO",
+              "systemEgenskap": 1
+            }
+          ],
+          "properties": {
+            "etternavn": "ETTERNAVN",
+            "mellomnavn": null,
+            "ikkebarneinntekt": "true",
+            "kjonn": "m",
+            "barnetillegg": "true",
+            "sammensattnavn": "MÄRT-MASK FEDORENKO",
+            "uniqueKey": "fnr",
+            "land": "NOR",
+            "fnr": "1234567890",
+            "fornavn": "navn",
+            "alder": "10"
+          },
+          "type": "SYSTEMREGISTRERT"
+        },
+        {
+          "faktumId": 776563,
+          "soknadId": 10636,
+          "parrentFaktum": null,
+          "key": "barn",
+          "value": null,
+          "faktumEgenskaper": [
+            {
+              "faktumId": 776563,
+              "soknadId": 10636,
+              "key": "land",
+              "value": "NOR",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776563,
+              "soknadId": 10636,
+              "key": "etternavn",
+              "value": "YRJAENAE",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776563,
+              "soknadId": 10636,
+              "key": "fnr",
+              "value": "1234567890",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776563,
+              "soknadId": 10636,
+              "key": "fornavn",
+              "value": "navn",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776563,
+              "soknadId": 10636,
+              "key": "barnetillegg",
+              "value": "true",
+              "systemEgenskap": 0
+            },
+            {
+              "faktumId": 776563,
+              "soknadId": 10636,
+              "key": "alder",
+              "value": "14",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776563,
+              "soknadId": 10636,
+              "key": "sammensattnavn",
+              "value": "EMIAN-MASK YRJAENAE",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776563,
+              "soknadId": 10636,
+              "key": "kjonn",
+              "value": "m",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776563,
+              "soknadId": 10636,
+              "key": "ikkebarneinntekt",
+              "value": "true",
+              "systemEgenskap": 0
+            },
+            {
+              "faktumId": 776563,
+              "soknadId": 10636,
+              "key": "mellomnavn",
+              "value": null,
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776563,
+              "soknadId": 10636,
+              "key": "uniqueKey",
+              "value": "fnr",
+              "systemEgenskap": 1
+            }
+          ],
+          "properties": {
+            "etternavn": "ETTERNAVN",
+            "mellomnavn": null,
+            "ikkebarneinntekt": "true",
+            "kjonn": "m",
+            "barnetillegg": "true",
+            "sammensattnavn": "EMIAN-MASK YRJAENAE",
+            "uniqueKey": "fnr",
+            "land": "NOR",
+            "fnr": "1234567890",
+            "fornavn": "navn",
+            "alder": "14"
+          },
+          "type": "SYSTEMREGISTRERT"
+        },
+        {
+          "faktumId": 776564,
+          "soknadId": 10636,
+          "parrentFaktum": null,
+          "key": "barn",
+          "value": null,
+          "faktumEgenskaper": [
+            {
+              "faktumId": 776564,
+              "soknadId": 10636,
+              "key": "kjonn",
+              "value": "m",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776564,
+              "soknadId": 10636,
+              "key": "alder",
+              "value": "15",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776564,
+              "soknadId": 10636,
+              "key": "mellomnavn",
+              "value": null,
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776564,
+              "soknadId": 10636,
+              "key": "ikkebarneinntekt",
+              "value": "true",
+              "systemEgenskap": 0
+            },
+            {
+              "faktumId": 776564,
+              "soknadId": 10636,
+              "key": "sammensattnavn",
+              "value": "MUNIREH-MASK PAJNIGARA",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776564,
+              "soknadId": 10636,
+              "key": "fnr",
+              "value": "1234567890",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776564,
+              "soknadId": 10636,
+              "key": "fornavn",
+              "value": "navn",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776564,
+              "soknadId": 10636,
+              "key": "uniqueKey",
+              "value": "fnr",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776564,
+              "soknadId": 10636,
+              "key": "land",
+              "value": "NOR",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776564,
+              "soknadId": 10636,
+              "key": "etternavn",
+              "value": "PAJNIGARA",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776564,
+              "soknadId": 10636,
+              "key": "barnetillegg",
+              "value": "true",
+              "systemEgenskap": 0
+            }
+          ],
+          "properties": {
+            "etternavn": "ETTERNAVN",
+            "mellomnavn": null,
+            "ikkebarneinntekt": "true",
+            "kjonn": "m",
+            "barnetillegg": "true",
+            "sammensattnavn": "navn navn",
+            "uniqueKey": "fnr",
+            "land": "NOR",
+            "fnr": "1234567890",
+            "fornavn": "navn",
+            "alder": "15"
+          },
+          "type": "SYSTEMREGISTRERT"
+        },
+        {
+          "faktumId": 776565,
+          "soknadId": 10636,
+          "parrentFaktum": null,
+          "key": "barn",
+          "value": null,
+          "faktumEgenskaper": [
+            {
+              "faktumId": 776565,
+              "soknadId": 10636,
+              "key": "ikkebarneinntekt",
+              "value": "true",
+              "systemEgenskap": 0
+            },
+            {
+              "faktumId": 776565,
+              "soknadId": 10636,
+              "key": "kjonn",
+              "value": "m",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776565,
+              "soknadId": 10636,
+              "key": "sammensattnavn",
+              "value": "ABANOUB-MASK SZYMKOWIAK",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776565,
+              "soknadId": 10636,
+              "key": "barnetillegg",
+              "value": "true",
+              "systemEgenskap": 0
+            },
+            {
+              "faktumId": 776565,
+              "soknadId": 10636,
+              "key": "etternavn",
+              "value": "SZYMKOWIAK",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776565,
+              "soknadId": 10636,
+              "key": "fnr",
+              "value": "1234567890",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776565,
+              "soknadId": 10636,
+              "key": "mellomnavn",
+              "value": null,
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776565,
+              "soknadId": 10636,
+              "key": "uniqueKey",
+              "value": "fnr",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776565,
+              "soknadId": 10636,
+              "key": "fornavn",
+              "value": "ABANOUB-MASK",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776565,
+              "soknadId": 10636,
+              "key": "alder",
+              "value": "16",
+              "systemEgenskap": 1
+            },
+            {
+              "faktumId": 776565,
+              "soknadId": 10636,
+              "key": "land",
+              "value": "NOR",
+              "systemEgenskap": 1
+            }
+          ],
+          "properties": {
+            "etternavn": "ETTERNAVN",
+            "mellomnavn": null,
+            "ikkebarneinntekt": "true",
+            "kjonn": "m",
+            "barnetillegg": "true",
+            "sammensattnavn": "NAVN NAVN",
+            "uniqueKey": "fnr",
+            "land": "NOR",
+            "fnr": "1234567890",
+            "fornavn": "ABANOUB-MASK",
+            "alder": "16"
+          },
+          "type": "SYSTEMREGISTRERT"
+        },
+        {
+          "faktumId": 776566,
+          "soknadId": 10636,
+          "parrentFaktum": null,
+          "key": "arbeidsforhold",
+          "value": null,
+          "faktumEgenskaper": [
+            {
+              "faktumId": 776566,
+              "soknadId": 10636,
+              "key": "datofra",
+              "value": "2000-01-01",
+              "systemEgenskap": 0
+            },
+            {
+              "faktumId": 776566,
+              "soknadId": 10636,
+              "key": "type",
+              "value": "permittert",
+              "systemEgenskap": 0
+            },
+            {
+              "faktumId": 776566,
+              "soknadId": 10636,
+              "key": "rotasjonskiftturnus",
+              "value": "nei",
+              "systemEgenskap": 0
+            },
+            {
+              "faktumId": 776566,
+              "soknadId": 10636,
+              "key": "lonnspliktigperiodedatofra",
+              "value": "2020-03-19",
+              "systemEgenskap": 0
+            },
+            {
+              "faktumId": 776566,
+              "soknadId": 10636,
+              "key": "land",
+              "value": "NOR",
+              "systemEgenskap": 0
+            },
+            {
+              "faktumId": 776566,
+              "soknadId": 10636,
+              "key": "skalHaT8VedleggForKontraktUtgaatt",
+              "value": "false",
+              "systemEgenskap": 0
+            },
+            {
+              "faktumId": 776566,
+              "soknadId": 10636,
+              "key": "eosland",
+              "value": "false",
+              "systemEgenskap": 0
+            },
+            {
+              "faktumId": 776566,
+              "soknadId": 10636,
+              "key": "arbeidsgivernavn",
+              "value": "Rakettforskeren",
+              "systemEgenskap": 0
+            },
+            {
+              "faktumId": 776566,
+              "soknadId": 10636,
+              "key": "lonnspliktigperiodedatotil",
+              "value": "2020-03-20",
+              "systemEgenskap": 0
+            }
+          ],
+          "properties": {
+            "arbeidsgivernavn": "Rakettforskeren",
+            "eosland": "false",
+            "lonnspliktigperiodedatofra": "2020-03-19",
+            "skalHaT8VedleggForKontraktUtgaatt": "false",
+            "datofra": "2000-01-01",
+            "lonnspliktigperiodedatotil": "2020-03-20",
+            "rotasjonskiftturnus": "nei",
+            "land": "NOR",
+            "type": "permittert"
+          },
+          "type": "BRUKERREGISTRERT"
+        },
+        {
+          "faktumId": 776567,
+          "soknadId": 10636,
+          "parrentFaktum": 776566,
+          "key": "arbeidsforhold.permitteringsperiode",
+          "value": null,
+          "faktumEgenskaper": [
+            {
+              "faktumId": 776567,
+              "soknadId": 10636,
+              "key": "permitteringProsent",
+              "value": "100",
+              "systemEgenskap": 0
+            },
+            {
+              "faktumId": 776567,
+              "soknadId": 10636,
+              "key": "permiteringsperiodedatofra",
+              "value": "2020-03-23",
+              "systemEgenskap": 0
+            },
+            {
+              "faktumId": 776567,
+              "soknadId": 10636,
+              "key": "permitteringsperiodeTittel",
+              "value": "Rakettforskeren (23. mars 2020 - pågående)",
+              "systemEgenskap": 0
+            }
+          ],
+          "properties": {
+            "permiteringsperiodedatofra": "2020-03-23",
+            "permitteringsperiodeTittel": "Rakettforskeren (23. mars 2020 - pågående)",
+            "permitteringProsent": "100"
+          },
+          "type": "BRUKERREGISTRERT"
+        }
+      ],
+      "status": "UNDER_ARBEID",
+      "aktoerId": "21038014495",
+      "opprettetDato": "2020-03-19T17:58:47.846Z",
+      "sistLagret": "2020-03-19T18:01:39.729Z",
+      "delstegStatus": "VEDLEGG_VALIDERT",
+      "vedlegg": [
+        {
+          "vedleggId": 18495,
+          "soknadId": 10636,
+          "faktumId": 776566,
+          "skjemaNummer": "T6",
+          "skjemanummerTillegg": null,
+          "innsendingsvalg": "SendesSenere",
+          "opprinneligInnsendingsvalg": null,
+          "navn": "Rakettforskeren",
+          "storrelse": 0,
+          "opprettetDato": 1584640863000,
+          "fillagerReferanse": "15295a96-ed7f-4e8f-a684-b621d3b25602",
+          "urls": {},
+          "tittel": null,
+          "aarsak": "err",
+          "filnavn": null,
+          "mimetype": null
+        }
+      ],
+      "journalforendeEnhet": null,
+      "soknadPrefix": "dagpenger.ordinaer",
+      "soknadUrl": "/soknaddagpenger/NAV04-01.03",
+      "fortsettSoknadUrl": "/soknaddagpenger/utslagskriterier"
+    },
+    {
+      "skjemanummerTillegg": null,
+      "innsendingsvalg": "SendesSenere",
+      "opprinneligInnsendingsvalg": null,
+      "navn": "Rakettforskeren",
+      "storrelse": 0,
+      "opprettetDato": 1584640863000,
+      "fillagerReferanse": "15295a96-ed7f-4e8f-a684-b621d3b25602",
+      "urls": {},
+      "tittel": null,
+      "aarsak": "err",
+      "filnavn": null,
+      "mimetype": null
+    }
+  ],
+  "journalforendeEnhet": null,
+  "soknadPrefix": "dagpenger.ordinaer",
+  "soknadUrl": "/soknaddagpenger/NAV04-01.03",
+  "fortsettSoknadUrl": "/soknaddagpenger/utslagskriterier"
+}

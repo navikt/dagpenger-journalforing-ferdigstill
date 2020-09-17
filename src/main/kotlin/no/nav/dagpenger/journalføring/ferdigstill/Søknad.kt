@@ -7,7 +7,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.nav.dagpenger.events.Packet
 
-
 interface Søknad {
     fun getFakta(faktaNavn: String): List<JsonNode>
     fun getBooleanFaktum(faktaNavn: String): Boolean
@@ -16,8 +15,8 @@ interface Søknad {
 }
 
 fun Packet.getSøknad(): Søknad? {
-    return if (this.hasField("søknaddata")) {
-        fromMap(this.getMapValue("søknaddata"))
+    return if (this.hasField("søknadsdata")) {
+        fromMap(this.getMapValue("søknadsdata"))
     } else null
 }
 

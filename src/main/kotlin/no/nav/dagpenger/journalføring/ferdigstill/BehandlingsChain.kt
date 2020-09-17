@@ -136,12 +136,12 @@ internal class NyttSaksforholdBehandlingsChain(
     private fun finnBehandlendeEnhet(
         packet: Packet
     ): String {
-        if (!toggle.isEnabled("dagpenger-journalforing-ferdigstill.bruk_hurtig_enhet", false)) {
-            return PacketMapper.tildeltEnhetsNrFrom(packet)
-        }
+
+        // when(packet.arbeidforhold()) {
+        //     is K
+        // }
 
         val kanAvslåsPåMinsteinntekt = packet.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) == false
-
         return when (kanAvslåsPåMinsteinntekt) {
             true -> packet.finnEnhetForHurtigAvslag()
             false -> PacketMapper.tildeltEnhetsNrFrom(packet)
