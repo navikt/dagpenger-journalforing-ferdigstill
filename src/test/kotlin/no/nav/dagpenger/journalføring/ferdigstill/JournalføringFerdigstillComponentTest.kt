@@ -90,8 +90,7 @@ internal class JournalforingFerdigstillComponentTest {
             ),
             manuellJournalføringsOppgaveClient = mockk(relaxed = true),
             arenaClient = arenaClientMock,
-            vilkårtester = mockk(),
-            unleash = FakeUnleash()
+            vilkårtester = mockk()
         )
 
         private val app = Application(configuration, journalFøringFerdigstill, FakeUnleash())

@@ -2,7 +2,6 @@ package no.nav.dagpenger.journalføring.ferdigstill
 
 import com.squareup.moshi.Types
 import mu.KotlinLogging
-import no.finn.unleash.Unleash
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.events.moshiInstance
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
@@ -50,11 +49,28 @@ internal object PacketMapper {
             packet.getStringValue(PacketKeys.AKTØR_ID),
             "AKTØR"
         ) else null
+
     fun aktørFrom(packet: Packet) = Bruker(
         packet.getStringValue(PacketKeys.AKTØR_ID),
         "AKTØR"
     )
-    fun henvendelse(packet: Packet): Henvendelse = Henvendelse.fra(packet.getStringValue(PacketKeys.HENVENDELSESTYPE))
+
+    fun oppgaveBeskrivelse(packet: Packet): String {
+        val kanAvslåsPåMinsteinntekt = packet.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) == false
+        val koronaRegelverkMinsteinntektBrukt =
+            packet.getNullableBoolean(PacketKeys.KORONAREGELVERK_MINSTEINNTEKT_BRUKT) == true
+
+        return when {
+            kanAvslåsPåMinsteinntekt && koronaRegelverkMinsteinntektBrukt -> "Minsteinntekt - mulig avslag - korona\n"
+            kanAvslåsPåMinsteinntekt && !koronaRegelverkMinsteinntektBrukt -> "Minsteinntekt - mulig avslag\n"
+            else -> henvendelse(packet).oppgavebeskrivelse
+        }
+    }
+
+    fun henvendelse(packet: Packet): Henvendelse {
+        return Henvendelse.fra(packet.getStringValue(PacketKeys.HENVENDELSESTYPE))
+    }
+
     fun harFagsakId(packet: Packet): Boolean = packet.hasField(PacketKeys.FAGSAK_ID)
     fun harIkkeFagsakId(packet: Packet): Boolean = !harFagsakId(packet)
 
@@ -98,8 +114,7 @@ internal class JournalføringFerdigstill(
     journalPostApi: JournalpostApi,
     manuellJournalføringsOppgaveClient: ManuellJournalføringsOppgaveClient,
     arenaClient: ArenaClient,
-    vilkårtester: Vilkårtester,
-    unleash: Unleash
+    vilkårtester: Vilkårtester
 ) {
 
     val ferdigBehandlingsChain = MarkerFerdigBehandlingsChain(null)
@@ -108,8 +123,8 @@ internal class JournalføringFerdigstill(
     val ferdigstillOppgaveChain = FerdigstillJournalpostBehandlingsChain(journalPostApi, manuellJournalføringsBehandlingsChain)
     val oppdaterChain = OppdaterJournalpostBehandlingsChain(journalPostApi, ferdigstillOppgaveChain)
     val eksisterendeSakChain = EksisterendeSaksForholdBehandlingsChain(arenaClient, oppdaterChain)
-    val nySakChain = NyttSaksforholdBehandlingsChain(arenaClient, unleash, eksisterendeSakChain)
-    val vilkårtestingChain = OppfyllerMinsteinntektBehandlingsChain(vilkårtester, unleash, nySakChain)
+    val nySakChain = NyttSaksforholdBehandlingsChain(arenaClient, eksisterendeSakChain)
+    val vilkårtestingChain = OppfyllerMinsteinntektBehandlingsChain(vilkårtester, nySakChain)
 
     fun handlePacket(packet: Packet): Packet {
         try {

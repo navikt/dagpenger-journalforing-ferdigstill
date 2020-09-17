@@ -108,8 +108,7 @@ fun main() {
         ),
         gosysOppgaveClient,
         arenaClient,
-        vilkårtester,
-        unleash
+        vilkårtester
     )
 
     Application(configuration, journalFøringFerdigstill, unleash).start()

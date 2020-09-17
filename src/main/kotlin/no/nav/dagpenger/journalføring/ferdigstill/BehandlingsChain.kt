@@ -3,7 +3,6 @@ package no.nav.dagpenger.journalføring.ferdigstill
 import com.github.kittinunf.result.Result
 import io.prometheus.client.Histogram
 import mu.KotlinLogging
-import no.finn.unleash.Unleash
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.journalføring.ferdigstill.Metrics.inngangsvilkårResultatTellerInc
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.FAGSAK_ID
@@ -44,12 +43,10 @@ fun BehandlingsChain.instrument(handler: () -> Packet): Packet {
 
 internal class OppfyllerMinsteinntektBehandlingsChain(
     private val vilkårtester: Vilkårtester,
-    private val toggle: Unleash,
     neste: BehandlingsChain?
 ) : BehandlingsChain(neste) {
     override fun kanBehandle(packet: Packet) =
-        toggle.isEnabled("dagpenger-journalforing-ferdigstill.vilkaartesting") &&
-            PacketMapper.hasNaturligIdent(packet) &&
+        PacketMapper.hasNaturligIdent(packet) &&
             PacketMapper.hasAktørId(packet) &&
             PacketMapper.harIkkeFagsakId(packet) &&
             PacketMapper.henvendelse(packet) == NyttSaksforhold &&
@@ -77,7 +74,6 @@ internal class OppfyllerMinsteinntektBehandlingsChain(
 
 internal class NyttSaksforholdBehandlingsChain(
     private val arena: ArenaClient,
-    val toggle: Unleash,
     neste: BehandlingsChain?
 ) : BehandlingsChain(neste) {
 
