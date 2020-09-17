@@ -4,6 +4,7 @@ import com.squareup.moshi.Types
 import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.events.moshiInstance
+import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.finnEnhetForHurtigAvslag
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Avsender
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Bruker
@@ -55,18 +56,28 @@ internal object PacketMapper {
         "AKTØR"
     )
 
-    fun oppgaveBeskrivelse(packet: Packet): String {
+    data class OppgaveBenk(
+        val id: String,
+        val beskrivelse: String
+    )
+
+    fun oppgaveBeskrivelseOgBenk(packet: Packet): OppgaveBenk {
         val kanAvslåsPåMinsteinntekt = packet.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) == false
         val koronaRegelverkMinsteinntektBrukt =
             packet.getNullableBoolean(PacketKeys.KORONAREGELVERK_MINSTEINNTEKT_BRUKT) == true
         val konkurs = packet.harAvsluttetArbeidsforholdFraKonkurs()
 
         return when {
-            konkurs -> "Konkurs\n"
-            kanAvslåsPåMinsteinntekt && koronaRegelverkMinsteinntektBrukt -> "Minsteinntekt - mulig avslag - korona\n"
-            kanAvslåsPåMinsteinntekt && !koronaRegelverkMinsteinntektBrukt -> "Minsteinntekt - mulig avslag\n"
-            else -> henvendelse(packet).oppgavebeskrivelse
+            konkurs -> OppgaveBenk("4450", "Konkurs\n")
+            kanAvslåsPåMinsteinntekt -> OppgaveBenk(packet.finnEnhetForHurtigAvslag(), if (koronaRegelverkMinsteinntektBrukt) "Minsteinntekt - mulig avslag - korona\n" else "Minsteinntekt - mulig avslag\n")
+            else -> OppgaveBenk(tildeltEnhetsNrFrom(packet), henvendelse(packet).oppgavebeskrivelse)
         }
+    }
+
+    private fun Packet.finnEnhetForHurtigAvslag() = when (this.getStringValue(PacketKeys.BEHANDLENDE_ENHET)) {
+        "4450" -> ENHET_FOR_HURTIG_AVSLAG_IKKE_PERMITTERT
+        "4455" -> ENHET_FOR_HURTIG_AVSLAG_PERMITTERT
+        else -> this.getStringValue(PacketKeys.BEHANDLENDE_ENHET)
     }
 
     fun henvendelse(packet: Packet): Henvendelse {
