@@ -2,9 +2,9 @@ package no.nav.dagpenger.journalføring.ferdigstill
 
 import com.squareup.moshi.Types
 import mu.KotlinLogging
-import no.finn.unleash.Unleash
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.events.moshiInstance
+import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.finnEnhetForHurtigAvslag
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Avsender
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Bruker
@@ -50,11 +50,40 @@ internal object PacketMapper {
             packet.getStringValue(PacketKeys.AKTØR_ID),
             "AKTØR"
         ) else null
+
     fun aktørFrom(packet: Packet) = Bruker(
         packet.getStringValue(PacketKeys.AKTØR_ID),
         "AKTØR"
     )
-    fun henvendelse(packet: Packet): Henvendelse = Henvendelse.fra(packet.getStringValue(PacketKeys.HENVENDELSESTYPE))
+
+    data class OppgaveBenk(
+        val id: String,
+        val beskrivelse: String
+    )
+
+    fun oppgaveBeskrivelseOgBenk(packet: Packet): OppgaveBenk {
+        val kanAvslåsPåMinsteinntekt = packet.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) == false
+        val koronaRegelverkMinsteinntektBrukt =
+            packet.getNullableBoolean(PacketKeys.KORONAREGELVERK_MINSTEINNTEKT_BRUKT) == true
+        val konkurs = packet.harAvsluttetArbeidsforholdFraKonkurs()
+
+        return when {
+            konkurs -> OppgaveBenk("4450", "Konkurs\n")
+            kanAvslåsPåMinsteinntekt -> OppgaveBenk(packet.finnEnhetForHurtigAvslag(), if (koronaRegelverkMinsteinntektBrukt) "Minsteinntekt - mulig avslag - korona\n" else "Minsteinntekt - mulig avslag\n")
+            else -> OppgaveBenk(tildeltEnhetsNrFrom(packet), henvendelse(packet).oppgavebeskrivelse)
+        }
+    }
+
+    private fun Packet.finnEnhetForHurtigAvslag() = when (this.getStringValue(PacketKeys.BEHANDLENDE_ENHET)) {
+        "4450" -> ENHET_FOR_HURTIG_AVSLAG_IKKE_PERMITTERT
+        "4455" -> ENHET_FOR_HURTIG_AVSLAG_PERMITTERT
+        else -> this.getStringValue(PacketKeys.BEHANDLENDE_ENHET)
+    }
+
+    fun henvendelse(packet: Packet): Henvendelse {
+        return Henvendelse.fra(packet.getStringValue(PacketKeys.HENVENDELSESTYPE))
+    }
+
     fun harFagsakId(packet: Packet): Boolean = packet.hasField(PacketKeys.FAGSAK_ID)
     fun harIkkeFagsakId(packet: Packet): Boolean = !harFagsakId(packet)
 
@@ -98,8 +127,7 @@ internal class JournalføringFerdigstill(
     journalPostApi: JournalpostApi,
     manuellJournalføringsOppgaveClient: ManuellJournalføringsOppgaveClient,
     arenaClient: ArenaClient,
-    vilkårtester: Vilkårtester,
-    unleash: Unleash
+    vilkårtester: Vilkårtester
 ) {
 
     val ferdigBehandlingsChain = MarkerFerdigBehandlingsChain(null)
@@ -108,8 +136,8 @@ internal class JournalføringFerdigstill(
     val ferdigstillOppgaveChain = FerdigstillJournalpostBehandlingsChain(journalPostApi, manuellJournalføringsBehandlingsChain)
     val oppdaterChain = OppdaterJournalpostBehandlingsChain(journalPostApi, ferdigstillOppgaveChain)
     val eksisterendeSakChain = EksisterendeSaksForholdBehandlingsChain(arenaClient, oppdaterChain)
-    val nySakChain = NyttSaksforholdBehandlingsChain(arenaClient, unleash, eksisterendeSakChain)
-    val vilkårtestingChain = OppfyllerMinsteinntektBehandlingsChain(vilkårtester, unleash, nySakChain)
+    val nySakChain = NyttSaksforholdBehandlingsChain(arenaClient, eksisterendeSakChain)
+    val vilkårtestingChain = OppfyllerMinsteinntektBehandlingsChain(vilkårtester, nySakChain)
 
     fun handlePacket(packet: Packet): Packet {
         try {

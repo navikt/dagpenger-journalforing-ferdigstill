@@ -3,7 +3,6 @@ package no.nav.dagpenger.journalføring.ferdigstill
 import com.github.kittinunf.result.Result
 import io.prometheus.client.Histogram
 import mu.KotlinLogging
-import no.finn.unleash.Unleash
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.journalføring.ferdigstill.Metrics.inngangsvilkårResultatTellerInc
 import no.nav.dagpenger.journalføring.ferdigstill.PacketKeys.FAGSAK_ID
@@ -44,12 +43,10 @@ fun BehandlingsChain.instrument(handler: () -> Packet): Packet {
 
 internal class OppfyllerMinsteinntektBehandlingsChain(
     private val vilkårtester: Vilkårtester,
-    private val toggle: Unleash,
     neste: BehandlingsChain?
 ) : BehandlingsChain(neste) {
     override fun kanBehandle(packet: Packet) =
-        toggle.isEnabled("dagpenger-journalforing-ferdigstill.vilkaartesting") &&
-            PacketMapper.hasNaturligIdent(packet) &&
+        PacketMapper.hasNaturligIdent(packet) &&
             PacketMapper.hasAktørId(packet) &&
             PacketMapper.harIkkeFagsakId(packet) &&
             PacketMapper.henvendelse(packet) == NyttSaksforhold &&
@@ -77,7 +74,6 @@ internal class OppfyllerMinsteinntektBehandlingsChain(
 
 internal class NyttSaksforholdBehandlingsChain(
     private val arena: ArenaClient,
-    val toggle: Unleash,
     neste: BehandlingsChain?
 ) : BehandlingsChain(neste) {
 
@@ -101,21 +97,15 @@ internal class NyttSaksforholdBehandlingsChain(
                     PacketMapper.registrertDatoFrom(packet)
                 )
 
-            val kanAvslåsPåMinsteinntekt = packet.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) == false
-            val koronaRegelverkMinsteinntektBrukt =
-                packet.getNullableBoolean(PacketKeys.KORONAREGELVERK_MINSTEINNTEKT_BRUKT) == true
+            val oppgaveBenk = PacketMapper.oppgaveBeskrivelseOgBenk(packet)
 
             val result = arena.bestillOppgave(
                 StartVedtakCommand(
                     naturligIdent = PacketMapper.bruker(packet).id,
-                    behandlendeEnhetId = finnBehandlendeEnhet(packet),
+                    behandlendeEnhetId = oppgaveBenk.id,
                     tilleggsinformasjon = tilleggsinformasjon,
                     registrertDato = PacketMapper.registrertDatoFrom(packet),
-                    oppgavebeskrivelse = when {
-                        kanAvslåsPåMinsteinntekt && koronaRegelverkMinsteinntektBrukt -> "Minsteinntekt - mulig avslag - korona\n"
-                        kanAvslåsPåMinsteinntekt && !koronaRegelverkMinsteinntektBrukt -> "Minsteinntekt - mulig avslag\n"
-                        else -> PacketMapper.henvendelse(packet).oppgavebeskrivelse
-                    }
+                    oppgavebeskrivelse = oppgaveBenk.beskrivelse
                 )
             )
 
@@ -131,27 +121,6 @@ internal class NyttSaksforholdBehandlingsChain(
         }
 
         return@instrument neste?.håndter(packet) ?: packet
-    }
-
-    private fun finnBehandlendeEnhet(
-        packet: Packet
-    ): String {
-        if (!toggle.isEnabled("dagpenger-journalforing-ferdigstill.bruk_hurtig_enhet", false)) {
-            return PacketMapper.tildeltEnhetsNrFrom(packet)
-        }
-
-        val kanAvslåsPåMinsteinntekt = packet.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) == false
-
-        return when (kanAvslåsPåMinsteinntekt) {
-            true -> packet.finnEnhetForHurtigAvslag()
-            false -> PacketMapper.tildeltEnhetsNrFrom(packet)
-        }
-    }
-
-    private fun Packet.finnEnhetForHurtigAvslag() = when (this.getStringValue(PacketKeys.BEHANDLENDE_ENHET)) {
-        "4450" -> ENHET_FOR_HURTIG_AVSLAG_IKKE_PERMITTERT
-        "4455" -> ENHET_FOR_HURTIG_AVSLAG_PERMITTERT
-        else -> this.getStringValue(PacketKeys.BEHANDLENDE_ENHET)
     }
 }
 

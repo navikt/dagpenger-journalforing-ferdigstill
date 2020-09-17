@@ -89,6 +89,9 @@ dependencies {
     implementation(Moshi.moshi)
     implementation(Moshi.moshiKotlin)
     implementation(Moshi.moshiAdapters)
+    implementation(Jackson.core)
+    implementation(Jackson.jsr310)
+    implementation(Jackson.kotlin)
 
     // prometheus
     implementation(Prometheus.common)

@@ -1,12 +1,92 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
 import io.kotest.matchers.shouldBe
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.mockkStatic
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.dokumentJsonAdapter
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Dokument
 import org.junit.jupiter.api.Test
 
 internal class PacketMapperTest {
+
+    @Test
+    fun `Finn riktig oppgave beskrivelse ved Konkurs `() {
+
+        mockkStatic("no.nav.dagpenger.journalføring.ferdigstill.AvsluttendeArbeidsforholdKt") {
+            val packet = mockk<Packet>(relaxed = true).also {
+                every { it.harAvsluttetArbeidsforholdFraKonkurs() } returns true
+                every { it.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) } returns false
+                every { it.getNullableBoolean(PacketKeys.KORONAREGELVERK_MINSTEINNTEKT_BRUKT) } returns false
+            }
+            val benk = PacketMapper.oppgaveBeskrivelseOgBenk(packet)
+            benk.beskrivelse shouldBe "Konkurs\n"
+            benk.id shouldBe "4450"
+        }
+    }
+
+    @Test
+    fun `Finn riktig oppgave beskrivelse og benk ved oppfyller minsteinntekt ved ordninær   `() {
+        mockkStatic("no.nav.dagpenger.journalføring.ferdigstill.AvsluttendeArbeidsforholdKt") {
+            val packet = mockk<Packet>(relaxed = true).also {
+                every { it.harAvsluttetArbeidsforholdFraKonkurs() } returns false
+                every { it.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) } returns false
+                every { it.getNullableBoolean(PacketKeys.KORONAREGELVERK_MINSTEINNTEKT_BRUKT) } returns false
+                every { it.getStringValue(PacketKeys.BEHANDLENDE_ENHET) } returns "4450"
+            }
+            val benk = PacketMapper.oppgaveBeskrivelseOgBenk(packet)
+            benk.beskrivelse shouldBe "Minsteinntekt - mulig avslag\n"
+            benk.id shouldBe "4451"
+        }
+    }
+
+    @Test
+    fun `Finn riktig oppgave beskrivelse og benk ved oppfyller minsteinntekt ved permittering   `() {
+        mockkStatic("no.nav.dagpenger.journalføring.ferdigstill.AvsluttendeArbeidsforholdKt") {
+            val packet = mockk<Packet>(relaxed = true).also {
+                every { it.harAvsluttetArbeidsforholdFraKonkurs() } returns false
+                every { it.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) } returns false
+                every { it.getNullableBoolean(PacketKeys.KORONAREGELVERK_MINSTEINNTEKT_BRUKT) } returns false
+                every { it.getStringValue(PacketKeys.BEHANDLENDE_ENHET) } returns "4455"
+            }
+            val benk = PacketMapper.oppgaveBeskrivelseOgBenk(packet)
+            benk.beskrivelse shouldBe "Minsteinntekt - mulig avslag\n"
+            benk.id shouldBe "4456"
+        }
+    }
+
+    @Test
+    fun `Finn riktig oppgave beskrivelse og benk ved oppfyller minsteinntekt ved korona regler   `() {
+
+        mockkStatic("no.nav.dagpenger.journalføring.ferdigstill.AvsluttendeArbeidsforholdKt") {
+            val packet = mockk<Packet>(relaxed = true).also {
+                every { it.harAvsluttetArbeidsforholdFraKonkurs() } returns false
+                every { it.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) } returns false
+                every { it.getNullableBoolean(PacketKeys.KORONAREGELVERK_MINSTEINNTEKT_BRUKT) } returns true
+                every { it.getStringValue(PacketKeys.BEHANDLENDE_ENHET) } returns "4450"
+            }
+            val benk = PacketMapper.oppgaveBeskrivelseOgBenk(packet)
+            benk.beskrivelse shouldBe "Minsteinntekt - mulig avslag - korona\n"
+            benk.id shouldBe "4451"
+        }
+    }
+
+    @Test
+    fun ` Finn riktig oppgavebeskrivelse ved ny søknad `() {
+        mockkStatic("no.nav.dagpenger.journalføring.ferdigstill.AvsluttendeArbeidsforholdKt") {
+            val packet = mockk<Packet>(relaxed = true).also {
+                every { it.harAvsluttetArbeidsforholdFraKonkurs() } returns false
+                every { it.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) } returns true
+                every { it.getNullableBoolean(PacketKeys.KORONAREGELVERK_MINSTEINNTEKT_BRUKT) } returns false
+                every { it.getStringValue(PacketKeys.HENVENDELSESTYPE) } returns "NY_SØKNAD"
+                every { it.getStringValue(PacketKeys.BEHANDLENDE_ENHET) } returns "4450"
+            }
+            val benk = PacketMapper.oppgaveBeskrivelseOgBenk(packet)
+            benk.beskrivelse shouldBe "Start Vedtaksbehandling - automatisk journalført.\n"
+            benk.id shouldBe "4450"
+        }
+    }
 
     @Test
     fun `Exctract journal post id from packet`() {
