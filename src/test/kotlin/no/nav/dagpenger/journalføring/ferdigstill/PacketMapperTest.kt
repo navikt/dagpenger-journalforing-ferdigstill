@@ -1,12 +1,25 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
 import io.kotest.matchers.shouldBe
+import io.mockk.every
+import io.mockk.mockk
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.dokumentJsonAdapter
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Dokument
 import org.junit.jupiter.api.Test
 
 internal class PacketMapperTest {
+
+    @Test
+    fun `Finn riktig oppgave beskrivelse`() {
+
+        val packet = mockk<Packet>(relaxed = true).also {
+            every { it.harAvsluttetArbeidsforholdFraKonkurs() } returns true
+            every { it.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) } returns true
+            every { it.getNullableBoolean(PacketKeys.KORONAREGELVERK_MINSTEINNTEKT_BRUKT) } returns false
+        }
+        PacketMapper.oppgaveBeskrivelse(packet) shouldBe "Konkurs\n"
+    }
 
     @Test
     fun `Exctract journal post id from packet`() {

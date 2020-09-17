@@ -59,8 +59,10 @@ internal object PacketMapper {
         val kanAvslåsPåMinsteinntekt = packet.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) == false
         val koronaRegelverkMinsteinntektBrukt =
             packet.getNullableBoolean(PacketKeys.KORONAREGELVERK_MINSTEINNTEKT_BRUKT) == true
+        val konkurs = packet.harAvsluttetArbeidsforholdFraKonkurs()
 
         return when {
+            konkurs -> "Konkurs\n"
             kanAvslåsPåMinsteinntekt && koronaRegelverkMinsteinntektBrukt -> "Minsteinntekt - mulig avslag - korona\n"
             kanAvslåsPåMinsteinntekt && !koronaRegelverkMinsteinntektBrukt -> "Minsteinntekt - mulig avslag\n"
             else -> henvendelse(packet).oppgavebeskrivelse
