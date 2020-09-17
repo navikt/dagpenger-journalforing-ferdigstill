@@ -96,16 +96,15 @@ dependencies {
     // prometheus
     implementation(Prometheus.common)
     implementation(Prometheus.hotspot)
-    implementation(Prometheus.log4j2)
     implementation(Konfig.konfig)
     implementation(Ktor.serverNetty)
 
     // logging
     implementation(Kotlin.Logging.kotlinLogging)
-    implementation(Log4j2.api)
-    implementation(Log4j2.core)
-    implementation(Log4j2.slf4j)
-    implementation(Log4j2.Logstash.logstashLayout)
+    api("ch.qos.logback:logback-classic:1.2.3")
+    api("net.logstash.logback:logstash-logback-encoder:6.4") {
+        exclude("com.fasterxml.jackson.core")
+    }
     implementation(Ulid.ulid)
 
     // resilience
