@@ -45,6 +45,9 @@ internal class Application(
             val readCountLimit = 15
             if (packet.getReadCount() >= readCountLimit && !unleash.isEnabled("dagpenger-journalforing-ferdigstill.skipReadCount", false)) {
                 logger.error { "Read count >= $readCountLimit for packet with journalpostid ${packet.getStringValue(PacketKeys.JOURNALPOST_ID)}" }
+                if (packet.getStringValue(PacketKeys.JOURNALPOST_ID) == "485283071") {
+                    return packet
+                }
                 throw ReadCountException()
             }
 
