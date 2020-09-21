@@ -21,7 +21,7 @@ import java.time.ZoneId
 
 private val logger = KotlinLogging.logger {}
 
-private val ignorerJournalpost: Set<String> = setOf("477201031", "476557172", "475680871", "471479059", "471479060", "471478910", "467047358")
+private val ignorerJournalpost: Set<String> = setOf("477201031", "476557172", "475680871", "471479059", "471479060", "471478910", "467047358", "485283071")
 
 internal val erIkkeFerdigBehandletJournalpost = Predicate<String, Packet> { _, packet ->
     packet.hasField(PacketKeys.JOURNALPOST_ID) &&
