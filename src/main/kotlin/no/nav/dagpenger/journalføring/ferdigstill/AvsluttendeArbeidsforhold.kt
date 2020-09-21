@@ -15,7 +15,6 @@ fun Packet.avsluttetArbeidsforhold(): AvsluttedeArbeidsforhold {
     } ?: emptyList()
 }
 
-
 fun Packet.erGrenseArbeider(): Boolean =
     this.avsluttetArbeidsforhold().any { it.grensearbeider }
 

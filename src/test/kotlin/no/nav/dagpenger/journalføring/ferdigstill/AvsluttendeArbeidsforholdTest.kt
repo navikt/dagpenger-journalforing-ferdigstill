@@ -34,7 +34,8 @@ internal class ArbeidsforholdTest {
         }
 
         packet.erGrenseArbeider() shouldBe true
-    }}
+    }
+}
 
 @Language("JSON")
 private fun søknadWithArbeidsforhold(
