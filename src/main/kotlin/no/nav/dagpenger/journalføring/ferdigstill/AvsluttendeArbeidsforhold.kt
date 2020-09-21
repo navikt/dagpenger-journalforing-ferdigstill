@@ -5,20 +5,26 @@ import no.nav.dagpenger.events.Packet
 internal typealias AvsluttedeArbeidsforhold = List<AvsluttetArbeidsforhold>
 
 fun Packet.avsluttetArbeidsforhold(): AvsluttedeArbeidsforhold {
-    return this.getSøknad()
-        ?.getFakta("arbeidsforhold")
-        ?.map {
+    return this.getSøknad()?.let { søknad ->
+        søknad.getFakta("arbeidsforhold").map {
             AvsluttetArbeidsforhold(
                 sluttårsak = asÅrsak(it["properties"]["type"].asText()),
+                grensearbeider = !søknad.getBooleanFaktum("arbeidsforhold.grensearbeider", true),
             )
-        } ?: emptyList()
+        }
+    } ?: emptyList()
 }
+
+
+fun Packet.erGrenseArbeider(): Boolean =
+    this.avsluttetArbeidsforhold().any { it.grensearbeider }
 
 fun Packet.harAvsluttetArbeidsforholdFraKonkurs(): Boolean =
     this.avsluttetArbeidsforhold().any { it.sluttårsak == AvsluttetArbeidsforhold.Sluttårsak.ARBEIDSGIVER_KONKURS }
 
 data class AvsluttetArbeidsforhold(
     val sluttårsak: Sluttårsak,
+    val grensearbeider: Boolean,
 ) {
     enum class Sluttårsak {
         AVSKJEDIGET,

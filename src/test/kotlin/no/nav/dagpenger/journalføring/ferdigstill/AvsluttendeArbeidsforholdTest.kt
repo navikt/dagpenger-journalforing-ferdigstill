@@ -24,7 +24,17 @@ internal class ArbeidsforholdTest {
 
         packet.harAvsluttetArbeidsforholdFraKonkurs() shouldBe true
     }
-}
+
+    @Test
+    fun `Skal kunne hente om søker er grensearbeider`() {
+        val data = objectMapper.readValue(søknadWithArbeidsforhold(), Map::class.java)
+
+        val packet = Packet().apply {
+            this.putValue("søknadsdata", data)
+        }
+
+        packet.erGrenseArbeider() shouldBe true
+    }}
 
 @Language("JSON")
 private fun søknadWithArbeidsforhold(
@@ -58,7 +68,7 @@ private fun søknadWithArbeidsforhold(
       "soknadId": 10636,
       "parrentFaktum": null,
       "key": "arbeidsforhold.grensearbeider",
-      "value": "true",
+      "value": "false",
       "faktumEgenskaper": [],
       "properties": {},
       "type": "BRUKERREGISTRERT"
