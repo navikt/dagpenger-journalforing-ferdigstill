@@ -66,8 +66,10 @@ internal object PacketMapper {
         val koronaRegelverkMinsteinntektBrukt =
             packet.getNullableBoolean(PacketKeys.KORONAREGELVERK_MINSTEINNTEKT_BRUKT) == true
         val konkurs = packet.harAvsluttetArbeidsforholdFraKonkurs()
+        val grenseArbeider = packet.erGrenseArbeider()
 
         return when {
+            grenseArbeider -> OppgaveBenk("4470", "SAMMENLEGGINGSSAKER\n")
             konkurs -> OppgaveBenk("4450", "Konkurs\n")
             kanAvslåsPåMinsteinntekt -> OppgaveBenk(packet.finnEnhetForHurtigAvslag(), if (koronaRegelverkMinsteinntektBrukt) "Minsteinntekt - mulig avslag - korona\n" else "Minsteinntekt - mulig avslag\n")
             else -> OppgaveBenk(tildeltEnhetsNrFrom(packet), henvendelse(packet).oppgavebeskrivelse)
