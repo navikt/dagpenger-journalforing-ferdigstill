@@ -1,13 +1,18 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.dokumentJsonAdapter
+import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.harInntektFraFangstOgFiske
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Dokument
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
 
 internal class PacketMapperTest {
 
@@ -199,5 +204,22 @@ internal class PacketMapperTest {
         jp.journalfoerendeEnhet shouldBe "9999"
         jp.tema shouldBe "DAG"
         jp.tittel shouldBe "tittel"
+    }
+
+    @Test
+    fun `kan lese fangst og fisk faktum fra packet`() {
+        Packet().apply { putValue("søknadsdata", "soknadsdata.json".getJsonResource()) }.also { packet ->
+            packet.harInntektFraFangstOgFiske() shouldBe true
+        }
+    }
+
+    private fun String.getJsonResource(): Map<*, *> {
+        val objectMapper = jacksonObjectMapper()
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+            .registerModule(JavaTimeModule())
+
+        return PacketMapperTest::class.java.classLoader.getResource(this)?.readText().let {
+            objectMapper.readValue(it, Map::class.java)
+        } ?: fail("Resource $this not found.")
     }
 }

@@ -56,6 +56,9 @@ internal object PacketMapper {
         "AKTØR"
     )
 
+    fun Packet.harInntektFraFangstOgFiske(): Boolean =
+        this.getSøknad()?.getBooleanFaktum("egennaering.fangstogfiske", false) ?: false
+
     data class OppgaveBenk(
         val id: String,
         val beskrivelse: String
