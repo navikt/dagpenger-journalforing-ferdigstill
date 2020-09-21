@@ -12,10 +12,27 @@ import org.junit.jupiter.api.Test
 internal class PacketMapperTest {
 
     @Test
+    fun `Finn riktig oppgave beskrivelse når søker er grensearbeider `() {
+
+        mockkStatic("no.nav.dagpenger.journalføring.ferdigstill.AvsluttendeArbeidsforholdKt") {
+            val packet = mockk<Packet>(relaxed = true).also {
+                every { it.erGrenseArbeider() } returns true
+                every { it.harAvsluttetArbeidsforholdFraKonkurs() } returns true
+                every { it.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) } returns false
+                every { it.getNullableBoolean(PacketKeys.KORONAREGELVERK_MINSTEINNTEKT_BRUKT) } returns false
+            }
+            val benk = PacketMapper.oppgaveBeskrivelseOgBenk(packet)
+            benk.beskrivelse shouldBe "SAMMENLEGGINGSSAKER\n"
+            benk.id shouldBe "4470"
+        }
+    }
+
+    @Test
     fun `Finn riktig oppgave beskrivelse ved Konkurs `() {
 
         mockkStatic("no.nav.dagpenger.journalføring.ferdigstill.AvsluttendeArbeidsforholdKt") {
             val packet = mockk<Packet>(relaxed = true).also {
+                every { it.erGrenseArbeider() } returns false
                 every { it.harAvsluttetArbeidsforholdFraKonkurs() } returns true
                 every { it.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) } returns false
                 every { it.getNullableBoolean(PacketKeys.KORONAREGELVERK_MINSTEINNTEKT_BRUKT) } returns false
@@ -30,6 +47,7 @@ internal class PacketMapperTest {
     fun `Finn riktig oppgave beskrivelse og benk ved oppfyller minsteinntekt ved ordninær   `() {
         mockkStatic("no.nav.dagpenger.journalføring.ferdigstill.AvsluttendeArbeidsforholdKt") {
             val packet = mockk<Packet>(relaxed = true).also {
+                every { it.erGrenseArbeider() } returns false
                 every { it.harAvsluttetArbeidsforholdFraKonkurs() } returns false
                 every { it.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) } returns false
                 every { it.getNullableBoolean(PacketKeys.KORONAREGELVERK_MINSTEINNTEKT_BRUKT) } returns false
@@ -45,6 +63,7 @@ internal class PacketMapperTest {
     fun `Finn riktig oppgave beskrivelse og benk ved oppfyller minsteinntekt ved permittering   `() {
         mockkStatic("no.nav.dagpenger.journalføring.ferdigstill.AvsluttendeArbeidsforholdKt") {
             val packet = mockk<Packet>(relaxed = true).also {
+                every { it.erGrenseArbeider() } returns false
                 every { it.harAvsluttetArbeidsforholdFraKonkurs() } returns false
                 every { it.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) } returns false
                 every { it.getNullableBoolean(PacketKeys.KORONAREGELVERK_MINSTEINNTEKT_BRUKT) } returns false
@@ -61,6 +80,7 @@ internal class PacketMapperTest {
 
         mockkStatic("no.nav.dagpenger.journalføring.ferdigstill.AvsluttendeArbeidsforholdKt") {
             val packet = mockk<Packet>(relaxed = true).also {
+                every { it.erGrenseArbeider() } returns false
                 every { it.harAvsluttetArbeidsforholdFraKonkurs() } returns false
                 every { it.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) } returns false
                 every { it.getNullableBoolean(PacketKeys.KORONAREGELVERK_MINSTEINNTEKT_BRUKT) } returns true
@@ -76,6 +96,7 @@ internal class PacketMapperTest {
     fun ` Finn riktig oppgavebeskrivelse ved ny søknad `() {
         mockkStatic("no.nav.dagpenger.journalføring.ferdigstill.AvsluttendeArbeidsforholdKt") {
             val packet = mockk<Packet>(relaxed = true).also {
+                every { it.erGrenseArbeider() } returns false
                 every { it.harAvsluttetArbeidsforholdFraKonkurs() } returns false
                 every { it.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) } returns true
                 every { it.getNullableBoolean(PacketKeys.KORONAREGELVERK_MINSTEINNTEKT_BRUKT) } returns false
