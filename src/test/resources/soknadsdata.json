@@ -448,7 +448,7 @@
       "soknadId": 10636,
       "parrentFaktum": null,
       "key": "egennaering.fangstogfiske",
-      "value": "false",
+      "value": "true",
       "faktumEgenskaper": [],
       "properties": {},
       "type": "BRUKERREGISTRERT"
@@ -1778,7 +1778,7 @@
           "soknadId": 10636,
           "parrentFaktum": null,
           "key": "egennaering.fangstogfiske",
-          "value": "true",
+          "value": "false",
           "faktumEgenskaper": [],
           "properties": {},
           "type": "BRUKERREGISTRERT"
