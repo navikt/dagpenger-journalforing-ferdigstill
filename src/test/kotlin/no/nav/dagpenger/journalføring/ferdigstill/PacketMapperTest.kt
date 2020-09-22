@@ -9,7 +9,6 @@ import io.mockk.mockk
 import io.mockk.mockkStatic
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.dokumentJsonAdapter
-import no.nav.dagpenger.journalføring.ferdigstill.PacketMapper.harInntektFraFangstOgFiske
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Dokument
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
@@ -17,10 +16,55 @@ import org.junit.jupiter.api.fail
 internal class PacketMapperTest {
 
     @Test
+    fun `Finn riktig oppgave beskrivelse og benk når søker har inntekt fra fangst og fisk ordinær`() {
+
+        mockkStatic(
+            "no.nav.dagpenger.journalføring.ferdigstill.AvsluttendeArbeidsforholdKt",
+            "no.nav.dagpenger.journalføring.ferdigstill.PacketMapperKt"
+        ) {
+            val packet = mockk<Packet>(relaxed = true).also {
+                every { it.harInntektFraFangstOgFiske() } returns true
+                every { it.erGrenseArbeider() } returns true
+                every { it.harAvsluttetArbeidsforholdFraKonkurs() } returns true
+                every { it.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) } returns false
+                every { it.getNullableBoolean(PacketKeys.KORONAREGELVERK_MINSTEINNTEKT_BRUKT) } returns false
+                every { it.getStringValue(PacketKeys.BEHANDLENDE_ENHET) } returns "4455"
+            }
+
+            val benk = PacketMapper.oppgaveBeskrivelseOgBenk(packet)
+            benk.beskrivelse shouldBe "FANGST OG FISKE\n"
+            benk.id shouldBe "4455"
+        }
+    }
+
+    @Test
+    fun `Finn riktig oppgave beskrivelse og benk når søker har inntekt fra fangst og fisk IKKE permttert`() {
+
+        mockkStatic(
+            "no.nav.dagpenger.journalføring.ferdigstill.AvsluttendeArbeidsforholdKt",
+            "no.nav.dagpenger.journalføring.ferdigstill.PacketMapperKt"
+        ) {
+            val packet = mockk<Packet>(relaxed = true).also {
+                every { it.harInntektFraFangstOgFiske() } returns true
+                every { it.erGrenseArbeider() } returns true
+                every { it.harAvsluttetArbeidsforholdFraKonkurs() } returns true
+                every { it.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) } returns false
+                every { it.getNullableBoolean(PacketKeys.KORONAREGELVERK_MINSTEINNTEKT_BRUKT) } returns false
+                every { it.getStringValue(PacketKeys.BEHANDLENDE_ENHET) } returns "4450"
+            }
+
+            val benk = PacketMapper.oppgaveBeskrivelseOgBenk(packet)
+            benk.beskrivelse shouldBe "FANGST OG FISKE\n"
+            benk.id shouldBe "4450"
+        }
+    }
+
+    @Test
     fun `Finn riktig oppgave beskrivelse når søker er grensearbeider `() {
 
         mockkStatic("no.nav.dagpenger.journalføring.ferdigstill.AvsluttendeArbeidsforholdKt") {
             val packet = mockk<Packet>(relaxed = true).also {
+                every { it.harInntektFraFangstOgFiske() } returns false
                 every { it.erGrenseArbeider() } returns true
                 every { it.harAvsluttetArbeidsforholdFraKonkurs() } returns true
                 every { it.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) } returns false
