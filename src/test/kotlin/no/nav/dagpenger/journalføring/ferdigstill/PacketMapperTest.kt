@@ -22,8 +22,8 @@ internal class PacketMapperTest {
                 every { it.getNullableBoolean(PacketKeys.KORONAREGELVERK_MINSTEINNTEKT_BRUKT) } returns false
             }
             val benk = PacketMapper.oppgaveBeskrivelseOgBenk(packet)
-            benk.beskrivelse shouldBe "SAMMENLEGGINGSSAKER\n"
-            benk.id shouldBe "4470"
+            benk.beskrivelse shouldBe "EØS\n"
+            benk.id shouldBe "4465"
         }
     }
 
