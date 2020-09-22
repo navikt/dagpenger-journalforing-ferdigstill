@@ -57,7 +57,7 @@ internal object PacketMapper {
 
         return when {
             inntektFraFangstFisk -> OppgaveBenk(packet.getStringValue(PacketKeys.BEHANDLENDE_ENHET), "FANGST OG FISKE\n")
-            grenseArbeider -> OppgaveBenk("4470", "SAMMENLEGGINGSSAKER\n")
+            grenseArbeider -> OppgaveBenk("4465", "EØS\n")
             konkurs -> OppgaveBenk("4450", "Konkurs\n")
             kanAvslåsPåMinsteinntekt -> OppgaveBenk(packet.finnEnhetForHurtigAvslag(), if (koronaRegelverkMinsteinntektBrukt) "Minsteinntekt - mulig avslag - korona\n" else "Minsteinntekt - mulig avslag\n")
             else -> OppgaveBenk(tildeltEnhetsNrFrom(packet), henvendelse(packet).oppgavebeskrivelse)
