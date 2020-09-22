@@ -13,7 +13,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 
 internal fun Packet.harInntektFraFangstOgFiske(): Boolean =
-    this.getSøknad()?.getBooleanFaktum("egennaering.fangstogfiske", false) ?: false
+    this.getSøknad()?.getBooleanFaktum("egennaering.fangstogfiske", false)?.not() ?: false
 
 internal object PacketMapper {
     val dokumentJsonAdapter = moshiInstance.adapter<List<Dokument>>(
