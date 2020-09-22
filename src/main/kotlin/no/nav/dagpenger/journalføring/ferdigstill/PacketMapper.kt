@@ -15,6 +15,9 @@ import java.time.ZoneId
 internal fun Packet.harInntektFraFangstOgFiske(): Boolean =
     this.getSøknad()?.getBooleanFaktum("egennaering.fangstogfiske", false)?.not() ?: false
 
+internal fun Packet.harAvtjentVerneplikt(): Boolean =
+    getSøknad()?.getFakta("ikkeavtjentverneplikt")?.getOrNull(0)?.get("value")?.asBoolean()?.not() ?: false
+
 internal object PacketMapper {
     val dokumentJsonAdapter = moshiInstance.adapter<List<Dokument>>(
         Types.newParameterizedType(
@@ -54,8 +57,10 @@ internal object PacketMapper {
         val konkurs = packet.harAvsluttetArbeidsforholdFraKonkurs()
         val grenseArbeider = packet.erGrenseArbeider()
         val inntektFraFangstFisk = packet.harInntektFraFangstOgFiske()
+        val harAvtjentVerneplikt = packet.harAvtjentVerneplikt()
 
         return when {
+            harAvtjentVerneplikt -> OppgaveBenk(packet.getStringValue(PacketKeys.BEHANDLENDE_ENHET), "VERNEPLIKT\n")
             inntektFraFangstFisk -> OppgaveBenk(packet.getStringValue(PacketKeys.BEHANDLENDE_ENHET), "FANGST OG FISKE\n")
             grenseArbeider -> OppgaveBenk("4465", "EØS\n")
             konkurs -> OppgaveBenk("4450", "Konkurs\n")

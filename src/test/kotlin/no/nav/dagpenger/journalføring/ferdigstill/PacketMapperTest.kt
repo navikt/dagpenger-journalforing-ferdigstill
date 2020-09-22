@@ -17,6 +17,7 @@ import org.junit.jupiter.api.fail
 internal class PacketMapperTest {
 
     private fun beregnOppgaveBenk(
+        harAvtjentVerneplikt: Boolean = false,
         harInntektFraFangstOgFiske: Boolean,
         erGrenseArbeider: Boolean,
         harAvsluttetArbeidsforholdFraKonkurs: Boolean,
@@ -31,6 +32,7 @@ internal class PacketMapperTest {
             "no.nav.dagpenger.journalføring.ferdigstill.PacketMapperKt"
         ) {
             val packet = mockk<Packet>(relaxed = false).also {
+                every { it.harAvtjentVerneplikt() } returns harAvtjentVerneplikt
                 every { it.harInntektFraFangstOgFiske() } returns harInntektFraFangstOgFiske
                 every { it.erGrenseArbeider() } returns erGrenseArbeider
                 every { it.harAvsluttetArbeidsforholdFraKonkurs() } returns harAvsluttetArbeidsforholdFraKonkurs
@@ -44,6 +46,31 @@ internal class PacketMapperTest {
         return oppgaveBenk
     }
 
+    @Test
+    fun `Finn riktig oppgave beskrivelse og benk når søker har avtjent verneplikt ordinær`() {
+        beregnOppgaveBenk(
+            harAvtjentVerneplikt = true,
+            harInntektFraFangstOgFiske = true,
+            erGrenseArbeider = true,
+            harAvsluttetArbeidsforholdFraKonkurs = true,
+            oppfyllerMinsteinntekt = false,
+            koronaRegelverkForMinsteinntektBrukt = false,
+            behandlendeEnhet = "4455"
+        ) shouldBe OppgaveBenk("4455", "VERNEPLIKT\n")
+    }
+
+    @Test
+    fun `Finn riktig oppgave beskrivelse og benk når søker har avtjent verneplikt IKKE verneplikt`() {
+        beregnOppgaveBenk(
+            harAvtjentVerneplikt = true,
+            harInntektFraFangstOgFiske = true,
+            erGrenseArbeider = true,
+            harAvsluttetArbeidsforholdFraKonkurs = true,
+            oppfyllerMinsteinntekt = false,
+            koronaRegelverkForMinsteinntektBrukt = false,
+            behandlendeEnhet = "4450"
+        ) shouldBe OppgaveBenk("4450", "VERNEPLIKT\n")
+    }
     @Test
     fun `Finn riktig oppgave beskrivelse og benk når søker har inntekt fra fangst og fisk ordinær`() {
         beregnOppgaveBenk(
@@ -235,6 +262,13 @@ internal class PacketMapperTest {
     fun `kan lese fangst og fisk faktum fra packet`() {
         Packet().apply { putValue("søknadsdata", "soknadsdata.json".getJsonResource()) }.also { packet ->
             packet.harInntektFraFangstOgFiske() shouldBe true
+        }
+    }
+
+    @Test
+    fun `kan lese avtjent verneplikt fra packet`() {
+        Packet().apply { putValue("søknadsdata", "soknadsdata.json".getJsonResource()) }.also { packet ->
+            packet.harAvtjentVerneplikt() shouldBe true
         }
     }
 

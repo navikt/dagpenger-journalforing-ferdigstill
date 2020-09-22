@@ -458,7 +458,7 @@
       "soknadId": 10636,
       "parrentFaktum": null,
       "key": "ikkeavtjentverneplikt",
-      "value": "true",
+      "value": "false",
       "faktumEgenskaper": [],
       "properties": {},
       "type": "BRUKERREGISTRERT"
