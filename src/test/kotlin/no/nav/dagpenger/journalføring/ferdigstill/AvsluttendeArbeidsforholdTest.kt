@@ -35,6 +35,17 @@ internal class ArbeidsforholdTest {
 
         packet.erGrenseArbeider() shouldBe true
     }
+
+    @Test
+    fun `Skal kunne hente om søker er permittert fra fiskeforedling`() {
+        val data = objectMapper.readValue(søknadWithArbeidsforhold(), Map::class.java)
+
+        val packet = Packet().apply {
+            this.putValue("søknadsdata", data)
+        }
+
+        packet.erPermittertFraFiskeForedling() shouldBe true
+    }
 }
 
 @Language("JSON")

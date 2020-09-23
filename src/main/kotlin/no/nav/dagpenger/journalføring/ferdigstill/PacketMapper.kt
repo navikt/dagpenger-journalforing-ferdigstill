@@ -58,12 +58,14 @@ internal object PacketMapper {
         val grenseArbeider = packet.erGrenseArbeider()
         val inntektFraFangstFisk = packet.harInntektFraFangstOgFiske()
         val harAvtjentVerneplikt = packet.harAvtjentVerneplikt()
+        val erPermittertFraFiskeforedling = packet.erPermittertFraFiskeForedling()
 
         return when {
             harAvtjentVerneplikt -> OppgaveBenk(packet.getStringValue(PacketKeys.BEHANDLENDE_ENHET), "VERNEPLIKT\n")
             inntektFraFangstFisk -> OppgaveBenk(packet.getStringValue(PacketKeys.BEHANDLENDE_ENHET), "FANGST OG FISKE\n")
             grenseArbeider -> OppgaveBenk("4465", "EØS\n")
             konkurs -> OppgaveBenk("4450", "Konkurs\n")
+            erPermittertFraFiskeforedling -> OppgaveBenk("4454", "FISK\n")
             kanAvslåsPåMinsteinntekt -> OppgaveBenk(packet.finnEnhetForHurtigAvslag(), if (koronaRegelverkMinsteinntektBrukt) "Minsteinntekt - mulig avslag - korona\n" else "Minsteinntekt - mulig avslag\n")
             else -> OppgaveBenk(tildeltEnhetsNrFrom(packet), henvendelse(packet).oppgavebeskrivelse)
         }
