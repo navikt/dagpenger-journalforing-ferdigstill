@@ -117,7 +117,7 @@ internal class PacketMapperTest {
             harAvsluttetArbeidsforholdFraKonkurs = true,
             oppfyllerMinsteinntekt = false,
             koronaRegelverkForMinsteinntektBrukt = false,
-        ) shouldBe OppgaveBenk("4450", "Konkurs\n")
+        ) shouldBe OppgaveBenk("4401", "Konkurs\n")
     }
 
     @Test
