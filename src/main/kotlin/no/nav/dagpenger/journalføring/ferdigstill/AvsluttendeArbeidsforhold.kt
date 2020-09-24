@@ -10,6 +10,7 @@ fun Packet.avsluttetArbeidsforhold(): AvsluttedeArbeidsforhold {
             AvsluttetArbeidsforhold(
                 sluttårsak = asÅrsak(it["properties"]["type"].asText()),
                 grensearbeider = !søknad.getBooleanFaktum("arbeidsforhold.grensearbeider", true),
+                fiskeforedling = it["properties"]["fangstogfisk"]?.asBoolean() ?: false
             )
         }
     } ?: emptyList()
@@ -21,9 +22,13 @@ fun Packet.erGrenseArbeider(): Boolean =
 fun Packet.harAvsluttetArbeidsforholdFraKonkurs(): Boolean =
     this.avsluttetArbeidsforhold().any { it.sluttårsak == AvsluttetArbeidsforhold.Sluttårsak.ARBEIDSGIVER_KONKURS }
 
+fun Packet.erPermittertFraFiskeForedling(): Boolean =
+    this.avsluttetArbeidsforhold().any { it.fiskeforedling }
+
 data class AvsluttetArbeidsforhold(
     val sluttårsak: Sluttårsak,
     val grensearbeider: Boolean,
+    val fiskeforedling: Boolean,
 ) {
     enum class Sluttårsak {
         AVSKJEDIGET,

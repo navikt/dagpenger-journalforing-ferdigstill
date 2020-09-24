@@ -24,7 +24,9 @@ internal class PacketMapperTest {
         oppfyllerMinsteinntekt: Boolean,
         koronaRegelverkForMinsteinntektBrukt: Boolean,
         behandlendeEnhet: String = "4450",
-        henvendelseType: String = "NY_SØKNAD"
+        henvendelseType: String = "NY_SØKNAD",
+        erPermittertFraFiskeforedling: Boolean = true,
+
     ): OppgaveBenk {
         lateinit var oppgaveBenk: OppgaveBenk
         mockkStatic(
@@ -36,6 +38,7 @@ internal class PacketMapperTest {
                 every { it.harInntektFraFangstOgFiske() } returns harInntektFraFangstOgFiske
                 every { it.erGrenseArbeider() } returns erGrenseArbeider
                 every { it.harAvsluttetArbeidsforholdFraKonkurs() } returns harAvsluttetArbeidsforholdFraKonkurs
+                every { it.erPermittertFraFiskeForedling() } returns erPermittertFraFiskeforedling
                 every { it.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) } returns oppfyllerMinsteinntekt
                 every { it.getNullableBoolean(PacketKeys.KORONAREGELVERK_MINSTEINNTEKT_BRUKT) } returns koronaRegelverkForMinsteinntektBrukt
                 every { it.getStringValue(PacketKeys.BEHANDLENDE_ENHET) } returns behandlendeEnhet
@@ -118,6 +121,19 @@ internal class PacketMapperTest {
     }
 
     @Test
+    fun `Finn riktig oppgave beskrivelse og benk når søker er permittert fra fiskeforedling  `() {
+        beregnOppgaveBenk(
+            harInntektFraFangstOgFiske = false,
+            erGrenseArbeider = false,
+            harAvsluttetArbeidsforholdFraKonkurs = false,
+            oppfyllerMinsteinntekt = false,
+            koronaRegelverkForMinsteinntektBrukt = true,
+            behandlendeEnhet = "4450",
+            erPermittertFraFiskeforedling = true
+        ) shouldBe OppgaveBenk("4454", "FISK\n")
+    }
+
+    @Test
     fun `Finn riktig oppgave beskrivelse og benk ved oppfyller minsteinntekt ved ordninær   `() {
         beregnOppgaveBenk(
             harInntektFraFangstOgFiske = false,
@@ -125,7 +141,8 @@ internal class PacketMapperTest {
             harAvsluttetArbeidsforholdFraKonkurs = false,
             oppfyllerMinsteinntekt = false,
             koronaRegelverkForMinsteinntektBrukt = false,
-            behandlendeEnhet = "4450"
+            behandlendeEnhet = "4450",
+            erPermittertFraFiskeforedling = false
         ) shouldBe OppgaveBenk("4451", "Minsteinntekt - mulig avslag\n")
     }
 
@@ -137,7 +154,8 @@ internal class PacketMapperTest {
             harAvsluttetArbeidsforholdFraKonkurs = false,
             oppfyllerMinsteinntekt = false,
             koronaRegelverkForMinsteinntektBrukt = false,
-            behandlendeEnhet = "4455"
+            behandlendeEnhet = "4455",
+            erPermittertFraFiskeforedling = false,
         ) shouldBe OppgaveBenk("4456", "Minsteinntekt - mulig avslag\n")
     }
 
@@ -149,7 +167,8 @@ internal class PacketMapperTest {
             harAvsluttetArbeidsforholdFraKonkurs = false,
             oppfyllerMinsteinntekt = false,
             koronaRegelverkForMinsteinntektBrukt = true,
-            behandlendeEnhet = "4450"
+            behandlendeEnhet = "4450",
+            erPermittertFraFiskeforedling = false,
         ) shouldBe OppgaveBenk("4451", "Minsteinntekt - mulig avslag - korona\n")
     }
 
@@ -162,7 +181,8 @@ internal class PacketMapperTest {
             oppfyllerMinsteinntekt = true,
             koronaRegelverkForMinsteinntektBrukt = false,
             behandlendeEnhet = "4450",
-            henvendelseType = "NY_SØKNAD"
+            henvendelseType = "NY_SØKNAD",
+            erPermittertFraFiskeforedling = false,
         ) shouldBe OppgaveBenk("4450", "Start Vedtaksbehandling - automatisk journalført.\n")
     }
 
