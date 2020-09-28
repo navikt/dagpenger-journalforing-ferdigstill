@@ -589,7 +589,7 @@ class IgnorerJournalpostTest : FreeSpec({
     val application = Application(Configuration(), mockk(), FakeUnleash())
 
     "Skal droppe behandling av journalpost" - {
-        setOf("477201031", "476557172", "475680871", "471479059", "471479060", "471478910", "467047358").map { journalpost ->
+        setOf("467048844", "477201031", "476557172", "475680871", "471479059", "471479060", "471478910", "467047358").map { journalpost ->
             withClue("Skal droppe journalpost $journalpost ") {
                 application.filterPredicates().all {
                     it.test(
