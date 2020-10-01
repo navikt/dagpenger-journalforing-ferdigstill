@@ -10,7 +10,7 @@ fun Packet.avsluttetArbeidsforhold(): AvsluttedeArbeidsforhold {
             AvsluttetArbeidsforhold(
                 sluttårsak = asÅrsak(it["properties"]["type"].asText()),
                 grensearbeider = !søknad.getBooleanFaktum("arbeidsforhold.grensearbeider", true),
-                fiskeforedling = it["properties"]["fangstogfisk"]?.asBoolean() ?: false
+                fiskeforedling = it["properties"]["fangstogfiske"]?.asBoolean() ?: false
             )
         }
     } ?: emptyList()

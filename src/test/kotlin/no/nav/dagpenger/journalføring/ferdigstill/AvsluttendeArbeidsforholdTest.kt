@@ -149,7 +149,7 @@ private fun søknadWithArbeidsforhold(
           "systemEgenskap":0
         },
         {
-          "key":"fangstogfisk",
+          "key":"fangstogfiske",
           "value":"true",
           "faktumId":776566,
           "soknadId":10636,
@@ -173,7 +173,7 @@ private fun søknadWithArbeidsforhold(
       "properties": {
         "arbeidsgivernavn": "Rakettforskeren",
         "eosland": "false",
-        "fangstogfisk": "true",
+        "fangstogfiske": "true",
         "laerling": "true",
         "skalHaT8VedleggForKontraktUtgaatt": "false",
         "datofra": "2000-01-01",
