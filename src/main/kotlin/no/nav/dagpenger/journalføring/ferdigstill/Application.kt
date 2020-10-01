@@ -22,7 +22,6 @@ import org.apache.logging.log4j.ThreadContext
 import java.util.Properties
 
 private val logger = KotlinLogging.logger {}
-private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
 internal class Application(
     private val configuration: Configuration,
@@ -42,7 +41,6 @@ internal class Application(
                 packet.getStringValue(PacketKeys.JOURNALPOST_ID)
             )
             logger.info { "Processing: $packet" }
-            sikkerlogg.info { "Processing: ${packet.toJson()}" }
 
             val readCountLimit = 15
             if (packet.getReadCount() >= readCountLimit && !unleash.isEnabled("dagpenger-journalforing-ferdigstill.skipReadCount", false)) {
