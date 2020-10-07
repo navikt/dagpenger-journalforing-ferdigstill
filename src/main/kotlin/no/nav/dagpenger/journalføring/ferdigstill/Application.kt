@@ -39,7 +39,7 @@ internal class Application(
         withLoggingContext(
             "journalpost_id" to PacketMapper.journalpostIdFrom(packet)
         ) {
-            logger.info { "Processing: $packet" }
+            logger.info { "Behandler journalpost-pakke som er lest ${packet.getStringValue("system_read_count")} ganger" }
             sikkerlogg.info {
                 "Behandler journalpost for person med naturlig ident ${PacketMapper.bruker(packet)} og aktør-id ${
                     PacketMapper.nullableAktørFrom(
