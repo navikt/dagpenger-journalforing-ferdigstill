@@ -1,6 +1,7 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
 import mu.KotlinLogging
+import mu.withLoggingContext
 import no.finn.unleash.DefaultUnleash
 import no.finn.unleash.Unleash
 import no.nav.dagpenger.events.Packet
@@ -18,7 +19,6 @@ import no.nav.dagpenger.streams.River
 import no.nav.dagpenger.streams.streamConfig
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3
 import org.apache.kafka.streams.StreamsConfig
-import org.apache.logging.log4j.ThreadContext
 import java.util.Properties
 
 private val logger = KotlinLogging.logger {}
@@ -36,23 +36,35 @@ internal class Application(
     override fun filterPredicates() = listOf(erIkkeFerdigBehandletJournalpost)
 
     override fun onPacket(packet: Packet): Packet {
-        try {
-            ThreadContext.put(
-                "x_journalpost_id",
-                packet.getStringValue(PacketKeys.JOURNALPOST_ID)
-            )
+        withLoggingContext(
+            "journalpost_id" to PacketMapper.journalpostIdFrom(packet)
+        ) {
             logger.info { "Processing: $packet" }
-            sikkerlogg.info { "Processing: ${packet.toJson()}" }
+            sikkerlogg.info {
+                "Behandler journalpost for person med naturlig ident ${PacketMapper.bruker(packet)} og aktør-id ${
+                    PacketMapper.nullableAktørFrom(
+                        packet
+                    )
+                }"
+            }
 
             val readCountLimit = 15
-            if (packet.getReadCount() >= readCountLimit && !unleash.isEnabled("dagpenger-journalforing-ferdigstill.skipReadCount", false)) {
-                logger.error { "Read count >= $readCountLimit for packet with journalpostid ${packet.getStringValue(PacketKeys.JOURNALPOST_ID)}" }
+            if (packet.getReadCount() >= readCountLimit && !unleash.isEnabled(
+                    "dagpenger-journalforing-ferdigstill.skipReadCount",
+                    false
+                )
+            ) {
+                logger.error {
+                    "Read count >= $readCountLimit for packet with journalpostid ${
+                        packet.getStringValue(
+                            PacketKeys.JOURNALPOST_ID
+                        )
+                    }"
+                }
                 throw ReadCountException()
             }
 
             return journalføringFerdigstill.handlePacket(packet)
-        } finally {
-            ThreadContext.remove("x_journalpost_id")
         }
     }
 
