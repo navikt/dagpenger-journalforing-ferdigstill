@@ -155,9 +155,9 @@ spotless {
     }
 }
 
-tasks.named("compileKotlin") {
+/*tasks.named("compileKotlin") {
     dependsOn("spotlessCheck")
-}
+}*/
 
 tasks.withType<Test> {
     useJUnitPlatform()
