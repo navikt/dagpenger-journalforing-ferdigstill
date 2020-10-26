@@ -59,7 +59,7 @@ private val devProperties = ConfigurationMap(
         "soapsecuritytokenservice.url" to "https://sts-q1.preprod.local/SecurityTokenServiceProvider/",
         "behandlearbeidsytelsesak.v1.url" to "https://arena-q1.adeo.no/ail_ws/BehandleArbeidOgAktivitetOppgave_v1",
         "ytelseskontrakt.v3.url" to "https://arena-q1.adeo.no/ail_ws/Ytelseskontrakt_v3",
-        "unleash.url" to "http://unleash.default.svc.nais.local/api",
+        "unleash.url" to "http://unleash.aura.svc.nais.local/api",
         "kafka.processing.guarantee" to StreamsConfig.AT_LEAST_ONCE
     )
 )
