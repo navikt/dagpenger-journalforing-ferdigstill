@@ -60,6 +60,7 @@ private val devProperties = ConfigurationMap(
         "behandlearbeidsytelsesak.v1.url" to "https://arena-q1.adeo.no/ail_ws/BehandleArbeidOgAktivitetOppgave_v1",
         "ytelseskontrakt.v3.url" to "https://arena-q1.adeo.no/ail_ws/Ytelseskontrakt_v3",
         "unleash.url" to "http://unleash.aura.svc.nais.local/api",
+        "ignore.journalpost" to "467199494, 453483019, 467026569",
         "kafka.processing.guarantee" to StreamsConfig.AT_LEAST_ONCE
     )
 )
@@ -78,6 +79,7 @@ private val prodProperties = ConfigurationMap(
         "behandlearbeidsytelsesak.v1.url" to "https://arena.adeo.no/ail_ws/BehandleArbeidOgAktivitetOppgave_v1",
         "ytelseskontrakt.v3.url" to "https://arena.adeo.no/ail_ws/Ytelseskontrakt_v3",
         "unleash.url" to "https://unleash.nais.adeo.no/api/",
+        "ignore.journalpost" to "467048844, 477201031, 476557172, 475680871, 471479059, 471479060, 471478910, 467047358, 485283071",
         "kafka.processing.guarantee" to StreamsConfig.AT_LEAST_ONCE
     )
 )
@@ -92,6 +94,10 @@ fun config(): Configuration {
             defaultConfiguration overriding localProperties
         }
     }
+}
+
+object IgnoreJournalPost {
+    val ignorerJournalpost: Set<String> = config().getOrNull(Key("ignore.journalpost", stringType))?.split(",")?.toSet() ?: emptySet()
 }
 
 data class Configuration(

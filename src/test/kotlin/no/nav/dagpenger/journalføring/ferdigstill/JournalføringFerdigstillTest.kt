@@ -1,8 +1,6 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
 import com.github.kittinunf.result.Result
-import io.kotest.assertions.withClue
-import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.doubles.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeTypeOf
@@ -583,23 +581,3 @@ internal class JournalføringFerdigstillTest {
         verify(exactly = 0) { journalPostApi.ferdigstill(any()) }
     }
 }
-
-class IgnorerJournalpostTest : FreeSpec({
-
-    val application = Application(Configuration(), mockk(), FakeUnleash())
-
-    "Skal droppe behandling av journalpost" - {
-        setOf("467048844", "477201031", "476557172", "475680871", "471479059", "471479060", "471478910", "467047358").map { journalpost ->
-            withClue("Skal droppe journalpost $journalpost ") {
-                application.filterPredicates().all {
-                    it.test(
-                        "",
-                        Packet().apply {
-                            this.putValue(JOURNALPOST_ID, journalpost)
-                        }
-                    )
-                } shouldBe false
-            }
-        }
-    }
-})
