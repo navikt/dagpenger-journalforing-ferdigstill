@@ -46,6 +46,17 @@ internal class ArbeidsforholdTest {
 
         packet.erPermittertFraFiskeForedling() shouldBe true
     }
+
+    @Test
+    fun `empty søknadsdata`() {
+        val data = objectMapper.readValue("{}", Map::class.java)
+
+        val packet = Packet().apply {
+            this.putValue("søknadsdata", data)
+        }
+
+        packet.harAvsluttetArbeidsforholdFraKonkurs() shouldBe false
+    }
 }
 
 @Language("JSON")

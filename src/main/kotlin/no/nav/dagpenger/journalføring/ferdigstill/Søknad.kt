@@ -30,7 +30,7 @@ private fun fromMap(json: Map<String, Any>): Søknad {
 
         object : Søknad {
             override fun getFakta(faktaNavn: String): List<JsonNode> =
-                søknadAsJson.get("fakta").filter { it["key"].asText() == faktaNavn }
+                søknadAsJson.get("fakta")?.filter { it["key"].asText() == faktaNavn } ?: emptyList()
 
             override fun getBooleanFaktum(faktaNavn: String) = getFaktumValue(
                 getFakta(faktaNavn)
