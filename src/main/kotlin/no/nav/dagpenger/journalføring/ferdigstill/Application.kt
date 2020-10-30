@@ -5,6 +5,7 @@ import mu.withLoggingContext
 import no.finn.unleash.DefaultUnleash
 import no.finn.unleash.Unleash
 import no.nav.dagpenger.events.Packet
+import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.GosysOppgaveClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.JournalpostRestApi
@@ -66,6 +67,15 @@ internal class Application(
 
     override fun onFailure(packet: Packet, error: Throwable?): Packet {
         logger.error(error) { "Feilet ved håndtering av journalpost: ${packet.getStringValue(PacketKeys.JOURNALPOST_ID)}. Pakke $packet" }
+        if (configuration.application.profile == Profile.DEV) {
+            packet.addProblem(
+                Problem(
+                    title = "Feilet ved håndtering av journalpost",
+                    detail = error?.message
+                )
+            )
+            return packet
+        }
         throw error ?: RuntimeException("Feilet ved håndtering av pakke, ukjent grunn")
     }
 }
