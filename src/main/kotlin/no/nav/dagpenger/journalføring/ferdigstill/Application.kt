@@ -18,6 +18,7 @@ import no.nav.dagpenger.oidc.StsOidcClient
 import no.nav.dagpenger.streams.River
 import no.nav.dagpenger.streams.streamConfig
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3
+import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.streams.StreamsConfig
 import java.util.Properties
 
@@ -60,6 +61,7 @@ internal class Application(
             configuration.kafka.brokers,
             configuration.kafka.credential
         )
+        properties[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
         properties[StreamsConfig.PROCESSING_GUARANTEE_CONFIG] = configuration.kafka.processingGuarantee
         return properties
     }
