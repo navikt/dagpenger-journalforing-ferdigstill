@@ -74,6 +74,7 @@ internal class PacketMapperTest {
             behandlendeEnhet = "4450"
         ) shouldBe OppgaveBenk("4450", "VERNEPLIKT\n")
     }
+
     @Test
     fun `Finn riktig oppgave beskrivelse og benk når søker har inntekt fra fangst og fisk ordinær`() {
         beregnOppgaveBenk(
@@ -289,6 +290,52 @@ internal class PacketMapperTest {
     fun `kan lese avtjent verneplikt fra packet`() {
         Packet().apply { putValue("søknadsdata", "soknadsdata.json".getJsonResource()) }.also { packet ->
             packet.harAvtjentVerneplikt() shouldBe true
+        }
+    }
+
+    @Test
+    fun `kan lese språk fra packet`() {
+        Packet().apply { putValue("søknadsdata", "soknadsdata.json".getJsonResource()) }.also { packet ->
+            packet.språk() shouldBe "nb_NO"
+        }
+    }
+
+    @Test
+    fun `kan lese antall arbeidsforhold fra packet`() {
+        Packet().apply { putValue("søknadsdata", "soknadsdata.json".getJsonResource()) }.also { packet ->
+            packet.antallArbeidsforhold() shouldBe 2
+        }
+    }
+
+    @Test
+    fun `kan lese andre ytelser fra packet`() {
+        Packet().apply { putValue("søknadsdata", "soknadsdata.json".getJsonResource()) }.also { packet ->
+            packet.andreYtelser() shouldBe false
+        }
+    }
+
+    @Test
+    fun `kan lese egen næring fra packet`() {
+        Packet().apply { putValue("søknadsdata", "soknadsdata.json".getJsonResource()) }.also { packet ->
+            packet.egenNæring().also {
+                it["egenNæring"] shouldBe false
+                it["gårdsbruk"] shouldBe false
+                it["fangstOgFiske"] shouldBe false
+            }
+        }
+    }
+
+    @Test
+    fun `kan lese arbeidstilstand fra packet`() {
+        Packet().apply { putValue("søknadsdata", "soknadsdata.json".getJsonResource()) }.also { packet ->
+            packet.arbeidstilstand() shouldBe "fastArbeidstid"
+        }
+    }
+
+    @Test
+    fun `kan lese utdanning fra packet`() {
+        Packet().apply { putValue("søknadsdata", "soknadsdata.json".getJsonResource()) }.also { packet ->
+            packet.utdanning() shouldBe "ikkeUtdanning"
         }
     }
 

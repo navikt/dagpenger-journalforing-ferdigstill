@@ -252,3 +252,26 @@ internal class MarkerFerdigBehandlingsChain(neste: BehandlingsChain?) : Behandli
         return@instrument neste?.håndter(packet) ?: packet
     }
 }
+
+internal class StatistikkChain(neste: BehandlingsChain?) : BehandlingsChain(neste) {
+    override fun kanBehandle(packet: Packet) = true
+
+    override fun håndter(packet: Packet): Packet = instrument {
+        if (kanBehandle(packet)) {
+            Metrics.andreYtelser.labels(packet.andreYtelser().toString()).inc()
+            Metrics.antallArbeidsforhold.labels(packet.antallArbeidsforhold().toString()).inc()
+            Metrics.arbeidstilstand.labels(packet.arbeidstilstand()).inc()
+            Metrics.språk.labels(packet.språk()).inc()
+            Metrics.utdanning.labels(packet.utdanning()).inc()
+            packet.egenNæring().also {
+                Metrics.egenNæring.labels(
+                    it["egenNæring"].toString(),
+                    it["gårdsbruk"].toString(),
+                    it["fangstOgFiske"].toString()
+                ).inc()
+            }
+        }
+
+        return@instrument neste?.håndter(packet) ?: packet
+    }
+}

@@ -21,7 +21,8 @@ internal class JournalføringFerdigstill(
     vilkårtester: Vilkårtester
 ) {
 
-    val ferdigBehandlingsChain = MarkerFerdigBehandlingsChain(null)
+    val statistikkChain = StatistikkChain(null)
+    val ferdigBehandlingsChain = MarkerFerdigBehandlingsChain(statistikkChain)
     val manuellJournalføringsBehandlingsChain =
         ManuellJournalføringsBehandlingsChain(manuellJournalføringsOppgaveClient, ferdigBehandlingsChain)
     val ferdigstillOppgaveChain = FerdigstillJournalpostBehandlingsChain(journalPostApi, manuellJournalføringsBehandlingsChain)

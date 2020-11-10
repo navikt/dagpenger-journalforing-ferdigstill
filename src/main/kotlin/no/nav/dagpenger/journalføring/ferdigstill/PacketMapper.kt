@@ -18,6 +18,40 @@ internal fun Packet.harInntektFraFangstOgFiske(): Boolean =
 internal fun Packet.harAvtjentVerneplikt(): Boolean =
     getSøknad()?.getFakta("ikkeavtjentverneplikt")?.getOrNull(0)?.get("value")?.asBoolean()?.not() ?: false
 
+internal fun Packet.språk(): String =
+    getSøknad()?.getFakta("skjema.sprak")?.getOrNull(0)?.get("value")?.asText() ?: "ukjent"
+
+internal fun Packet.antallArbeidsforhold(): Int =
+    getSøknad()?.getFakta("arbeidsforhold")?.size ?: 0
+
+internal fun Packet.andreYtelser(): Boolean =
+    getSøknad()?.getFakta("andreytelser.ytelser.ingenytelse")?.getOrNull(0)?.get("value")?.asBoolean()?.not() ?: false
+
+internal fun Packet.verneplikt(): Boolean =
+    getSøknad()?.getFakta("ikkeavtjentverneplikt")?.getOrNull(0)?.get("value")?.asBoolean()?.not() ?: false
+
+internal fun Packet.egenNæring(): Map<String, Boolean> =
+    mapOf(
+        "egenNæring" to (
+            getSøknad()?.getFakta("egennaering.driveregennaering")?.getOrNull(0)?.get("value")?.asBoolean()
+                ?: false
+            ),
+        "gårdsbruk" to (
+            getSøknad()?.getFakta("egennaering.gardsbruk")?.getOrNull(0)?.get("value")?.asBoolean()
+                ?: false
+            ),
+        "fangstOgFiske" to (
+            getSøknad()?.getFakta("egennaering.fangstogfiske")?.getOrNull(0)?.get("value")?.asBoolean()
+                ?: false
+            )
+    )
+
+internal fun Packet.arbeidstilstand(): String =
+    getSøknad()?.getFakta("arbeidsforhold.arbeidstilstand")?.getOrNull(0)?.get("value")?.asText() ?: "ukjent"
+
+internal fun Packet.utdanning(): String =
+    getSøknad()?.getFakta("utdanning")?.getOrNull(0)?.get("value")?.asText() ?: "ukjent"
+
 internal object PacketMapper {
     val dokumentJsonAdapter = moshiInstance.adapter<List<Dokument>>(
         Types.newParameterizedType(
@@ -62,11 +96,17 @@ internal object PacketMapper {
 
         return when {
             harAvtjentVerneplikt -> OppgaveBenk(packet.getStringValue(PacketKeys.BEHANDLENDE_ENHET), "VERNEPLIKT\n")
-            inntektFraFangstFisk -> OppgaveBenk(packet.getStringValue(PacketKeys.BEHANDLENDE_ENHET), "FANGST OG FISKE\n")
+            inntektFraFangstFisk -> OppgaveBenk(
+                packet.getStringValue(PacketKeys.BEHANDLENDE_ENHET),
+                "FANGST OG FISKE\n"
+            )
             grenseArbeider -> OppgaveBenk("4465", "EØS\n")
             konkurs -> OppgaveBenk("4401", "Konkurs\n")
             erPermittertFraFiskeforedling -> OppgaveBenk("4454", "FISK\n")
-            kanAvslåsPåMinsteinntekt -> OppgaveBenk(packet.finnEnhetForHurtigAvslag(), if (koronaRegelverkMinsteinntektBrukt) "Minsteinntekt - mulig avslag - korona\n" else "Minsteinntekt - mulig avslag\n")
+            kanAvslåsPåMinsteinntekt -> OppgaveBenk(
+                packet.finnEnhetForHurtigAvslag(),
+                if (koronaRegelverkMinsteinntektBrukt) "Minsteinntekt - mulig avslag - korona\n" else "Minsteinntekt - mulig avslag\n"
+            )
             else -> OppgaveBenk(tildeltEnhetsNrFrom(packet), henvendelse(packet).oppgavebeskrivelse)
         }
     }

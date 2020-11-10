@@ -37,4 +37,52 @@ internal object Metrics {
 
     fun inngangsvilkårResultatTellerInc(oppfyllerKrav: Boolean) =
         inngangsvilkårResultatTeller.labels(oppfyllerKrav.toString()).inc()
+
+    val antallArbeidsforhold: Counter = Counter
+        .build()
+        .namespace(DAGPENGER_NAMESPACE)
+        .name("soknad_arbeidsforhold")
+        .help("Antall arbeidsforhold i en søknad")
+        .labelNames("arbeidsforhold")
+        .register()
+
+    val språk: Counter = Counter
+        .build()
+        .namespace(DAGPENGER_NAMESPACE)
+        .name("soknad_sprak")
+        .help("Språk i en søknad")
+        .labelNames("sprak")
+        .register()
+
+    val andreYtelser: Counter = Counter
+        .build()
+        .namespace(DAGPENGER_NAMESPACE)
+        .name("soknad_andre_ytelser")
+        .help("Om søknaden har andre ytelser")
+        .labelNames("andre_ytelser")
+        .register()
+
+    val utdanning: Counter = Counter
+        .build()
+        .namespace(DAGPENGER_NAMESPACE)
+        .name("soknad_utdanning")
+        .help("Om søkeren er under utdanning")
+        .labelNames("utdanning")
+        .register()
+
+    val arbeidstilstand: Counter = Counter
+        .build()
+        .namespace(DAGPENGER_NAMESPACE)
+        .name("soknad_arbeidstilstand")
+        .help("Hva slags arbeidstilknyting søkeren har")
+        .labelNames("arbeidstilstand")
+        .register()
+
+    val egenNæring: Counter = Counter
+        .build()
+        .namespace(DAGPENGER_NAMESPACE)
+        .name("soknad_egen_naring")
+        .help("Om søker har noe egen næring")
+        .labelNames("egenNaring", "gardsbruk", "fangstOgFiske")
+        .register()
 }
