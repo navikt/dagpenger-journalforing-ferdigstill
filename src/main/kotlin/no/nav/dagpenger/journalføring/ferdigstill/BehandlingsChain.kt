@@ -258,12 +258,12 @@ internal class StatistikkChain(neste: BehandlingsChain?) : BehandlingsChain(nest
 
     override fun håndter(packet: Packet): Packet = instrument {
         if (kanBehandle(packet)) {
-            Metrics.andreYtelser.labels(packet.andreYtelser().toString()).inc()
-            Metrics.antallArbeidsforhold.labels(packet.antallArbeidsforhold().toString()).inc()
-            Metrics.arbeidstilstand.labels(packet.arbeidstilstand()).inc()
-            Metrics.språk.labels(packet.språk()).inc()
-            Metrics.utdanning.labels(packet.utdanning()).inc()
-            packet.egenNæring().also {
+            packet.andreYtelser()?.let { Metrics.andreYtelser.labels(it.toString()).inc() }
+            packet.antallArbeidsforhold()?.let { Metrics.antallArbeidsforhold.labels(it.toString()).inc() }
+            packet.arbeidstilstand()?.let { Metrics.arbeidstilstand.labels(it).inc() }
+            packet.språk()?.let { Metrics.språk.labels(it).inc() }
+            packet.utdanning()?.let { Metrics.utdanning.labels(it).inc() }
+            packet.egenNæring().takeIf { it.all { svar -> svar.value != null } }?.let {
                 Metrics.egenNæring.labels(
                     it["egenNæring"].toString(),
                     it["gårdsbruk"].toString(),

@@ -18,39 +18,36 @@ internal fun Packet.harInntektFraFangstOgFiske(): Boolean =
 internal fun Packet.harAvtjentVerneplikt(): Boolean =
     getSøknad()?.getFakta("ikkeavtjentverneplikt")?.getOrNull(0)?.get("value")?.asBoolean()?.not() ?: false
 
-internal fun Packet.språk(): String =
-    getSøknad()?.getFakta("skjema.sprak")?.getOrNull(0)?.get("value")?.asText() ?: "ukjent"
+internal fun Packet.språk(): String? =
+    getSøknad()?.getFakta("skjema.sprak")?.getOrNull(0)?.get("value")?.asText()
 
-internal fun Packet.antallArbeidsforhold(): Int =
-    getSøknad()?.getFakta("arbeidsforhold")?.size ?: 0
+internal fun Packet.antallArbeidsforhold(): Int? =
+    getSøknad()?.getFakta("arbeidsforhold")?.size
 
-internal fun Packet.andreYtelser(): Boolean =
-    getSøknad()?.getFakta("andreytelser.ytelser.ingenytelse")?.getOrNull(0)?.get("value")?.asBoolean()?.not() ?: false
+internal fun Packet.andreYtelser(): Boolean? =
+    getSøknad()?.getFakta("andreytelser.ytelser.ingenytelse")?.getOrNull(0)?.get("value")?.asBoolean()?.not()
 
-internal fun Packet.verneplikt(): Boolean =
-    getSøknad()?.getFakta("ikkeavtjentverneplikt")?.getOrNull(0)?.get("value")?.asBoolean()?.not() ?: false
+internal fun Packet.verneplikt(): Boolean? =
+    getSøknad()?.getFakta("ikkeavtjentverneplikt")?.getOrNull(0)?.get("value")?.asBoolean()?.not()
 
-internal fun Packet.egenNæring(): Map<String, Boolean> =
+internal fun Packet.egenNæring(): Map<String, Boolean?> =
     mapOf(
         "egenNæring" to (
             getSøknad()?.getFakta("egennaering.driveregennaering")?.getOrNull(0)?.get("value")?.asBoolean()
-                ?: false
             ),
         "gårdsbruk" to (
             getSøknad()?.getFakta("egennaering.gardsbruk")?.getOrNull(0)?.get("value")?.asBoolean()
-                ?: false
             ),
         "fangstOgFiske" to (
             getSøknad()?.getFakta("egennaering.fangstogfiske")?.getOrNull(0)?.get("value")?.asBoolean()
-                ?: false
             )
     )
 
-internal fun Packet.arbeidstilstand(): String =
-    getSøknad()?.getFakta("arbeidsforhold.arbeidstilstand")?.getOrNull(0)?.get("value")?.asText() ?: "ukjent"
+internal fun Packet.arbeidstilstand(): String? =
+    getSøknad()?.getFakta("arbeidsforhold.arbeidstilstand")?.getOrNull(0)?.get("value")?.asText()
 
-internal fun Packet.utdanning(): String =
-    getSøknad()?.getFakta("utdanning")?.getOrNull(0)?.get("value")?.asText() ?: "ukjent"
+internal fun Packet.utdanning(): String? =
+    getSøknad()?.getFakta("utdanning")?.getOrNull(0)?.get("value")?.asText()
 
 internal object PacketMapper {
     val dokumentJsonAdapter = moshiInstance.adapter<List<Dokument>>(

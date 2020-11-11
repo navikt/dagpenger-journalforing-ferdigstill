@@ -339,6 +339,13 @@ internal class PacketMapperTest {
         }
     }
 
+    @Test
+    fun `gir null om datapunktet mangler fra packet`() {
+        Packet().apply { putValue("søknadsdata", emptyMap<String?, String?>()) }.also { packet ->
+            packet.utdanning() shouldBe null
+        }
+    }
+
     private fun String.getJsonResource(): Map<*, *> {
         val objectMapper = jacksonObjectMapper()
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
