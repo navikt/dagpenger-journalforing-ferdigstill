@@ -254,7 +254,7 @@ internal class MarkerFerdigBehandlingsChain(neste: BehandlingsChain?) : Behandli
 }
 
 internal class StatistikkChain(neste: BehandlingsChain?) : BehandlingsChain(neste) {
-    override fun kanBehandle(packet: Packet) = true
+    override fun kanBehandle(packet: Packet): Boolean = PacketMapper.henvendelse(packet) == NyttSaksforhold
 
     override fun håndter(packet: Packet): Packet = instrument {
         if (kanBehandle(packet)) {
