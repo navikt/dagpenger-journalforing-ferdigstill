@@ -91,7 +91,7 @@ internal object Metrics {
         .namespace(DAGPENGER_NAMESPACE)
         .name("soknad_gardsbruk")
         .help("Om søker har eget gårdsbruk")
-        .labelNames( "gardsbruk")
+        .labelNames("gardsbruk")
         .register()
 
     val fangstOgFiske: Counter = Counter
