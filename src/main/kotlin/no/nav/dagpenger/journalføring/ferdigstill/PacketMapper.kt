@@ -33,13 +33,13 @@ internal fun Packet.verneplikt(): Boolean? =
 internal fun Packet.egenNæring(): Map<String, Boolean?> =
     mapOf(
         "egenNæring" to (
-            getSøknad()?.getFakta("egennaering.driveregennaering")?.getOrNull(0)?.get("value")?.asBoolean()
+            getSøknad()?.getFakta("egennaering.driveregennaering")?.getOrNull(0)?.get("value")?.asBoolean()?.not()
             ),
         "gårdsbruk" to (
-            getSøknad()?.getFakta("egennaering.gardsbruk")?.getOrNull(0)?.get("value")?.asBoolean()
+            getSøknad()?.getFakta("egennaering.gardsbruk")?.getOrNull(0)?.get("value")?.asBoolean()?.not()
             ),
         "fangstOgFiske" to (
-            getSøknad()?.getFakta("egennaering.fangstogfiske")?.getOrNull(0)?.get("value")?.asBoolean()
+            getSøknad()?.getFakta("egennaering.fangstogfiske")?.getOrNull(0)?.get("value")?.asBoolean()?.not()
             )
     )
 
