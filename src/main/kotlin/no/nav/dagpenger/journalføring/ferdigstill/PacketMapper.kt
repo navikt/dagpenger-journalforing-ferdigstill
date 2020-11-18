@@ -30,18 +30,14 @@ internal fun Packet.andreYtelser(): Boolean? =
 internal fun Packet.verneplikt(): Boolean? =
     getSøknad()?.getFakta("ikkeavtjentverneplikt")?.getOrNull(0)?.get("value")?.asBoolean()?.not()
 
-internal fun Packet.egenNæring(): Map<String, Boolean?> =
-    mapOf(
-        "egenNæring" to (
-            getSøknad()?.getFakta("egennaering.driveregennaering")?.getOrNull(0)?.get("value")?.asBoolean()?.not()
-            ),
-        "gårdsbruk" to (
-            getSøknad()?.getFakta("egennaering.gardsbruk")?.getOrNull(0)?.get("value")?.asBoolean()?.not()
-            ),
-        "fangstOgFiske" to (
-            getSøknad()?.getFakta("egennaering.fangstogfiske")?.getOrNull(0)?.get("value")?.asBoolean()?.not()
-            )
-    )
+internal fun Packet.egenNæring() =
+    getSøknad()?.getFakta("egennaering.driveregennaering")?.getOrNull(0)?.get("value")?.asBoolean()?.not()
+
+internal fun Packet.gårdsbruk() =
+    getSøknad()?.getFakta("egennaering.gardsbruk")?.getOrNull(0)?.get("value")?.asBoolean()?.not()
+
+internal fun Packet.fangstOgFiske() =
+    getSøknad()?.getFakta("egennaering.fangstogfiske")?.getOrNull(0)?.get("value")?.asBoolean()?.not()
 
 internal fun Packet.arbeidstilstand(): String? =
     getSøknad()?.getFakta("arbeidsforhold.arbeidstilstand")?.getOrNull(0)?.get("value")?.asText()

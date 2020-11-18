@@ -83,6 +83,22 @@ internal object Metrics {
         .namespace(DAGPENGER_NAMESPACE)
         .name("soknad_egen_naring")
         .help("Om søker har noe egen næring")
-        .labelNames("egenNaring", "gardsbruk", "fangstOgFiske")
+        .labelNames("egenNaring")
+        .register()
+
+    val gårdsbruk: Counter = Counter
+        .build()
+        .namespace(DAGPENGER_NAMESPACE)
+        .name("soknad_gardsbruk")
+        .help("Om søker har eget gårdsbruk")
+        .labelNames( "gardsbruk")
+        .register()
+
+    val fangstOgFiske: Counter = Counter
+        .build()
+        .namespace(DAGPENGER_NAMESPACE)
+        .name("soknad_fangstOgFiske")
+        .help("Om søker har noe egen næring")
+        .labelNames("fangstOgFiske")
         .register()
 }

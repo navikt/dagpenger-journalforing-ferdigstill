@@ -317,11 +317,7 @@ internal class PacketMapperTest {
     @Test
     fun `kan lese egen næring fra packet`() {
         Packet().apply { putValue("søknadsdata", "soknadsdata.json".getJsonResource()) }.also { packet ->
-            packet.egenNæring().also {
-                it["egenNæring"] shouldBe false
-                it["gårdsbruk"] shouldBe false
-                it["fangstOgFiske"] shouldBe false
-            }
+            packet.egenNæring() shouldBe false
         }
     }
 
