@@ -79,7 +79,7 @@ private val prodProperties = ConfigurationMap(
         "behandlearbeidsytelsesak.v1.url" to "https://arena.adeo.no/ail_ws/BehandleArbeidOgAktivitetOppgave_v1",
         "ytelseskontrakt.v3.url" to "https://arena.adeo.no/ail_ws/Ytelseskontrakt_v3",
         "unleash.url" to "https://unleash.nais.io/api/",
-        "ignore.journalpost" to "467048844, 477201031, 476557172, 475680871, 471479059, 471479060, 471478910, 467047358, 485283071, 490603325",
+        "ignore.journalpost" to "467048844, 477201031, 476557172, 475680871, 471479059, 471479060, 471478910, 467047358, 485283071, 490603325, 490587791",
         "kafka.processing.guarantee" to StreamsConfig.AT_LEAST_ONCE
     )
 )
