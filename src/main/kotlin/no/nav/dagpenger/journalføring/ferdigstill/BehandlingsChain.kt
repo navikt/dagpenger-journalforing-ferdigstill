@@ -266,6 +266,15 @@ internal class StatistikkChain(neste: BehandlingsChain?) : BehandlingsChain(nest
             packet.egenNæring()?.let { Metrics.egenNæring.labels(it.toString()).inc() }
             packet.gårdsbruk()?.let { Metrics.gårdsbruk.labels(it.toString()).inc() }
             packet.fangstOgFiske()?.let { Metrics.fangstOgFiske.labels(it.toString()).inc() }
+            packet.reellArbeidssøker()?.let {
+                Metrics.reellArbeidssøker.labels(
+                    it.villigAlle.toString(),
+                    it["villigdeltid"].toString(),
+                    it["villigpendle"].toString(),
+                    it["villighelse"].toString(),
+                    it["villigjobb"].toString()
+                ).inc()
+            }
         }
 
         return@instrument neste?.håndter(packet) ?: packet

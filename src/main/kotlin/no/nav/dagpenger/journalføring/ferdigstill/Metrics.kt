@@ -3,8 +3,7 @@ package no.nav.dagpenger.journalføring.ferdigstill
 import io.prometheus.client.Counter
 
 internal object Metrics {
-
-    private val DAGPENGER_NAMESPACE = "dagpenger"
+    private const val DAGPENGER_NAMESPACE = "dagpenger"
 
     private val jpFerdigstiltCounter = Counter
         .build()
@@ -100,5 +99,19 @@ internal object Metrics {
         .name("soknad_fangstOgFiske")
         .help("Om søker har noe egen næring")
         .labelNames("fangstOgFiske")
+        .register()
+
+    val reellArbeidssøker: Counter = Counter
+        .build()
+        .namespace(DAGPENGER_NAMESPACE)
+        .name("soknad_reellArbeidssoker")
+        .help("Om søker anser seg som reell arbeidssøker")
+        .labelNames(
+            "villigAlle",
+            "villigDeltid",
+            "villigPendle",
+            "villigHelse",
+            "villigJobb"
+        )
         .register()
 }

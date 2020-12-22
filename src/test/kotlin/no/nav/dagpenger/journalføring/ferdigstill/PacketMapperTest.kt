@@ -334,6 +334,13 @@ internal class PacketMapperTest {
             packet.utdanning() shouldBe "ikkeUtdanning"
         }
     }
+    @Test
+    fun `kan lese reell arbeidssøker fra packet`() {
+        Packet().apply { putValue("søknadsdata", "soknadsdata.json".getJsonResource()) }.also { packet ->
+            packet.reellArbeidssøker().villigAlle shouldBe true
+            packet.reellArbeidssøker()["villigdeltid"] shouldBe true
+        }
+    }
 
     @Test
     fun `gir null om datapunktet mangler fra packet`() {

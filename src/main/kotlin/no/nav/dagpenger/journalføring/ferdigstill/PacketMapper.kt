@@ -18,6 +18,21 @@ internal fun Packet.harInntektFraFangstOgFiske(): Boolean =
 internal fun Packet.harAvtjentVerneplikt(): Boolean =
     getSøknad()?.getFakta("ikkeavtjentverneplikt")?.getOrNull(0)?.get("value")?.asBoolean()?.not() ?: false
 
+typealias ReellArbeidssøker = Map<String, Boolean?>
+
+internal val ReellArbeidssøker.villigAlle get() = values.all { it ?: false }
+
+internal fun Packet.reellArbeidssøker(): ReellArbeidssøker =
+    mapOf(
+        "villigdeltid" to getSøknad()?.getFakta("reellarbeidssoker.villigdeltid")?.getOrNull(0)?.get("value")
+            ?.asBoolean(),
+        "villigpendle" to getSøknad()?.getFakta("reellarbeidssoker.villigpendle")?.getOrNull(0)?.get("value")
+            ?.asBoolean(),
+        "villighelse" to getSøknad()?.getFakta("reellarbeidssoker.villighelse")?.getOrNull(0)?.get("value")
+            ?.asBoolean(),
+        "villigjobb" to getSøknad()?.getFakta("reellarbeidssoker.villigjobb")?.getOrNull(0)?.get("value")?.asBoolean()
+    )
+
 internal fun Packet.språk(): String? =
     getSøknad()?.getFakta("skjema.sprak")?.getOrNull(0)?.get("value")?.asText()
 
