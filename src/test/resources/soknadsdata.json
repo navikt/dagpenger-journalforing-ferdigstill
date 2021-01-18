@@ -414,6 +414,16 @@
       "type": "BRUKERREGISTRERT"
     },
     {
+      "faktumId": 14,
+      "soknadId": 10636,
+      "parrentFaktum": null,
+      "key": "eosarbeidsforhold.jobbetieos",
+      "value": "false",
+      "faktumEgenskaper": [],
+      "properties": {},
+      "type": "BRUKERREGISTRERT"
+    },
+    {
       "faktumId": 776468,
       "soknadId": 10636,
       "parrentFaktum": null,

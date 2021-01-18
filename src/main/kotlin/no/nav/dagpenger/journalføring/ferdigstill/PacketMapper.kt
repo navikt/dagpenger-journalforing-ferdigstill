@@ -15,6 +15,9 @@ import java.time.ZoneId
 internal fun Packet.harInntektFraFangstOgFiske(): Boolean =
     this.getSøknad()?.getBooleanFaktum("egennaering.fangstogfiske", false)?.not() ?: false
 
+internal fun Packet.harEøsArbeidsforhold(): Boolean =
+    this.getSøknad()?.getBooleanFaktum("eosarbeidsforhold.jobbetieos", true)?.not() ?: false
+
 internal fun Packet.harAvtjentVerneplikt(): Boolean =
     getSøknad()?.getFakta("ikkeavtjentverneplikt")?.getOrNull(0)?.get("value")?.asBoolean()?.not() ?: false
 
@@ -98,11 +101,13 @@ internal object PacketMapper {
             packet.getNullableBoolean(PacketKeys.KORONAREGELVERK_MINSTEINNTEKT_BRUKT) == true
         val konkurs = packet.harAvsluttetArbeidsforholdFraKonkurs()
         val grenseArbeider = packet.erGrenseArbeider()
+        val eøsArbeidsforhold = packet.harEøsArbeidsforhold()
         val inntektFraFangstFisk = packet.harInntektFraFangstOgFiske()
         val harAvtjentVerneplikt = packet.harAvtjentVerneplikt()
         val erPermittertFraFiskeforedling = packet.erPermittertFraFiskeForedling()
 
         return when {
+            eøsArbeidsforhold -> OppgaveBenk("4470", "MULIG SAMMENLEGGING – EØS")
             harAvtjentVerneplikt -> OppgaveBenk(packet.getStringValue(PacketKeys.BEHANDLENDE_ENHET), "VERNEPLIKT\n")
             inntektFraFangstFisk -> OppgaveBenk(
                 packet.getStringValue(PacketKeys.BEHANDLENDE_ENHET),

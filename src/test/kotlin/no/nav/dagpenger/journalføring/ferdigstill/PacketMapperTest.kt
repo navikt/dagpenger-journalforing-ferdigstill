@@ -17,6 +17,7 @@ import org.junit.jupiter.api.fail
 internal class PacketMapperTest {
 
     private fun beregnOppgaveBenk(
+        harEøsArbeidsforhold: Boolean = false,
         harAvtjentVerneplikt: Boolean = false,
         harInntektFraFangstOgFiske: Boolean,
         erGrenseArbeider: Boolean,
@@ -34,6 +35,7 @@ internal class PacketMapperTest {
             "no.nav.dagpenger.journalføring.ferdigstill.PacketMapperKt"
         ) {
             val packet = mockk<Packet>(relaxed = false).also {
+                every { it.harEøsArbeidsforhold() } returns harEøsArbeidsforhold
                 every { it.harAvtjentVerneplikt() } returns harAvtjentVerneplikt
                 every { it.harInntektFraFangstOgFiske() } returns harInntektFraFangstOgFiske
                 every { it.erGrenseArbeider() } returns erGrenseArbeider
@@ -50,8 +52,9 @@ internal class PacketMapperTest {
     }
 
     @Test
-    fun `Finn riktig oppgave beskrivelse og benk når søker har avtjent verneplikt ordinær`() {
+    fun `Finn riktig oppgave beskrivelse og benk når søker har eøs arbeidsforhold de siste 3 årene `() {
         beregnOppgaveBenk(
+            harEøsArbeidsforhold = true,
             harAvtjentVerneplikt = true,
             harInntektFraFangstOgFiske = true,
             erGrenseArbeider = true,
@@ -59,12 +62,13 @@ internal class PacketMapperTest {
             oppfyllerMinsteinntekt = false,
             koronaRegelverkForMinsteinntektBrukt = false,
             behandlendeEnhet = "4455"
-        ) shouldBe OppgaveBenk("4455", "VERNEPLIKT\n")
+        ) shouldBe OppgaveBenk("4470", "MULIG SAMMENLEGGING – EØS")
     }
 
     @Test
     fun `Finn riktig oppgave beskrivelse og benk når søker har avtjent verneplikt IKKE verneplikt`() {
         beregnOppgaveBenk(
+            harEøsArbeidsforhold = false,
             harAvtjentVerneplikt = true,
             harInntektFraFangstOgFiske = true,
             erGrenseArbeider = true,
@@ -78,6 +82,7 @@ internal class PacketMapperTest {
     @Test
     fun `Finn riktig oppgave beskrivelse og benk når søker har inntekt fra fangst og fisk ordinær`() {
         beregnOppgaveBenk(
+            harEøsArbeidsforhold = false,
             harInntektFraFangstOgFiske = true,
             erGrenseArbeider = true,
             harAvsluttetArbeidsforholdFraKonkurs = true,
@@ -90,6 +95,7 @@ internal class PacketMapperTest {
     @Test
     fun `Finn riktig oppgave beskrivelse og benk når søker har inntekt fra fangst og fisk IKKE permttert`() {
         beregnOppgaveBenk(
+            harEøsArbeidsforhold = false,
             harInntektFraFangstOgFiske = true,
             erGrenseArbeider = true,
             harAvsluttetArbeidsforholdFraKonkurs = true,
@@ -102,6 +108,7 @@ internal class PacketMapperTest {
     @Test
     fun `Finn riktig oppgave beskrivelse når søker er grensearbeider `() {
         beregnOppgaveBenk(
+            harEøsArbeidsforhold = false,
             harInntektFraFangstOgFiske = false,
             erGrenseArbeider = true,
             harAvsluttetArbeidsforholdFraKonkurs = true,
@@ -113,6 +120,7 @@ internal class PacketMapperTest {
     @Test
     fun `Finn riktig oppgave beskrivelse ved Konkurs `() {
         beregnOppgaveBenk(
+            harEøsArbeidsforhold = false,
             harInntektFraFangstOgFiske = false,
             erGrenseArbeider = false,
             harAvsluttetArbeidsforholdFraKonkurs = true,
@@ -124,6 +132,7 @@ internal class PacketMapperTest {
     @Test
     fun `Finn riktig oppgave beskrivelse og benk når søker er permittert fra fiskeforedling  `() {
         beregnOppgaveBenk(
+            harEøsArbeidsforhold = false,
             harInntektFraFangstOgFiske = false,
             erGrenseArbeider = false,
             harAvsluttetArbeidsforholdFraKonkurs = false,
@@ -137,6 +146,7 @@ internal class PacketMapperTest {
     @Test
     fun `Finn riktig oppgave beskrivelse og benk ved oppfyller minsteinntekt ved ordninær   `() {
         beregnOppgaveBenk(
+            harEøsArbeidsforhold = false,
             harInntektFraFangstOgFiske = false,
             erGrenseArbeider = false,
             harAvsluttetArbeidsforholdFraKonkurs = false,
@@ -150,6 +160,7 @@ internal class PacketMapperTest {
     @Test
     fun `Finn riktig oppgave beskrivelse og benk ved oppfyller minsteinntekt ved permittering   `() {
         beregnOppgaveBenk(
+            harEøsArbeidsforhold = false,
             harInntektFraFangstOgFiske = false,
             erGrenseArbeider = false,
             harAvsluttetArbeidsforholdFraKonkurs = false,
@@ -163,6 +174,7 @@ internal class PacketMapperTest {
     @Test
     fun `Finn riktig oppgave beskrivelse og benk ved oppfyller minsteinntekt ved korona regler   `() {
         beregnOppgaveBenk(
+            harEøsArbeidsforhold = false,
             harInntektFraFangstOgFiske = false,
             erGrenseArbeider = false,
             harAvsluttetArbeidsforholdFraKonkurs = false,
@@ -176,6 +188,7 @@ internal class PacketMapperTest {
     @Test
     fun ` Finn riktig oppgavebeskrivelse ved ny søknad `() {
         beregnOppgaveBenk(
+            harEøsArbeidsforhold = false,
             harInntektFraFangstOgFiske = false,
             erGrenseArbeider = false,
             harAvsluttetArbeidsforholdFraKonkurs = false,
@@ -283,6 +296,13 @@ internal class PacketMapperTest {
     fun `kan lese fangst og fisk faktum fra packet`() {
         Packet().apply { putValue("søknadsdata", "soknadsdata.json".getJsonResource()) }.also { packet ->
             packet.harInntektFraFangstOgFiske() shouldBe true
+        }
+    }
+
+    @Test
+    fun `kan lese jobbet i eøs faktum fra packet`() {
+        Packet().apply { putValue("søknadsdata", "soknadsdata.json".getJsonResource()) }.also { packet ->
+            packet.harEøsArbeidsforhold() shouldBe true
         }
     }
 

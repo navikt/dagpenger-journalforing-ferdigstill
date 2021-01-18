@@ -149,7 +149,7 @@ data class Configuration(
         val httpPort: Int = config()[Key("application.httpPort", intType)],
         val name: String = config()[Key("application.name", stringType)],
         val unleashConfig: UnleashConfig = UnleashConfig.builder()
-            .appName(config().getOrElse(Key("app.name", stringType), "dagpenger-journalforing-ferdigstill"))
+            .appName(config().getOrElse(Key("app.name", stringType), "dagpenger-journalføring-ferdigstill"))
             .instanceId(getHostname())
             .unleashAPI(config()[Key("unleash.url", stringType)])
             .build(),
