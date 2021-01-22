@@ -62,7 +62,7 @@ internal class PacketMapperTest {
             oppfyllerMinsteinntekt = false,
             koronaRegelverkForMinsteinntektBrukt = false,
             behandlendeEnhet = "4455"
-        ) shouldBe OppgaveBenk("4470", "MULIG SAMMENLEGGING – EØS")
+        ) shouldBe OppgaveBenk("4470", "MULIG SAMMENLEGGING - EØS\n")
     }
 
     @Test

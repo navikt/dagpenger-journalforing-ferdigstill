@@ -104,9 +104,9 @@ internal object Metrics {
     val jobbetieøs: Counter = Counter
         .build()
         .namespace(DAGPENGER_NAMESPACE)
-        .name("soknad_jobbetieøs")
+        .name("soknad_jobbetieos")
         .help("Om søker har arbeidshold i eøs de siste 36 måneder")
-        .labelNames("jobbetieøs")
+        .labelNames("jobbetieos")
         .register()
 
     val reellArbeidssøker: Counter = Counter
