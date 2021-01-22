@@ -266,6 +266,7 @@ internal class StatistikkChain(neste: BehandlingsChain?) : BehandlingsChain(nest
             packet.egenNæring()?.let { Metrics.egenNæring.labels(it.toString()).inc() }
             packet.gårdsbruk()?.let { Metrics.gårdsbruk.labels(it.toString()).inc() }
             packet.fangstOgFiske()?.let { Metrics.fangstOgFiske.labels(it.toString()).inc() }
+            packet.harEøsArbeidsforhold().let { Metrics.jobbetieøs.labels(it.toString()).inc() }
             packet.reellArbeidssøker()?.let {
                 Metrics.reellArbeidssøker.labels(
                     it.villigAlle.toString(),

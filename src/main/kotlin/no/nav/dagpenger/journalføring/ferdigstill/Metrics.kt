@@ -101,6 +101,14 @@ internal object Metrics {
         .labelNames("fangstOgFiske")
         .register()
 
+    val jobbetieøs: Counter = Counter
+        .build()
+        .namespace(DAGPENGER_NAMESPACE)
+        .name("soknad_jobbetieøs")
+        .help("Om søker har arbeidshold i eøs de siste 36 måneder")
+        .labelNames("jobbetieøs")
+        .register()
+
     val reellArbeidssøker: Counter = Counter
         .build()
         .namespace(DAGPENGER_NAMESPACE)
