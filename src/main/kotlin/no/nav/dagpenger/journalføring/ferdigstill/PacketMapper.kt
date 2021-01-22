@@ -107,7 +107,7 @@ internal object PacketMapper {
         val erPermittertFraFiskeforedling = packet.erPermittertFraFiskeForedling()
 
         return when {
-            eøsArbeidsforhold -> OppgaveBenk("4470", "MULIG SAMMENLEGGING – EØS")
+            eøsArbeidsforhold -> OppgaveBenk("4470", "MULIG SAMMENLEGGING - EØS\n")
             harAvtjentVerneplikt -> OppgaveBenk(packet.getStringValue(PacketKeys.BEHANDLENDE_ENHET), "VERNEPLIKT\n")
             inntektFraFangstFisk -> OppgaveBenk(
                 packet.getStringValue(PacketKeys.BEHANDLENDE_ENHET),
