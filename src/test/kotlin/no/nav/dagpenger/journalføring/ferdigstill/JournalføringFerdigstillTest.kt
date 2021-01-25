@@ -249,6 +249,10 @@ internal class JournalføringFerdigstillTest {
     fun `Opprett oppgave, og ferdigstill, når henvendelsestype er klage_anke`() {
         testHenvendelseAngåendeEksisterendeSaksforhold("KLAGE_ANKE")
     }
+    @Test
+    fun `Opprett oppgave, og ferdigstill, når henvendelsestype er ettersendelse`() {
+        testHenvendelseAngåendeEksisterendeSaksforhold("ETTERSENDELSE")
+    }
 
     @Test
     fun `Ved kandidat for avslag basert på minsteinntekt uten permittering havner på egen kø`() {
