@@ -18,6 +18,7 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.Bruker
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.HentArenaSakerException
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.OppgaveCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderFornyetRettighetCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderHenvendelseAngåendeEksisterendeSaksforholdCommand
 import no.nav.dagpenger.streams.HealthStatus
 import no.nav.tjeneste.virksomhet.behandlearbeidogaktivitetoppgave.v1.BehandleArbeidOgAktivitetOppgaveV1
@@ -108,6 +109,12 @@ class SoapArenaClient(
                 }
             }
             is VurderHenvendelseAngåendeEksisterendeSaksforholdCommand -> {
+                soapRequest.oppgavetype = WSOppgavetype().apply { value = "BEHENVPERSON" }
+                WSOppgave().apply {
+                    sakInfo = WSSakInfo().withTvingNySak(false)
+                }
+            }
+            is VurderFornyetRettighetCommand -> {
                 soapRequest.oppgavetype = WSOppgavetype().apply { value = "BEHENVPERSON" }
                 WSOppgave().apply {
                     sakInfo = WSSakInfo().withTvingNySak(false)

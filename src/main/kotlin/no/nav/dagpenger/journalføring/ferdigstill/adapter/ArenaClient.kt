@@ -34,3 +34,11 @@ class VurderHenvendelseAngåendeEksisterendeSaksforholdCommand(
     override val registrertDato: ZonedDateTime,
     override val oppgavebeskrivelse: String
 ) : OppgaveCommand()
+
+class VurderFornyetRettighetCommand(
+    override val naturligIdent: String,
+    override val behandlendeEnhetId: String,
+    override val tilleggsinformasjon: String,
+    override val registrertDato: ZonedDateTime,
+    override val oppgavebeskrivelse: String
+) : OppgaveCommand()

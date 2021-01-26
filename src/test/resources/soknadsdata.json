@@ -306,6 +306,13 @@
       "type": "BRUKERREGISTRERT"
     },
     {
+      "faktumId": 12345,
+      "soknadId": 10636,
+      "parrentFaktum": null,
+      "key": "fornyetrett",
+      "value": "ja"
+    },
+    {
       "faktumId": 776459,
       "soknadId": 10636,
       "parrentFaktum": null,

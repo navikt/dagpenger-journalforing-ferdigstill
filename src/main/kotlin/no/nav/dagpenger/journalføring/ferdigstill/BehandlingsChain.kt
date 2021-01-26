@@ -12,6 +12,7 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.JournalpostApi
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ManuellJournalføringsOppgaveClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.OppdaterJournalpostPayload
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderFornyetRettighetCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderHenvendelseAngåendeEksisterendeSaksforholdCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.createArenaTilleggsinformasjon
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.vilkårtester.Vilkårtester
@@ -39,6 +40,50 @@ fun BehandlingsChain.instrument(handler: () -> Packet): Packet {
         .startTimer()
 
     return handler().also { timer.observeDuration() }
+}
+
+internal class FornyetRettighetBehandlingsChain(
+    private val arena: ArenaClient,
+    neste: BehandlingsChain?
+) : BehandlingsChain(neste) {
+
+    override fun håndter(packet: Packet) = instrument {
+        if (kanBehandle(packet)) {
+            logger.info { "Fornyet rettighet" }
+            val tilleggsinformasjon =
+                createArenaTilleggsinformasjon(
+                    PacketMapper.dokumentTitlerFrom(packet),
+                    PacketMapper.registrertDatoFrom(packet)
+                )
+
+            val result = arena.bestillOppgave(
+                VurderFornyetRettighetCommand(
+                    naturligIdent = PacketMapper.bruker(packet).id,
+                    behandlendeEnhetId = "4455COR", // todo: Sjekke opp navnet
+                    tilleggsinformasjon = tilleggsinformasjon,
+                    registrertDato = PacketMapper.registrertDatoFrom(packet),
+                    oppgavebeskrivelse = "TODO?"
+                )
+            )
+
+            when (result) {
+                is Result.Success -> {
+                    result.value.let { idPar ->
+                        packet.putValue(OPPGAVE_ID, idPar.oppgaveId.value)
+                        idPar.fagsakId?.let { packet.putValue(FAGSAK_ID, it.value) }
+                    }
+                    packet.putValue(PacketKeys.FERDIGSTILT_ARENA, true)
+                    logger.info { "Fornyet rettighet - laget oppgave" }
+                }
+                is Result.Failure -> logger.info { "Feilet opprettelse Fornyet rettighet oppgave" }
+            }
+        }
+        return@instrument neste?.håndter(packet) ?: packet
+    }
+
+    override fun kanBehandle(packet: Packet): Boolean {
+        return PacketMapper.hasNaturligIdent(packet) && PacketMapper.hasAktørId(packet) && packet.fornyetRettighet()
+    }
 }
 
 internal class OppfyllerMinsteinntektBehandlingsChain(
@@ -81,6 +126,7 @@ internal class NyttSaksforholdBehandlingsChain(
         PacketMapper.hasNaturligIdent(packet) &&
             PacketMapper.harIkkeFagsakId(packet) &&
             PacketMapper.henvendelse(packet) == NyttSaksforhold &&
+            !packet.hasField(PacketKeys.FERDIGSTILT_ARENA) &&
             arena.harIkkeAktivSak(PacketMapper.bruker(packet))
                 .also {
                     if (!it) Metrics.automatiskJournalførtNeiTellerInc(
