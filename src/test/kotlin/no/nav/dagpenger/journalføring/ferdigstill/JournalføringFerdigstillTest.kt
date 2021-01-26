@@ -249,6 +249,10 @@ internal class JournalføringFerdigstillTest {
     fun `Opprett oppgave, og ferdigstill, når henvendelsestype er klage_anke`() {
         testHenvendelseAngåendeEksisterendeSaksforhold("KLAGE_ANKE")
     }
+    @Test
+    fun `Opprett oppgave, og ferdigstill, når henvendelsestype er ettersendelse`() {
+        testHenvendelseAngåendeEksisterendeSaksforhold("ETTERSENDELSE")
+    }
 
     @Test
     fun `Ved kandidat for avslag basert på minsteinntekt uten permittering havner på egen kø`() {
@@ -377,6 +381,34 @@ internal class JournalføringFerdigstillTest {
         slot.captured.shouldBeTypeOf<VurderHenvendelseAngåendeEksisterendeSaksforholdCommand>()
         slot.captured.behandlendeEnhetId shouldBe behandlendeEnhet
         slot.captured.naturligIdent shouldBe naturligIdent
+
+        finishedPacket.getBoolean("ferdigBehandlet") shouldBe true
+    }
+
+    @Test
+    fun testManuell() {
+        val journalFøringFerdigstill =
+            JournalføringFerdigstill(
+                journalPostApi,
+                manuellJournalføringsOppgaveClient,
+                arenaClient,
+                mockk()
+            )
+        val journalPostId = "journalPostId"
+        val naturligIdent = "12345678910"
+        val behandlendeEnhet = "4450"
+
+        val packet = lagPacket(journalPostId, naturligIdent, behandlendeEnhet, "MANUELL")
+
+        val finishedPacket = journalFøringFerdigstill.handlePacket(packet)
+
+        verify(exactly = 0) {
+            arenaClient.bestillOppgave(any())
+            journalPostApi.ferdigstill(journalPostId)
+        }
+        verify {
+            manuellJournalføringsOppgaveClient.opprettOppgave(journalPostId, any(), any(), behandlendeEnhet, any())
+        }
 
         finishedPacket.getBoolean("ferdigBehandlet") shouldBe true
     }

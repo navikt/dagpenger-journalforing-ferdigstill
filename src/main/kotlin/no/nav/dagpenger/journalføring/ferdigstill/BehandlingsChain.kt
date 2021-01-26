@@ -131,7 +131,8 @@ internal class EksisterendeSaksForholdBehandlingsChain(private val arena: ArenaC
         KlageAnke,
         Utdanning,
         Etablering,
-        Gjenopptak
+        Gjenopptak,
+        Ettersendelse
     )
 
     override fun kanBehandle(packet: Packet): Boolean =
