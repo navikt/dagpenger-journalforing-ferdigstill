@@ -385,6 +385,34 @@ internal class JournalføringFerdigstillTest {
         finishedPacket.getBoolean("ferdigBehandlet") shouldBe true
     }
 
+    @Test
+    fun testManuell() {
+        val journalFøringFerdigstill =
+            JournalføringFerdigstill(
+                journalPostApi,
+                manuellJournalføringsOppgaveClient,
+                arenaClient,
+                mockk()
+            )
+        val journalPostId = "journalPostId"
+        val naturligIdent = "12345678910"
+        val behandlendeEnhet = "4450"
+
+        val packet = lagPacket(journalPostId, naturligIdent, behandlendeEnhet, "MANUELL")
+
+        val finishedPacket = journalFøringFerdigstill.handlePacket(packet)
+
+        verify(exactly = 0) {
+            arenaClient.bestillOppgave(any())
+            journalPostApi.ferdigstill(journalPostId)
+        }
+        verify {
+            manuellJournalføringsOppgaveClient.opprettOppgave(journalPostId, any(), any(), behandlendeEnhet, any())
+        }
+
+        finishedPacket.getBoolean("ferdigBehandlet") shouldBe true
+    }
+
     private fun lagPacket(
         journalPostId: String,
         naturligIdent: String,
