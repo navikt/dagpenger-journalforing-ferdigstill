@@ -1,6 +1,5 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
-import com.github.kittinunf.result.Result
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -61,7 +60,7 @@ class KafkaFeilhåndteringTest {
 
         every { arenaClient.harIkkeAktivSak(any()) } returns true
 
-        every { arenaClient.bestillOppgave(any()) } returns Result.of(ArenaIdParRespons(oppgaveId = OppgaveId("abc"), fagsakId = FagsakId("abc")))
+        every { arenaClient.bestillOppgave(any()) } returns ArenaIdParRespons(oppgaveId = OppgaveId("abc"), fagsakId = FagsakId("abc"))
         every { journalpostApi.oppdater(any(), any()) } throws AdapterException(RuntimeException()) andThen { Unit }
 
         val packet = Packet().apply {

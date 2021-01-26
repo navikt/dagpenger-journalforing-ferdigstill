@@ -1,6 +1,5 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
-import com.github.kittinunf.result.Result
 import io.prometheus.client.Histogram
 import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
@@ -66,16 +65,10 @@ internal class FornyetRettighetBehandlingsChain(
                 )
             )
 
-            when (result) {
-                is Result.Success -> {
-                    result.value.let { idPar ->
-                        packet.putValue(OPPGAVE_ID, idPar.oppgaveId.value)
-                        idPar.fagsakId?.let { packet.putValue(FAGSAK_ID, it.value) }
-                    }
-                    packet.putValue(PacketKeys.FERDIGSTILT_ARENA, true)
-                    logger.info { "Fornyet rettighet - laget oppgave" }
-                }
-                is Result.Failure -> logger.info { "Feilet opprettelse Fornyet rettighet oppgave" }
+            result?.let { response ->
+                packet.putValue(OPPGAVE_ID, response.oppgaveId.value)
+                response.fagsakId?.let { packet.putValue(FAGSAK_ID, it.value) }
+                packet.putValue(PacketKeys.FERDIGSTILT_ARENA, true)
             }
         }
         return@instrument neste?.håndter(packet) ?: packet
@@ -155,14 +148,10 @@ internal class NyttSaksforholdBehandlingsChain(
                 )
             )
 
-            when (result) {
-                is Result.Success -> {
-                    result.value.let { idPar ->
-                        packet.putValue(OPPGAVE_ID, idPar.oppgaveId.value)
-                        idPar.fagsakId?.let { packet.putValue(FAGSAK_ID, it.value) }
-                    }
-                    packet.putValue(PacketKeys.FERDIGSTILT_ARENA, true)
-                }
+            result?.let { response ->
+                packet.putValue(OPPGAVE_ID, response.oppgaveId.value)
+                response.fagsakId?.let { packet.putValue(FAGSAK_ID, it.value) }
+                packet.putValue(PacketKeys.FERDIGSTILT_ARENA, true)
             }
         }
 
@@ -206,10 +195,10 @@ internal class EksisterendeSaksForholdBehandlingsChain(private val arena: ArenaC
                 )
             )
 
-            when (result) {
-                is Result.Success -> {
-                    packet.putValue(PacketKeys.FERDIGSTILT_ARENA, true)
-                }
+            result?.let { response ->
+                packet.putValue(OPPGAVE_ID, response.oppgaveId.value)
+                packet.putValue(PacketKeys.FERDIGSTILT_ARENA, true)
+                response.fagsakId?.let { packet.putValue(FAGSAK_ID, it.value) }
             }
         }
 
