@@ -66,6 +66,20 @@ internal class PacketMapperTest {
     }
 
     @Test
+    fun `Bruk original benk når bruker har diskresjonskode`() {
+        beregnOppgaveBenk(
+            harEøsArbeidsforhold = true,
+            harAvtjentVerneplikt = true,
+            harInntektFraFangstOgFiske = true,
+            erGrenseArbeider = true,
+            harAvsluttetArbeidsforholdFraKonkurs = true,
+            oppfyllerMinsteinntekt = false,
+            koronaRegelverkForMinsteinntektBrukt = false,
+            behandlendeEnhet = "2103"
+        ) shouldBe OppgaveBenk("2103", "Start Vedtaksbehandling - automatisk journalført.\n")
+    }
+
+    @Test
     fun `Finn riktig oppgave beskrivelse og benk når søker har avtjent verneplikt IKKE verneplikt`() {
         beregnOppgaveBenk(
             harEøsArbeidsforhold = false,

@@ -105,8 +105,10 @@ internal object PacketMapper {
         val inntektFraFangstFisk = packet.harInntektFraFangstOgFiske()
         val harAvtjentVerneplikt = packet.harAvtjentVerneplikt()
         val erPermittertFraFiskeforedling = packet.erPermittertFraFiskeForedling()
+        val diskresjonskodeBenk = packet.getStringValue(PacketKeys.BEHANDLENDE_ENHET) == "2103"
 
         return when {
+            diskresjonskodeBenk -> OppgaveBenk(tildeltEnhetsNrFrom(packet), henvendelse(packet).oppgavebeskrivelse)
             eøsArbeidsforhold -> OppgaveBenk("4470", "MULIG SAMMENLEGGING - EØS\n")
             harAvtjentVerneplikt -> OppgaveBenk(packet.getStringValue(PacketKeys.BEHANDLENDE_ENHET), "VERNEPLIKT\n")
             inntektFraFangstFisk -> OppgaveBenk(
