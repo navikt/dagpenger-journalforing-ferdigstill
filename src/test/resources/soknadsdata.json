@@ -309,8 +309,8 @@
       "faktumId": 12345,
       "soknadId": 10636,
       "parrentFaktum": null,
-      "key": "fornyetrett",
-      "value": "ja"
+      "key": "fornyetrett.onskerutvidelse",
+      "value": "false"
     },
     {
       "faktumId": 776459,

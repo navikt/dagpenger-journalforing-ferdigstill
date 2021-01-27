@@ -64,7 +64,7 @@ internal fun Packet.utdanning(): String? =
     getSøknad()?.getFakta("utdanning")?.getOrNull(0)?.get("value")?.asText()
 
 internal fun Packet.fornyetRettighet(): Boolean =
-    getSøknad()?.getFakta("fornyetrett")?.getOrNull(0)?.get("value")?.asText() == "ja"
+    getSøknad()?.getBooleanFaktum("fornyetrett.onskerutvidelse", true)?.not() ?: false
 
 internal fun Packet.journalpostId() = PacketMapper.journalpostIdFrom(this)
 
