@@ -48,7 +48,7 @@ internal class FornyetRettighetBehandlingsChain(
 
     override fun håndter(packet: Packet) = instrument {
         if (kanBehandle(packet)) {
-            logger.info { "Fornyet rettighet" }
+            logger.info { "Behandler i henhold til anmodningsvedtak 538 for ${packet.journalpostId()}" }
             val tilleggsinformasjon =
                 createArenaTilleggsinformasjon(
                     PacketMapper.dokumentTitlerFrom(packet),
@@ -58,10 +58,10 @@ internal class FornyetRettighetBehandlingsChain(
             val result = arena.bestillOppgave(
                 VurderFornyetRettighetCommand(
                     naturligIdent = PacketMapper.bruker(packet).id,
-                    behandlendeEnhetId = "4455COR", // todo: Sjekke opp navnet
+                    behandlendeEnhetId = "4455COR",
                     tilleggsinformasjon = tilleggsinformasjon,
                     registrertDato = PacketMapper.registrertDatoFrom(packet),
-                    oppgavebeskrivelse = "TODO?"
+                    oppgavebeskrivelse = "Anmodningsvedtak 538"
                 )
             )
 
@@ -87,6 +87,7 @@ internal class OppfyllerMinsteinntektBehandlingsChain(
         PacketMapper.hasNaturligIdent(packet) &&
             PacketMapper.hasAktørId(packet) &&
             PacketMapper.harIkkeFagsakId(packet) &&
+            !packet.hasField(PacketKeys.FERDIGSTILT_ARENA) &&
             PacketMapper.henvendelse(packet) == NyttSaksforhold &&
             !packet.hasField(PacketKeys.OPPFYLLER_MINSTEINNTEKT)
 

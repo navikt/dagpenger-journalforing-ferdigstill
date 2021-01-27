@@ -30,11 +30,11 @@ internal class JournalføringFerdigstill(
     val eksisterendeSakChain = EksisterendeSaksForholdBehandlingsChain(arenaClient, oppdaterChain)
     val nySakChain = NyttSaksforholdBehandlingsChain(arenaClient, eksisterendeSakChain)
     val vilkårtestingChain = OppfyllerMinsteinntektBehandlingsChain(vilkårtester, nySakChain)
-    val fornyetrett = FornyetRettighetBehandlingsChain(arenaClient, vilkårtestingChain)
+    val fornyetrettighet = FornyetRettighetBehandlingsChain(arenaClient, vilkårtestingChain)
 
     fun handlePacket(packet: Packet): Packet {
         try {
-            return fornyetrett.håndter(packet)
+            return fornyetrettighet.håndter(packet)
         } catch (e: AdapterException) {
         }
         return packet

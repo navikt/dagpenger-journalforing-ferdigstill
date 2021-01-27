@@ -66,6 +66,8 @@ internal fun Packet.utdanning(): String? =
 internal fun Packet.fornyetRettighet(): Boolean =
     getSøknad()?.getFakta("fornyetrett")?.getOrNull(0)?.get("value")?.asText() == "ja"
 
+internal fun Packet.journalpostId() = PacketMapper.journalpostIdFrom(this)
+
 internal object PacketMapper {
     val dokumentJsonAdapter = moshiInstance.adapter<List<Dokument>>(
         Types.newParameterizedType(
