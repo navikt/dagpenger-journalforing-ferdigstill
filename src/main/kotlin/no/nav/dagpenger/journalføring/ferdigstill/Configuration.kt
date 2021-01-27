@@ -96,7 +96,7 @@ fun config(): Configuration {
 }
 
 object IgnoreJournalPost {
-    val ignorerJournalpost: Set<String> = config().getOrNull(Key("ignore.journalpost", stringType))?.split(",")?.toSet() ?: emptySet()
+    val ignorerJournalpost: Set<String> = config().getOrNull(Key("ignore.journalpost", stringType))?.split(",")?.map { it.trim() }?.toSet() ?: emptySet()
 }
 
 data class Configuration(
