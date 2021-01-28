@@ -678,7 +678,7 @@ internal class JournalføringFerdigstillTest {
 
         slot.isCaptured shouldBe true
         slot.captured.shouldBeTypeOf<VurderFornyetRettighetCommand>()
-        slot.captured.behandlendeEnhetId shouldBe "4455COR"
+        slot.captured.behandlendeEnhetId shouldBe "4451"
         slot.captured.naturligIdent shouldBe naturligIdent
 
         behandletPakke.getBoolean("ferdigBehandlet") shouldBe true

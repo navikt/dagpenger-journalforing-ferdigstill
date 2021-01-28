@@ -54,7 +54,7 @@ internal class FornyetRettighetBehandlingsChain(
             val result = arena.bestillOppgave(
                 VurderFornyetRettighetCommand(
                     naturligIdent = PacketMapper.bruker(packet).id,
-                    behandlendeEnhetId = "4455COR",
+                    behandlendeEnhetId = "4451",
                     tilleggsinformasjon = tilleggsinformasjon,
                     registrertDato = PacketMapper.registrertDatoFrom(packet),
                     oppgavebeskrivelse = "Anmodningsvedtak 538"
