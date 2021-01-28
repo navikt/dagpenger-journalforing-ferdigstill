@@ -49,7 +49,7 @@ internal class PacketMapperTest {
 
     @Test
     fun `Genererer json`() {
-        OppgaveBenk("id","beskrivelse").toJson() shouldBe """{"id":"id","beskrivelse":"beskrivelse"}"""
+        OppgaveBenk("id", "beskrivelse").toJson() shouldBe """{"id":"id","beskrivelse":"beskrivelse"}"""
     }
 
     @Test
