@@ -48,6 +48,11 @@ internal class PacketMapperTest {
     }
 
     @Test
+    fun `Genererer json`() {
+        OppgaveBenk("id","beskrivelse").toJson() shouldBe """{"id":"id","beskrivelse":"beskrivelse"}"""
+    }
+
+    @Test
     fun `Finn riktig oppgave beskrivelse og benk når søker har eøs arbeidsforhold de siste 3 årene `() {
         beregnOppgaveBenk(
             harEøsArbeidsforhold = true,

@@ -49,11 +49,7 @@ internal class FornyetRettighetBehandlingsChain(
     override fun håndter(packet: Packet) = instrument {
         if (kanBehandle(packet)) {
             logger.info { "Behandler i henhold til anmodningsvedtak 538 for ${packet.journalpostId()}" }
-            val tilleggsinformasjon =
-                createArenaTilleggsinformasjon(
-                    PacketMapper.dokumentTitlerFrom(packet),
-                    PacketMapper.registrertDatoFrom(packet)
-                )
+            val tilleggsinformasjon = PacketMapper.oppgaveBeskrivelseOgBenk(packet).toJson()
 
             val result = arena.bestillOppgave(
                 VurderFornyetRettighetCommand(

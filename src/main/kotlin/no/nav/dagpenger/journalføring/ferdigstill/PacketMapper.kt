@@ -1,5 +1,6 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.squareup.moshi.Types
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.events.moshiInstance
@@ -98,7 +99,13 @@ internal object PacketMapper {
     data class OppgaveBenk(
         val id: String,
         val beskrivelse: String
-    )
+    ) {
+        companion object {
+            private val objectMapper = jacksonObjectMapper()
+        }
+
+        fun toJson(): String = objectMapper.writeValueAsString(this)
+    }
 
     fun oppgaveBeskrivelseOgBenk(packet: Packet): OppgaveBenk {
         val kanAvslåsPåMinsteinntekt = packet.getNullableBoolean(PacketKeys.OPPFYLLER_MINSTEINNTEKT) == false
