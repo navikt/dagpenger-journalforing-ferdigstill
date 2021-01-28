@@ -59,7 +59,7 @@ private val devProperties = ConfigurationMap(
         "behandlearbeidsytelsesak.v1.url" to "https://arena-q1.adeo.no/ail_ws/BehandleArbeidOgAktivitetOppgave_v1",
         "ytelseskontrakt.v3.url" to "https://arena-q1.adeo.no/ail_ws/Ytelseskontrakt_v3",
         "unleash.url" to "https://unleash.nais.io/api/",
-        "ignore.journalpost" to "467199494, 453483019, 467026569, 467199494, 493328921",
+        "ignore.journalpost" to "467199494, 453483019, 467026569, 467199494, 493328921, 493329280,493329282",
         "kafka.processing.guarantee" to StreamsConfig.AT_LEAST_ONCE
     )
 )
