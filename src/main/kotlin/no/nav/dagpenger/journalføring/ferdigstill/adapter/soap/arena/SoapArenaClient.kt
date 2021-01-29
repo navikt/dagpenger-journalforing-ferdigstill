@@ -63,8 +63,8 @@ class SoapArenaClient(
     override fun bestillOppgave(command: OppgaveCommand): ArenaIdParRespons? {
 
         val soapRequest = command.toWSBestillOppgaveRequest()
-
         val response = try {
+            logger.info("Sender til arena benk:${soapRequest.oppgave.behandlendeEnhetId}")
             bestillOppgaveRetry.executeCallable {
                 oppgaveV1.bestillOppgave(soapRequest)
             }
