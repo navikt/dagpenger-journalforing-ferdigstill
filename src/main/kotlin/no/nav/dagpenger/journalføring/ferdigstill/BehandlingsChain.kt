@@ -193,6 +193,7 @@ internal class EksisterendeSaksForholdBehandlingsChain(private val arena: ArenaC
                     registrertDato = PacketMapper.registrertDatoFrom(packet)
                 )
             )
+            logger.info { "Behandler journalpost: ${packet.journalpostId()} som eksisterende sak, henvendelsestype: ${PacketMapper.henvendelse(packet)}" }
 
             result?.let { response ->
                 packet.putValue(OPPGAVE_ID, response.oppgaveId.value)
