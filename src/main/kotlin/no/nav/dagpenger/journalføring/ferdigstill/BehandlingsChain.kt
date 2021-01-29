@@ -47,6 +47,7 @@ internal class FornyetRettighetBehandlingsChain(
 ) : BehandlingsChain(neste) {
 
     override fun håndter(packet: Packet) = instrument {
+        logger.info { "Starter behandlingschain for ${packet.journalpostId()}, resultat av kanbehandle fornyet rettighet: ${kanBehandle(packet)}" }
         if (kanBehandle(packet)) {
             logger.info { "Behandler i henhold til anmodningsvedtak 538 for ${packet.journalpostId()}" }
             val tilleggsinformasjon = PacketMapper.oppgaveBeskrivelseOgBenk(packet).toJson()
