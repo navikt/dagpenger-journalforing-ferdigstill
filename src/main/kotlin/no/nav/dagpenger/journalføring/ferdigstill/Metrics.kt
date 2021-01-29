@@ -109,6 +109,14 @@ internal object Metrics {
         .labelNames("jobbetieos")
         .register()
 
+    val fornyetRettighet: Counter = Counter
+        .build()
+        .namespace(DAGPENGER_NAMESPACE)
+        .name("soknad_fornyetrettighet")
+        .help("Om søker har besvart at de ønsker å gjenoppta en dagpengeperiode som har utgått, corona 2021")
+        .labelNames("fornyetrettighet")
+        .register()
+
     val reellArbeidssøker: Counter = Counter
         .build()
         .namespace(DAGPENGER_NAMESPACE)

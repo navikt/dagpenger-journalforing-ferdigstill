@@ -134,6 +134,7 @@ internal class NyttSaksforholdBehandlingsChain(
                 )
 
             val oppgaveBenk = PacketMapper.oppgaveBeskrivelseOgBenk(packet)
+            logger.info { "Behandler journalpost: ${packet.journalpostId()} og sender til benk: ${oppgaveBenk.id} med beskrivelse: ${oppgaveBenk.beskrivelse}" }
 
             val result = arena.bestillOppgave(
                 StartVedtakCommand(
@@ -300,6 +301,7 @@ internal class StatistikkChain(neste: BehandlingsChain?) : BehandlingsChain(nest
             packet.gårdsbruk()?.let { Metrics.gårdsbruk.labels(it.toString()).inc() }
             packet.fangstOgFiske()?.let { Metrics.fangstOgFiske.labels(it.toString()).inc() }
             packet.harEøsArbeidsforhold().let { Metrics.jobbetieøs.labels(it.toString()).inc() }
+            packet.fornyetRettighet().let { Metrics.fornyetRettighet.labels(it.toString()).inc() }
             packet.reellArbeidssøker()?.let {
                 Metrics.reellArbeidssøker.labels(
                     it.villigAlle.toString(),
