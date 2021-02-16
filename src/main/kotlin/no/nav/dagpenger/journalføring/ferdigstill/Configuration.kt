@@ -56,8 +56,8 @@ private val devProperties = ConfigurationMap(
         "kafka.bootstrap.servers" to "b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443",
         "sts.url" to "http://security-token-service.default.svc.nais.local",
         "soapsecuritytokenservice.url" to "https://sts-q1.preprod.local/SecurityTokenServiceProvider/",
-        "behandlearbeidsytelsesak.v1.url" to "https://arena-q1.adeo.no/ail_ws/BehandleArbeidOgAktivitetOppgave_v1",
-        "ytelseskontrakt.v3.url" to "https://arena-q1.adeo.no/ail_ws/Ytelseskontrakt_v3",
+        "behandlearbeidsytelsesak.v1.url" to "https://arena-q0.adeo.no/ail_ws/BehandleArbeidOgAktivitetOppgave_v1",
+        "ytelseskontrakt.v3.url" to "https://arena-q0.adeo.no/ail_ws/Ytelseskontrakt_v3",
         "unleash.url" to "https://unleash.nais.io/api/",
         "ignore.journalpost" to "467199494, 453483019, 467026569, 467199494, 493328921, 493329280,493329282,493329283,493329285, 493329628",
         "kafka.processing.guarantee" to StreamsConfig.AT_LEAST_ONCE
