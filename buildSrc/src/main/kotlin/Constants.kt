@@ -10,6 +10,11 @@ object Avro {
     const val avro = "org.apache.avro:avro:1.9.2"
 }
 
+object Auth {
+    const val tokenSupportVersion = "1.3.3"
+    fun tokenSupportLibrary(name: String) = "no.nav.security:$name:$tokenSupportVersion"
+}
+
 object Bekk {
     const val nocommons = "no.bekk.bekkopen:nocommons:0.9.0"
 }
