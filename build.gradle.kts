@@ -78,7 +78,11 @@ dependencies {
     }
 
     constraints {
-        implementation("org.apache.cxf:cxf-rt-transports-http:3.3.8") {
+        implementation("org.apache.cxf:cxf-rt-transports-http:3.4.1") {
+            because("Because Snyk says so")
+        }
+
+        implementation("org.apache.cxf:cxf-rt-ws-security:3.4.1") {
             because("Because Snyk says so")
         }
     }
