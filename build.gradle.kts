@@ -77,6 +77,12 @@ dependencies {
         }
     }
 
+    constraints {
+        implementation("org.apache.cxf:cxf-rt-transports-http:3.3.8") {
+            because("Because Snyk says so")
+        }
+    }
+
     // kafka
     implementation(Dagpenger.Streams)
     implementation(Dagpenger.Events)
