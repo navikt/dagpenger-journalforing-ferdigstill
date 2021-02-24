@@ -53,7 +53,7 @@ configurations {
     }
 }
 
-val cxfVersion = "3.3.4"
+val cxfVersion = "3.4.1"
 val tjenestespesifikasjonerVersion = "1.2019.09.25-00.21-49b69f0625e0"
 val resilience4jVersion = "1.3.1"
 val resultVersion = "3.0.0"
@@ -78,14 +78,6 @@ dependencies {
     }
 
     constraints {
-        implementation("org.apache.cxf:cxf-rt-transports-http:3.4.1") {
-            because("Because Snyk says so")
-        }
-
-        implementation("org.apache.cxf:cxf-rt-ws-security:3.4.1") {
-            because("Because Snyk says so")
-        }
-
         implementation("commons-collections:commons-collections:3.2.2") {
             because("Because Snyk says so")
         }
