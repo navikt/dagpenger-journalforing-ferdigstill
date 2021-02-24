@@ -86,7 +86,7 @@ dependencies {
             because("Because Snyk says so")
         }
 
-        implementation("commons-collections:commons-collection:3.2.2") {
+        implementation("commons-collections:commons-collections:3.2.2") {
             because("Because Snyk says so")
         }
     }
