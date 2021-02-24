@@ -85,6 +85,10 @@ dependencies {
         implementation("org.apache.cxf:cxf-rt-ws-security:3.4.1") {
             because("Because Snyk says so")
         }
+
+        implementation("commons-collections:commons-collection:3.2.2") {
+            because("Because Snyk says so")
+        }
     }
 
     // kafka
