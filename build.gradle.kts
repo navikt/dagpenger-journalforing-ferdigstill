@@ -47,8 +47,8 @@ tasks.withType<KotlinCompile> {
 configurations {
     all {
         resolutionStrategy {
-            force("com.fasterxml.jackson.core:jackson-databind:2.10.0")
-            force("com.fasterxml.jackson.core:jackson-core:2.10.0")
+            force("com.fasterxml.jackson.core:jackson-databind:2.12.1")
+            force("com.fasterxml.jackson.core:jackson-core:2.12.1")
         }
     }
 }
