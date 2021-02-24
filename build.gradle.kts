@@ -49,11 +49,12 @@ configurations {
         resolutionStrategy {
             force("com.fasterxml.jackson.core:jackson-databind:2.12.1")
             force("com.fasterxml.jackson.core:jackson-core:2.12.1")
+            force("org.codehaus.woodstox:stax2-api:3.1.4")
         }
     }
 }
 
-val cxfVersion = "3.3.1" // Kan ikke oppdateres uten videre, må undersøkes: java.lang.NoSuchMethodError: ’org.codehaus.stax2.ri.EmptyIterator org.codehaus.stax2.ri.EmptyIterator.getInstance()
+val cxfVersion = "3.4.1" // Kan ikke oppdateres uten videre, må undersøkes: java.lang.NoSuchMethodError: ’org.codehaus.stax2.ri.EmptyIterator org.codehaus.stax2.ri.EmptyIterator.getInstance()
 val tjenestespesifikasjonerVersion = "1.2019.09.25-00.21-49b69f0625e0"
 val resilience4jVersion = "1.3.1"
 val resultVersion = "3.0.0"
