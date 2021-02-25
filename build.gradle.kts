@@ -49,7 +49,7 @@ configurations {
         resolutionStrategy {
             force("com.fasterxml.jackson.core:jackson-databind:2.12.1")
             force("com.fasterxml.jackson.core:jackson-core:2.12.1")
-           //Nyere versjoner skaper trøbbel med cfx.
+            // Nyere versjoner skaper trøbbel med cfx.
             force("org.codehaus.woodstox:stax2-api:3.1.4")
         }
     }
