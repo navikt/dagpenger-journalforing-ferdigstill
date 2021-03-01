@@ -4,8 +4,9 @@ import java.time.LocalDate
 
 data class BehovRequest(
     val aktorId: String,
-    val vedtakId: Int,
+    val regelkontekst: BehovClient.RegelKontekst,
     val beregningsdato: LocalDate,
+    val vedtakId: Int = -12345, // todo: fjerne vedtakId
     val harAvtjentVerneplikt: Boolean? = null,
     val oppfyllerKravTilFangstOgFisk: Boolean? = null,
     val bruktInntektsPeriode: LocalDate? = null,

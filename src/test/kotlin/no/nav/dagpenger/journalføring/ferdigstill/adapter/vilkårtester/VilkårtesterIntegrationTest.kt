@@ -97,6 +97,10 @@ class VilkårtesterIntegrationTest {
             """
                     {
                         "aktorId": "$aktørId",
+                        "regelkontekst" : {
+                        "id" : "-12345",
+                        "type" : "soknad"
+                        },
                         "vedtakId": -12345,
                         "beregningsdato": "${LocalDate.now()}"
                     }

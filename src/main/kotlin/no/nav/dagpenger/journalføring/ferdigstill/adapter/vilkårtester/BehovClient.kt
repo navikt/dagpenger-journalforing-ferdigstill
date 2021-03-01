@@ -34,8 +34,11 @@ class BehovClient(private val regelApiUrl: String, private val regelApiKey: Stri
     }
 
     private fun createBehovRequest(aktørId: String): BehovRequest {
-        return BehovRequest(aktørId, -12345, LocalDate.now())
+        val kontekst = RegelKontekst("-12345", "soknad")
+        return BehovRequest(aktørId, kontekst, LocalDate.now())
     }
+
+    data class RegelKontekst(val id: String, val type: String)
 }
 
 class RegelApiBehovHttpClientException(override val message: String) : RuntimeException(message)
