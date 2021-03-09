@@ -1,30 +1,15 @@
 package no.nav.dagpenger.journalføring.ferdigstill.adapter.vilkårtester
 
 import com.github.kittinunf.fuel.httpGet
-import io.prometheus.client.Counter
-import io.prometheus.client.Histogram
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.time.delay
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
-import mu.KotlinLogging
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.responseObject
 import java.time.Duration
 import java.util.concurrent.Executors
 
-private val LOGGER = KotlinLogging.logger {}
 private val api = Executors.newFixedThreadPool(4).asCoroutineDispatcher()
-
-private val timeSpentPolling = Histogram.build()
-    .name("time_spent_polling_status")
-    .help("Time spent polling status on behov")
-    .register()
-
-private val timesPolled = Counter.build()
-    .name("times_polled_status")
-    .help("Times we needed to pull for status on behov")
-    .register()
 
 class BehovStatusPoller(
     private val regelApiUrl: String,
@@ -35,29 +20,33 @@ class BehovStatusPoller(
 
     private fun pollInternal(statusUrl: String): BehovStatusPollResult {
         val (_, response, result) =
-            with(
-                statusUrl
-                    .httpGet()
-                    .apiKey(regelApiKey)
-                    .allowRedirects(false)
-            ) { responseObject<BehovStatusResponse>() }
+            statusUrl
+                .httpGet()
+                .apiKey(regelApiKey)
+                .allowRedirects(false)
+                .response()
 
-        return try {
-            BehovStatusPollResult(result.get().status, null)
-        } catch (exception: Exception) {
-            if (response.statusCode == 303) {
-                LOGGER.info("Caught 303: $response")
-                return BehovStatusPollResult(
-                    null,
-                    response.headers["Location"].first()
-                )
-            } else {
+        return result.fold(
+            {
+                when (response.statusCode) {
+                    303 -> BehovStatusPollResult(
+                        status = false,
+                        location = response.headers["Location"].first()
+                    )
+                    else -> {
+                        BehovStatusPollResult(
+                            status = true,
+                            location = null
+                        )
+                    }
+                }
+            },
+            {
                 throw PollSubsumsjonStatusException(
-                    response.responseMessage,
-                    exception
+                    "Failed to poll status behov. Response message ${response.responseMessage}. Error message: ${it.message}. "
                 )
             }
-        }
+        )
     }
 
     suspend fun pollStatus(statusUrl: String): String {
@@ -89,10 +78,10 @@ class BehovStatusPoller(
 }
 
 private data class BehovStatusPollResult(
-    val status: BehovStatus?,
+    val status: Boolean,
     val location: String?
 ) {
-    fun isPending() = status == BehovStatus.PENDING
+    fun isPending() = status
 }
 
 class PollSubsumsjonStatusException(
