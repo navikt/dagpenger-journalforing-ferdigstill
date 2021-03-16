@@ -10,6 +10,7 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.JournalpostApi
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ManuellJournalføringsOppgaveClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.OppdaterJournalpostPayload
+import no.nav.dagpenger.journalføring.ferdigstill.adapter.Oppgavetype
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderFornyetRettighetCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderHenvendelseAngåendeEksisterendeSaksforholdCommand
@@ -258,7 +259,7 @@ internal class ManuellJournalføringsBehandlingsChain(
     neste: BehandlingsChain?
 ) : BehandlingsChain(neste) {
     override fun kanBehandle(packet: Packet) =
-        !packet.hasField(PacketKeys.FERDIGSTILT_ARENA)
+        !packet.hasField(PacketKeys.FERDIGSTILT_ARENA) && PacketMapper.henvendelse(packet) != KlageAnkeLonnskompensasjon
 
     override fun håndter(packet: Packet): Packet = instrument {
         if (kanBehandle(packet)) {
@@ -270,6 +271,30 @@ internal class ManuellJournalføringsBehandlingsChain(
                 PacketMapper.registrertDatoFrom(packet)
             )
             logger.info { "Manuelt journalført" }
+        }
+
+        return@instrument neste?.håndter(packet) ?: packet
+    }
+}
+
+internal class KlageAnkeLonnskompensasjonChain(
+    val manuellJournalføringsOppgaveClient: ManuellJournalføringsOppgaveClient,
+    neste: BehandlingsChain?
+) : BehandlingsChain(neste) {
+    override fun kanBehandle(packet: Packet) =
+        !packet.hasField(PacketKeys.FERDIGSTILT_ARENA) && PacketMapper.henvendelse(packet) == KlageAnkeLonnskompensasjon
+
+    override fun håndter(packet: Packet): Packet = instrument {
+        if (kanBehandle(packet)) {
+            manuellJournalføringsOppgaveClient.opprettOppgave(
+                PacketMapper.journalpostIdFrom(packet),
+                PacketMapper.nullableAktørFrom(packet)?.id,
+                PacketMapper.tittelFrom(packet),
+                PacketMapper.tildeltEnhetsNrFrom(packet),
+                PacketMapper.registrertDatoFrom(packet),
+                oppgavetype = Oppgavetype.BehandleHenvendelse
+            )
+            logger.info { "Manuelt journalført, klage og anke for lønnskompensasjon" }
         }
 
         return@instrument neste?.håndter(packet) ?: packet

@@ -13,6 +13,7 @@ sealed class Henvendelse(val oppgavebeskrivelse: String) {
                 "KLAGE_ANKE" -> KlageAnke
                 "ETTERSENDELSE" -> Ettersendelse
                 "MANUELL" -> Manuell
+                "KLAGE_ANKE_LONNSKOMPENSASJON" -> KlageAnkeLonnskompensasjon
                 else -> throw UgyldigHenvendelseException(henvendelsesnavn)
             }
         }
@@ -21,6 +22,7 @@ sealed class Henvendelse(val oppgavebeskrivelse: String) {
 
 object NyttSaksforhold : Henvendelse("Start Vedtaksbehandling - automatisk journalført.\n")
 object Manuell : Henvendelse("Manuell.\n")
+object KlageAnkeLonnskompensasjon : Henvendelse("Vurder henvendelse")
 
 sealed class EksisterendeSaksforhold(oppgavebeskrivelse: String) : Henvendelse(oppgavebeskrivelse)
 

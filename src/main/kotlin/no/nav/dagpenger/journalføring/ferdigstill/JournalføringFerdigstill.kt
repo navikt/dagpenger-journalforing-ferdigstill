@@ -25,7 +25,8 @@ internal class JournalføringFerdigstill(
     val ferdigBehandlingsChain = MarkerFerdigBehandlingsChain(statistikkChain)
     val manuellJournalføringsBehandlingsChain =
         ManuellJournalføringsBehandlingsChain(manuellJournalføringsOppgaveClient, ferdigBehandlingsChain)
-    val ferdigstillOppgaveChain = FerdigstillJournalpostBehandlingsChain(journalPostApi, manuellJournalføringsBehandlingsChain)
+    val klageAnkeLonnskompensasjonChain = KlageAnkeLonnskompensasjonChain(manuellJournalføringsOppgaveClient, manuellJournalføringsBehandlingsChain)
+    val ferdigstillOppgaveChain = FerdigstillJournalpostBehandlingsChain(journalPostApi, klageAnkeLonnskompensasjonChain)
     val oppdaterChain = OppdaterJournalpostBehandlingsChain(journalPostApi, ferdigstillOppgaveChain)
     val eksisterendeSakChain = EksisterendeSaksForholdBehandlingsChain(arenaClient, oppdaterChain)
     val nySakChain = NyttSaksforholdBehandlingsChain(arenaClient, eksisterendeSakChain)

@@ -14,16 +14,23 @@ import java.time.ZonedDateTime
 
 private val logger = KotlinLogging.logger {}
 
+// DOK https://confluence.adeo.no/display/TO/Systemdokumentasjon+Oppgave
+
 internal interface ManuellJournalføringsOppgaveClient {
     fun opprettOppgave(
         journalPostId: String,
         aktørId: String?,
         søknadstittel: String,
         tildeltEnhetsnr: String,
-        frist: ZonedDateTime
+        frist: ZonedDateTime,
+        oppgavetype: Oppgavetype = Oppgavetype.Journalføring
     )
 }
 
+enum class Oppgavetype {
+    Journalføring,
+    BehandleHenvendelse,
+}
 internal data class GosysOppgave(
     val journalpostId: String,
     val aktoerId: String?,
@@ -57,7 +64,8 @@ internal class GosysOppgaveClient(private val url: String, private val oidcClien
         aktørId: String?,
         søknadstittel: String,
         tildeltEnhetsnr: String,
-        frist: ZonedDateTime
+        frist: ZonedDateTime,
+        oppgavetype: Oppgavetype
     ) {
         val (_, _, result) = retryFuel(
             initialDelay = 5000,
@@ -76,7 +84,11 @@ internal class GosysOppgaveClient(private val url: String, private val oidcClien
                             beskrivelse = søknadstittel,
                             tildeltEnhetsnr = tildeltEnhetsnr,
                             aktivDato = frist.toLocalDate(),
-                            fristFerdigstillelse = frist.toLocalDate()
+                            fristFerdigstillelse = frist.toLocalDate(),
+                            oppgavetype = when (oppgavetype) {
+                                Oppgavetype.BehandleHenvendelse -> "BEH_HENV"
+                                else -> "JFR"
+                            }
                         )
                     )
                 )
