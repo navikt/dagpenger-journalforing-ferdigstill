@@ -43,18 +43,14 @@ internal class Application(
             logger.info { "Behandler journalpost-pakke som er lest ${packet.getStringValue("system_read_count")} ganger" }
             sikkerlogg.info {
                 "Behandler journalpost for person med naturlig ident ${PacketMapper.bruker(packet)} og aktør-id ${
-                    PacketMapper.nullableAktørFrom(
-                        packet
-                    )
+                PacketMapper.nullableAktørFrom(
+                    packet
+                )
                 }"
             }
 
             val readCountLimit = 15
-            if (packet.getReadCount() >= readCountLimit && !unleash.isEnabled(
-                    "dagpenger-journalforing-ferdigstill.skipReadCount",
-                    false
-                )
-            ) {
+            if (packet.getReadCount() >= readCountLimit && !unleash.isEnabled("dagpenger-journalforing-ferdigstill.skipReadCount", false)) {
                 logger.error {
                     "Read count >= $readCountLimit for packet with journalpostid ${packet.getStringValue(PacketKeys.JOURNALPOST_ID)}"
                 }

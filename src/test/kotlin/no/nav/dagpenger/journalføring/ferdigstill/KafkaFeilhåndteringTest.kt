@@ -12,6 +12,7 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.Dokument
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.JournalpostApi
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ManuellJournalføringsOppgaveClient
+import no.nav.dagpenger.streams.KafkaAivenCredentials
 import no.nav.dagpenger.streams.PacketDeserializer
 import no.nav.dagpenger.streams.PacketSerializer
 import no.nav.dagpenger.streams.Topic
@@ -24,7 +25,14 @@ import org.junit.jupiter.api.Test
 import java.util.Properties
 
 class KafkaFeilhåndteringTest {
-    private val configuration = Configuration()
+
+    private val configuration = Configuration(
+        kafka = Configuration.Kafka(
+            credential = KafkaAivenCredentials(
+                sslTruststorePasswordConfig = "changeme"
+            )
+        )
+    )
 
     private val streamProperties = Properties().apply {
         this[StreamsConfig.APPLICATION_ID_CONFIG] = "test"
@@ -32,7 +40,7 @@ class KafkaFeilhåndteringTest {
     }
 
     val dagpengerJournalpostTopic: Topic<String, Packet> = Topic(
-        "privat-dagpenger-journalpost-mottatt-v1",
+        "teamdagpenger.journalforing.v1",
         keySerde = Serdes.String(),
         valueSerde = Serdes.serdeFrom(PacketSerializer(), PacketDeserializer())
     )
@@ -60,7 +68,10 @@ class KafkaFeilhåndteringTest {
 
         every { arenaClient.harIkkeAktivSak(any()) } returns true
 
-        every { arenaClient.bestillOppgave(any()) } returns ArenaIdParRespons(oppgaveId = OppgaveId("abc"), fagsakId = FagsakId("abc"))
+        every { arenaClient.bestillOppgave(any()) } returns ArenaIdParRespons(
+            oppgaveId = OppgaveId("abc"),
+            fagsakId = FagsakId("abc")
+        )
         every { journalpostApi.oppdater(any(), any()) } throws AdapterException(RuntimeException()) andThen { Unit }
 
         val packet = Packet().apply {
