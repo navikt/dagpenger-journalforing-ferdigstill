@@ -289,7 +289,7 @@ internal class KlageAnkeLonnskompensasjonChain(
             manuellJournalføringsOppgaveClient.opprettOppgave(
                 PacketMapper.journalpostIdFrom(packet),
                 PacketMapper.nullableAktørFrom(packet)?.id,
-                PacketMapper.tittelFrom(packet),
+                PacketMapper.tittelFrom(packet) + "- Lønnskompensasjon",
                 PacketMapper.tildeltEnhetsNrFrom(packet),
                 PacketMapper.registrertDatoFrom(packet),
                 oppgavetype = Oppgavetype.BehandleHenvendelse
