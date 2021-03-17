@@ -12,7 +12,7 @@ import com.natpryce.konfig.stringType
 import no.finn.unleash.util.UnleashConfig
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.ktor.auth.ApiKeyVerifier
-import no.nav.dagpenger.streams.KafkaCredential
+import no.nav.dagpenger.streams.KafkaAivenCredentials
 import no.nav.dagpenger.streams.PacketDeserializer
 import no.nav.dagpenger.streams.PacketSerializer
 import no.nav.dagpenger.streams.Topic
@@ -32,7 +32,7 @@ private val localProperties = ConfigurationMap(
         "allow.insecure.soap.requests" to false.toString(),
         "journalPostApi.url" to "http://localhost",
         "gosysApi.url" to "http://localhost",
-        "kafka.bootstrap.servers" to "localhost:9092",
+        "kafka.brokers" to "localhost:9092",
         "regel.api.secret" to "secret",
         "regel.api.key" to "regelKey",
         "sts.url" to "http://localhost",
@@ -53,7 +53,6 @@ private val devProperties = ConfigurationMap(
         "dp.regel.api.url" to "http://dp-regel-api.teamdagpenger.svc.nais.local",
         "journalPostApi.url" to "http://dokarkiv.q1.svc.nais.local",
         "gosysApi.url" to "https://oppgave-q1.nais.preprod.local",
-        "kafka.bootstrap.servers" to "b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443",
         "sts.url" to "http://security-token-service.default.svc.nais.local",
         "soapsecuritytokenservice.url" to "https://sts-q1.preprod.local/SecurityTokenServiceProvider/",
         "behandlearbeidsytelsesak.v1.url" to "https://arena-q1.adeo.no/ail_ws/BehandleArbeidOgAktivitetOppgave_v1",
@@ -72,7 +71,6 @@ private val prodProperties = ConfigurationMap(
         "dp.regel.api.url" to "http://dp-regel-api.teamdagpenger.svc.nais.local",
         "journalPostApi.url" to "http://dokarkiv.default.svc.nais.local",
         "gosysApi.url" to "https://oppgave.nais.adeo.no",
-        "kafka.bootstrap.servers" to "a01apvl00145.adeo.no:8443,a01apvl00146.adeo.no:8443,a01apvl00147.adeo.no:8443,a01apvl00148.adeo.no:8443,a01apvl00149.adeo.no:8443,a01apvl00150.adeo.no:8443",
         "sts.url" to "http://security-token-service.default.svc.nais.local",
         "soapsecuritytokenservice.url" to "https://sts.adeo.no/SecurityTokenServiceProvider/",
         "behandlearbeidsytelsesak.v1.url" to "https://arena.adeo.no/ail_ws/BehandleArbeidOgAktivitetOppgave_v1",
@@ -96,7 +94,8 @@ fun config(): Configuration {
 }
 
 object IgnoreJournalPost {
-    val ignorerJournalpost: Set<String> = config().getOrNull(Key("ignore.journalpost", stringType))?.split(",")?.map { it.trim() }?.toSet() ?: emptySet()
+    val ignorerJournalpost: Set<String> =
+        config().getOrNull(Key("ignore.journalpost", stringType))?.split(",")?.map { it.trim() }?.toSet() ?: emptySet()
 }
 
 data class Configuration(
@@ -119,15 +118,12 @@ data class Configuration(
 
     data class Kafka(
         val dagpengerJournalpostTopic: Topic<String, Packet> = Topic(
-            "privat-dagpenger-journalpost-mottatt-v1",
+            "teamdagpenger.journalforing.v1",
             keySerde = Serdes.String(),
             valueSerde = Serdes.serdeFrom(PacketSerializer(), PacketDeserializer())
         ),
-        val brokers: String = config()[Key("kafka.bootstrap.servers", stringType)],
-        val credential: KafkaCredential = KafkaCredential(
-            username = Serviceuser.username,
-            password = Serviceuser.password
-        ),
+        val brokers: String = config()[Key("kafka.brokers", stringType)],
+        val credential: KafkaAivenCredentials = KafkaAivenCredentials(),
         val processingGuarantee: String = config()[Key("kafka.processing.guarantee", stringType)]
     )
 

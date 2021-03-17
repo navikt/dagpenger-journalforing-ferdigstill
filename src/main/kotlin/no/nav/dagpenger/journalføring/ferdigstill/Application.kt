@@ -16,7 +16,7 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.soap.stsClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.vilkårtester.Vilkårtester
 import no.nav.dagpenger.oidc.StsOidcClient
 import no.nav.dagpenger.streams.River
-import no.nav.dagpenger.streams.streamConfig
+import no.nav.dagpenger.streams.streamConfigAiven
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.streams.StreamsConfig
@@ -41,12 +41,22 @@ internal class Application(
             "journalpost_id" to PacketMapper.journalpostIdFrom(packet)
         ) {
             logger.info { "Behandler journalpost-pakke som er lest ${packet.getStringValue("system_read_count")} ganger" }
-            sikkerlogg.info { "Behandler journalpost for person med naturlig ident ${PacketMapper.bruker(packet)} og aktør-id ${ PacketMapper.nullableAktørFrom(packet) }" }
+            sikkerlogg.info {
+                "Behandler journalpost for person med naturlig ident ${PacketMapper.bruker(packet)} og aktør-id ${
+                    PacketMapper.nullableAktørFrom(
+                        packet
+                    )
+                }"
+            }
 
             val readCountLimit = 15
-            if (packet.getReadCount() >= readCountLimit && !unleash.isEnabled("dagpenger-journalforing-ferdigstill.skipReadCount", false)) {
+            if (packet.getReadCount() >= readCountLimit && !unleash.isEnabled(
+                    "dagpenger-journalforing-ferdigstill.skipReadCount",
+                    false
+                )
+            ) {
                 logger.error {
-                    "Read count >= $readCountLimit for packet with journalpostid ${ packet.getStringValue(PacketKeys.JOURNALPOST_ID) }"
+                    "Read count >= $readCountLimit for packet with journalpostid ${packet.getStringValue(PacketKeys.JOURNALPOST_ID)}"
                 }
                 throw ReadCountException()
             }
@@ -56,12 +66,12 @@ internal class Application(
     }
 
     override fun getConfig(): Properties {
-        val properties = streamConfig(
-            SERVICE_APP_ID,
-            configuration.kafka.brokers,
-            configuration.kafka.credential
+        val properties = streamConfigAiven(
+            appId = SERVICE_APP_ID,
+            bootStapServerUrl = configuration.kafka.brokers,
+            aivenCredentials = configuration.kafka.credential
         )
-        properties[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
+        properties[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
         properties[StreamsConfig.PROCESSING_GUARANTEE_CONFIG] = configuration.kafka.processingGuarantee
         return properties
     }
