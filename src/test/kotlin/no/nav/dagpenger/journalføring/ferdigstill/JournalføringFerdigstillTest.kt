@@ -30,6 +30,7 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderFornyetRettighe
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderHenvendelseAngåendeEksisterendeSaksforholdCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.vilkårtester.MinsteArbeidsinntektVilkår
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.vilkårtester.Vilkårtester
+import no.nav.dagpenger.streams.KafkaAivenCredentials
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -39,10 +40,17 @@ internal class JournalføringFerdigstillTest {
     private val journalPostApi = mockk<JournalpostApi>(relaxed = true)
     private val manuellJournalføringsOppgaveClient = mockk<ManuellJournalføringsOppgaveClient>(relaxed = true)
     private val arenaClient = mockk<ArenaClient>(relaxed = true)
+    private val config = Configuration(
+        kafka = Configuration.Kafka(
+            credential = KafkaAivenCredentials(
+                sslTruststorePasswordConfig = "changeme"
+            )
+        )
+    )
 
     @Test
     fun `Skal ta imot pakker med journalpostId`() {
-        val application = Application(Configuration(), mockk(), FakeUnleash())
+        val application = Application(config, mockk(), FakeUnleash())
 
         application.filterPredicates().all {
             it.test(
@@ -66,7 +74,7 @@ internal class JournalføringFerdigstillTest {
 
     @Test
     fun `skal ikke behandle pakker som er ferdig behandlet`() {
-        val application = Application(Configuration(), mockk(), FakeUnleash())
+        val application = Application(config, mockk(), FakeUnleash())
 
         application.filterPredicates().all {
             it.test(
