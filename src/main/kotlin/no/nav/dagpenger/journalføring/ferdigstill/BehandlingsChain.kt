@@ -292,7 +292,7 @@ internal class KlageAnkeLonnskompensasjonChain(
                 PacketMapper.tittelFrom(packet) + "- Lønnskompensasjon",
                 PacketMapper.tildeltEnhetsNrFrom(packet),
                 PacketMapper.registrertDatoFrom(packet),
-                oppgavetype = Oppgavetype.BehandleHenvendelse
+                oppgavetype = Oppgavetype.VurderHenvendelse
             )
             logger.info { "Manuelt journalført, klage og anke for lønnskompensasjon" }
         }

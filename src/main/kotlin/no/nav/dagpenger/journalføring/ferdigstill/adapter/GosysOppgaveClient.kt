@@ -29,7 +29,7 @@ internal interface ManuellJournalføringsOppgaveClient {
 
 enum class Oppgavetype {
     Journalføring,
-    BehandleHenvendelse,
+    VurderHenvendelse,
 }
 internal data class GosysOppgave(
     val journalpostId: String,
@@ -86,8 +86,8 @@ internal class GosysOppgaveClient(private val url: String, private val oidcClien
                             aktivDato = frist.toLocalDate(),
                             fristFerdigstillelse = frist.toLocalDate(),
                             oppgavetype = when (oppgavetype) {
-                                Oppgavetype.BehandleHenvendelse -> "BEH_HENV"
-                                else -> "JFR"
+                                Oppgavetype.VurderHenvendelse -> "VURD_HENV"
+                                Oppgavetype.Journalføring -> "JFR"
                             }
                         )
                     )

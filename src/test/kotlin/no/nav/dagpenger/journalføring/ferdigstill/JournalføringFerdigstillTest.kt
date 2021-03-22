@@ -473,7 +473,7 @@ internal class JournalføringFerdigstillTest {
             journalPostApi.ferdigstill(journalPostId)
         }
         verify {
-            manuellJournalføringsOppgaveClient.opprettOppgave(journalPostId, any(), any(), behandlendeEnhet, any(), oppgavetype = Oppgavetype.BehandleHenvendelse)
+            manuellJournalføringsOppgaveClient.opprettOppgave(journalPostId, any(), any(), behandlendeEnhet, any(), oppgavetype = Oppgavetype.VurderHenvendelse)
         }
 
         finishedPacket.getBoolean("ferdigBehandlet") shouldBe true
