@@ -187,7 +187,7 @@ internal class PacketMapperTest {
     }
 
     @Test
-    fun `Finn riktig oppgave beskrivelse og benk ved oppfyller minsteinntekt ved korona regler   `() {
+    fun `Finn riktig oppgave beskrivelse og benk ved oppfyller minsteinntekt ved korona regler`() {
         beregnOppgaveBenk(
             harEøsArbeidsforhold = false,
             harInntektFraFangstOgFiske = false,

@@ -1,5 +1,6 @@
 package no.nav.dagpenger.journalføring.ferdigstill.adapter
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.httpPost
@@ -53,6 +54,8 @@ internal class GosysOppgaveClient(private val url: String, private val oidcClien
             .add(LocalDateJsonAdapter())
             .build()
 
+        private val jacksonMapper = jacksonObjectMapper()
+
         fun toOpprettGosysOppgaveJsonPayload(gosysOppgave: GosysOppgave) =
             moishiInstance.adapter<GosysOppgave>(
                 GosysOppgave::class.java
@@ -96,7 +99,11 @@ internal class GosysOppgaveClient(private val url: String, private val oidcClien
         }
 
         result.fold(
-            { logger.info(" Oppretter manuell journalføringsoppgave for $journalPostId") },
+            {
+                val gosysoppgave = kotlin.runCatching { jacksonMapper.readTree(it) }.getOrNull()
+                val oppgaveId = gosysoppgave?.get("id") ?: "ukjent"
+                logger.info(" Opprettet manuell journalføringsoppgave med oppgaveid '$oppgaveId' for $journalPostId")
+            },
             { e ->
                 logger.error(
                     "Feilet oppretting av manuell journalføringsoppgave for $journalPostId response message: ${e.response.body().asString(
