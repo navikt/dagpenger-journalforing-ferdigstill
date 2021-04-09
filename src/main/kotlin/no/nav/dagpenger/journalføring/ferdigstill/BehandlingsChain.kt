@@ -10,7 +10,6 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.JournalpostApi
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ManuellJournalføringsOppgaveClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.OppdaterJournalpostPayload
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.Oppgavetype
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderFornyetRettighetCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderHenvendelseAngåendeEksisterendeSaksforholdCommand
@@ -291,8 +290,7 @@ internal class KlageAnkeLonnskompensasjonChain(
                 PacketMapper.nullableAktørFrom(packet)?.id,
                 PacketMapper.tittelFrom(packet) + "- Lønnskompensasjon",
                 PacketMapper.tildeltEnhetsNrFrom(packet),
-                PacketMapper.registrertDatoFrom(packet),
-                oppgavetype = Oppgavetype.VurderHenvendelse
+                PacketMapper.registrertDatoFrom(packet)
             )
             logger.info { "Manuelt journalført, klage og anke for lønnskompensasjon" }
         }

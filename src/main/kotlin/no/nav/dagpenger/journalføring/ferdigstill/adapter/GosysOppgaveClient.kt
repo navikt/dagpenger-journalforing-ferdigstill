@@ -23,15 +23,10 @@ internal interface ManuellJournalføringsOppgaveClient {
         aktørId: String?,
         søknadstittel: String,
         tildeltEnhetsnr: String,
-        frist: ZonedDateTime,
-        oppgavetype: Oppgavetype = Oppgavetype.Journalføring
+        frist: ZonedDateTime
     )
 }
 
-enum class Oppgavetype {
-    Journalføring,
-    VurderHenvendelse,
-}
 internal data class GosysOppgave(
     val journalpostId: String,
     val aktoerId: String?,
@@ -56,8 +51,10 @@ internal class GosysOppgaveClient(private val url: String, private val oidcClien
 
         private val jacksonMapper = jacksonObjectMapper()
 
+        private val Journalføring = "JFR"
+
         fun toOpprettGosysOppgaveJsonPayload(gosysOppgave: GosysOppgave) =
-            moishiInstance.adapter<GosysOppgave>(
+            moishiInstance.adapter(
                 GosysOppgave::class.java
             ).toJson(gosysOppgave)
     }
@@ -67,9 +64,9 @@ internal class GosysOppgaveClient(private val url: String, private val oidcClien
         aktørId: String?,
         søknadstittel: String,
         tildeltEnhetsnr: String,
-        frist: ZonedDateTime,
-        oppgavetype: Oppgavetype
+        frist: ZonedDateTime
     ) {
+
         val (_, _, result) = retryFuel(
             initialDelay = 5000,
             maxDelay = 30000
@@ -88,10 +85,7 @@ internal class GosysOppgaveClient(private val url: String, private val oidcClien
                             tildeltEnhetsnr = tildeltEnhetsnr,
                             aktivDato = frist.toLocalDate(),
                             fristFerdigstillelse = frist.toLocalDate(),
-                            oppgavetype = when (oppgavetype) {
-                                Oppgavetype.VurderHenvendelse -> "VURD_HENV"
-                                Oppgavetype.Journalføring -> "JFR"
-                            }
+                            oppgavetype = Journalføring
                         )
                     )
                 )

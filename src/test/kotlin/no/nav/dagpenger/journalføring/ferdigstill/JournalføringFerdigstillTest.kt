@@ -24,7 +24,6 @@ import no.nav.dagpenger.journalføring.ferdigstill.adapter.Dokument
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.JournalpostApi
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ManuellJournalføringsOppgaveClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.OppgaveCommand
-import no.nav.dagpenger.journalføring.ferdigstill.adapter.Oppgavetype
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.StartVedtakCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderFornyetRettighetCommand
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.VurderHenvendelseAngåendeEksisterendeSaksforholdCommand
@@ -473,7 +472,7 @@ internal class JournalføringFerdigstillTest {
             journalPostApi.ferdigstill(journalPostId)
         }
         verify {
-            manuellJournalføringsOppgaveClient.opprettOppgave(journalPostId, any(), any(), behandlendeEnhet, any(), oppgavetype = Oppgavetype.VurderHenvendelse)
+            manuellJournalføringsOppgaveClient.opprettOppgave(journalPostId, any(), any(), behandlendeEnhet, any())
         }
 
         finishedPacket.getBoolean("ferdigBehandlet") shouldBe true
