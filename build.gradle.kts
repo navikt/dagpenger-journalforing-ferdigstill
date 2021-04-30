@@ -121,6 +121,9 @@ dependencies {
     // result
     implementation("com.github.kittinunf.result:result:$resultVersion")
 
+    // unleash
+    implementation("no.finn.unleash:unleash-client-java:3.2.9")
+
     // testing
     testImplementation(Junit5.api)
     testImplementation(KoTest.runner)
