@@ -5,6 +5,7 @@ import mu.withLoggingContext
 import no.finn.unleash.DefaultUnleash
 import no.finn.unleash.Unleash
 import no.nav.dagpenger.events.Packet
+import no.nav.dagpenger.journalføring.ferdigstill.ByClusterStrategy.Companion.SLÅ_AV_HÅNDTERING
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.GosysOppgaveClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.JournalpostRestApi
@@ -20,7 +21,9 @@ import no.nav.dagpenger.streams.streamConfigAiven
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.streams.StreamsConfig
-import java.util.Properties
+import org.apache.kafka.streams.kstream.Predicate
+import java.util.*
+
 
 private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
@@ -33,6 +36,12 @@ internal class Application(
 
     override val SERVICE_APP_ID = configuration.application.name
     override val HTTP_PORT: Int = configuration.application.httpPort
+    internal val erIkkeFerdigBehandletJournalpost = Predicate<String, Packet> { _, packet ->
+        unleash.isEnabled(SLÅ_AV_HÅNDTERING) || (
+                packet.hasField(PacketKeys.JOURNALPOST_ID) &&
+                        !packet.hasField(PacketKeys.FERDIG_BEHANDLET) &&
+                        !IgnoreJournalPost.ignorerJournalpost.contains(packet.getStringValue(PacketKeys.JOURNALPOST_ID)))
+    }
 
     override fun filterPredicates() = listOf(erIkkeFerdigBehandletJournalpost)
 
@@ -43,21 +52,27 @@ internal class Application(
             logger.info { "Behandler journalpost-pakke som er lest ${packet.getStringValue("system_read_count")} ganger" }
             sikkerlogg.info {
                 "Behandler journalpost for person med naturlig ident ${PacketMapper.bruker(packet)} og aktør-id ${
-                PacketMapper.nullableAktørFrom(
-                    packet
-                )
+                    PacketMapper.nullableAktørFrom(
+                        packet
+                    )
                 }"
             }
 
             val readCountLimit = 15
-            if (packet.getReadCount() >= readCountLimit && !unleash.isEnabled("dagpenger-journalforing-ferdigstill.skipReadCount", false)) {
+            if (packet.getReadCount() >= readCountLimit && !unleash.isEnabled(
+                    "dagpenger-journalforing-ferdigstill.skipReadCount",
+                    false
+                )
+            ) {
                 logger.error {
                     "Read count >= $readCountLimit for packet with journalpostid ${packet.getStringValue(PacketKeys.JOURNALPOST_ID)}"
                 }
                 throw ReadCountException()
             }
 
-            return journalføringFerdigstill.handlePacket(packet)
+            else return journalføringFerdigstill.handlePacket(packet)
+
+
         }
     }
 
@@ -103,7 +118,8 @@ fun main() {
         soapStsClient.configureFor(ytelseskontraktV3)
     }
 
-    val unleash: Unleash = DefaultUnleash(configuration.application.unleashConfig)
+    val unleash: Unleash =
+        DefaultUnleash(configuration.application.unleashConfig, ByClusterStrategy(ByClusterStrategy.Cluster.current))
     val gosysOppgaveClient = GosysOppgaveClient(
         configuration.gosysApiUrl,
         stsOidcClient

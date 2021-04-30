@@ -3,6 +3,10 @@ package no.nav.dagpenger.journalføring.ferdigstill
 import no.finn.unleash.strategy.Strategy
 
 internal class ByClusterStrategy(private val currentCluster: Cluster) : Strategy {
+
+    companion object {
+        const val SLÅ_AV_HÅNDTERING = "dagpenger-journalforing-ferdigstill.disable"
+    }
     override fun getName(): String = "byCluster"
 
     override fun isEnabled(parameters: Map<String, String>?): Boolean {
