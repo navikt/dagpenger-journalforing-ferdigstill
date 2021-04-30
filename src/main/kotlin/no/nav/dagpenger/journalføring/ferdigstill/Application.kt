@@ -22,8 +22,7 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.kstream.Predicate
-import java.util.*
-
+import java.util.Properties
 
 private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
@@ -36,14 +35,14 @@ internal class Application(
 
     override val SERVICE_APP_ID = configuration.application.name
     override val HTTP_PORT: Int = configuration.application.httpPort
-    internal val erIkkeFerdigBehandletJournalpost = Predicate<String, Packet> { _, packet ->
-        unleash.isEnabled(SLÅ_AV_HÅNDTERING) || (
-                packet.hasField(PacketKeys.JOURNALPOST_ID) &&
-                        !packet.hasField(PacketKeys.FERDIG_BEHANDLET) &&
-                        !IgnoreJournalPost.ignorerJournalpost.contains(packet.getStringValue(PacketKeys.JOURNALPOST_ID)))
+    private val skalBehandle = Predicate<String, Packet> { _, _ -> !unleash.isEnabled(SLÅ_AV_HÅNDTERING, false) }
+    private val erIkkeFerdigBehandletJournalpost = Predicate<String, Packet> { _, packet ->
+        packet.hasField(PacketKeys.JOURNALPOST_ID) &&
+            !packet.hasField(PacketKeys.FERDIG_BEHANDLET) &&
+            !IgnoreJournalPost.ignorerJournalpost.contains(packet.getStringValue(PacketKeys.JOURNALPOST_ID))
     }
 
-    override fun filterPredicates() = listOf(erIkkeFerdigBehandletJournalpost)
+    override fun filterPredicates() = listOf(skalBehandle, erIkkeFerdigBehandletJournalpost)
 
     override fun onPacket(packet: Packet): Packet {
         withLoggingContext(
@@ -52,17 +51,14 @@ internal class Application(
             logger.info { "Behandler journalpost-pakke som er lest ${packet.getStringValue("system_read_count")} ganger" }
             sikkerlogg.info {
                 "Behandler journalpost for person med naturlig ident ${PacketMapper.bruker(packet)} og aktør-id ${
-                    PacketMapper.nullableAktørFrom(
-                        packet
-                    )
+                PacketMapper.nullableAktørFrom(
+                    packet
+                )
                 }"
             }
 
             val readCountLimit = 15
-            if (packet.getReadCount() >= readCountLimit && !unleash.isEnabled(
-                    "dagpenger-journalforing-ferdigstill.skipReadCount",
-                    false
-                )
+            if (packet.getReadCount() >= readCountLimit && !unleash.isEnabled("dagpenger-journalforing-ferdigstill.skipReadCount", false)
             ) {
                 logger.error {
                     "Read count >= $readCountLimit for packet with journalpostid ${packet.getStringValue(PacketKeys.JOURNALPOST_ID)}"
@@ -70,9 +66,7 @@ internal class Application(
                 throw ReadCountException()
             }
 
-            else return journalføringFerdigstill.handlePacket(packet)
-
-
+            return journalføringFerdigstill.handlePacket(packet)
         }
     }
 

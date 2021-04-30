@@ -48,8 +48,19 @@ internal class JournalføringFerdigstillTest {
     )
     @Test
     fun `skal ikke gjennomføre journalstilling`() {
-        val fakeUnleash = FakeUnleash()
-        val application = Application(config, mockk(), FakeUnleash())
+        val fakeUnleash = FakeUnleash().also {
+            it.enable("dagpenger-journalforing-ferdigstill.disable")
+        }
+        val application = Application(config, mockk(), fakeUnleash)
+
+        application.filterPredicates().all {
+            it.test(
+                "",
+                Packet().apply {
+                    this.putValue(JOURNALPOST_ID, "journalPostId")
+                }
+            )
+        } shouldBe false
     }
 
     @Test
