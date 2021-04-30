@@ -46,6 +46,11 @@ internal class JournalføringFerdigstillTest {
             )
         )
     )
+    @Test
+    fun `skal ikke gjennomføre journalstilling`() {
+        val fakeUnleash = FakeUnleash()
+        val application = Application(config, mockk(), FakeUnleash())
+    }
 
     @Test
     fun `Skal ta imot pakker med journalpostId`() {

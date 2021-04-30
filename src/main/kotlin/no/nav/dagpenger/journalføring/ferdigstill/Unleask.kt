@@ -1,23 +1,9 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
-import no.finn.unleash.DefaultUnleash
 import no.finn.unleash.strategy.Strategy
-import no.finn.unleash.util.UnleashConfig
 
 internal class ByClusterStrategy(private val currentCluster: Cluster) : Strategy {
     override fun getName(): String = "byCluster"
-
-    fun setupUnleash(unleashApiUrl: String): DefaultUnleash {
-
-        val appName = "dagpenger-journalforing-ferdigstill"
-        val unleashconfig = UnleashConfig.builder()
-            .appName(appName)
-            .instanceId(appName)
-            .unleashAPI(unleashApiUrl)
-            .build()
-
-        return DefaultUnleash(unleashconfig, ByClusterStrategy(Cluster.current))
-    }
 
     override fun isEnabled(parameters: Map<String, String>?): Boolean {
         val clustersParameter = parameters?.get("cluster") ?: return false
