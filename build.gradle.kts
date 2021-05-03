@@ -69,7 +69,9 @@ dependencies {
     implementation("com.github.navikt:dp-biblioteker:2019.11.14-12.52.2f5a90180072")
 
     // feature toggle
-    implementation("no.finn.unleash:unleash-client-java:3.2.9")
+    implementation("no.finn.unleash:unleash-client-java:4.2.1") {
+        exclude("org.apache.logging.log4j")
+    }
 
     // httpclient
     // We need PATCH. SEE https://github.com/kittinunf/fuel/pull/562
