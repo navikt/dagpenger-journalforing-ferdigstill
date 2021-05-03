@@ -5,6 +5,7 @@ import mu.withLoggingContext
 import no.finn.unleash.DefaultUnleash
 import no.finn.unleash.Unleash
 import no.nav.dagpenger.events.Packet
+import no.nav.dagpenger.journalføring.ferdigstill.ByClusterStrategy.Companion.SLÅ_AV_HÅNDTERING
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.GosysOppgaveClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.JournalpostRestApi
@@ -20,6 +21,7 @@ import no.nav.dagpenger.streams.streamConfigAiven
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.streams.StreamsConfig
+import org.apache.kafka.streams.kstream.Predicate
 import java.util.Properties
 
 private val logger = KotlinLogging.logger {}
@@ -33,8 +35,14 @@ internal class Application(
 
     override val SERVICE_APP_ID = configuration.application.name
     override val HTTP_PORT: Int = configuration.application.httpPort
+    private val skalBehandle = Predicate<String, Packet> { _, _ -> !unleash.isEnabled(SLÅ_AV_HÅNDTERING, false) }
+    private val erIkkeFerdigBehandletJournalpost = Predicate<String, Packet> { _, packet ->
+        packet.hasField(PacketKeys.JOURNALPOST_ID) &&
+            !packet.hasField(PacketKeys.FERDIG_BEHANDLET) &&
+            !IgnoreJournalPost.ignorerJournalpost.contains(packet.getStringValue(PacketKeys.JOURNALPOST_ID))
+    }
 
-    override fun filterPredicates() = listOf(erIkkeFerdigBehandletJournalpost)
+    override fun filterPredicates() = listOf(skalBehandle, erIkkeFerdigBehandletJournalpost)
 
     override fun onPacket(packet: Packet): Packet {
         withLoggingContext(
@@ -50,7 +58,8 @@ internal class Application(
             }
 
             val readCountLimit = 15
-            if (packet.getReadCount() >= readCountLimit && !unleash.isEnabled("dagpenger-journalforing-ferdigstill.skipReadCount", false)) {
+            if (packet.getReadCount() >= readCountLimit && !unleash.isEnabled("dagpenger-journalforing-ferdigstill.skipReadCount", false)
+            ) {
                 logger.error {
                     "Read count >= $readCountLimit for packet with journalpostid ${packet.getStringValue(PacketKeys.JOURNALPOST_ID)}"
                 }
@@ -103,7 +112,8 @@ fun main() {
         soapStsClient.configureFor(ytelseskontraktV3)
     }
 
-    val unleash: Unleash = DefaultUnleash(configuration.application.unleashConfig)
+    val unleash: Unleash =
+        DefaultUnleash(configuration.application.unleashConfig, ByClusterStrategy(ByClusterStrategy.Cluster.current))
     val gosysOppgaveClient = GosysOppgaveClient(
         configuration.gosysApiUrl,
         stsOidcClient

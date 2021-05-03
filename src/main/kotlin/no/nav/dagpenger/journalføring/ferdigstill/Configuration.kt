@@ -39,9 +39,8 @@ private val localProperties = ConfigurationMap(
         "soapsecuritytokenservice.url" to "http://localhost",
         "behandlearbeidsytelsesak.v1.url" to "https://localhost/ail_ws/BehandleArbeidOgAktivitetOppgave_v1",
         "ytelseskontrakt.v3.url" to "https://localhost/ail_ws/Ytelseskontrakt_v3",
-        "unleash.url" to "http://localhost:1010",
-        "kafka.processing.guarantee" to StreamsConfig.AT_LEAST_ONCE
-
+        "kafka.processing.guarantee" to StreamsConfig.AT_LEAST_ONCE,
+        "unleash.url" to "https://unleash.nais.io/api/"
     )
 )
 private val devProperties = ConfigurationMap(
@@ -77,7 +76,7 @@ private val prodProperties = ConfigurationMap(
         "ytelseskontrakt.v3.url" to "https://arena.adeo.no/ail_ws/Ytelseskontrakt_v3",
         "unleash.url" to "https://unleash.nais.io/api/",
         "ignore.journalpost" to "467048844, 477201031, 476557172, 475680871, 471479059, 471479060, 471478910, 467047358, 485283071, 490603325, 490587791,490587791,491096964,491096222,491098497,497902755,498196657",
-        "kafka.processing.guarantee" to StreamsConfig.AT_LEAST_ONCE
+        "kafka.processing.guarantee" to StreamsConfig.AT_LEAST_ONCE,
     )
 )
 

@@ -1,18 +1,10 @@
 package no.nav.dagpenger.journalføring.ferdigstill
 
 import no.nav.dagpenger.events.Packet
-import no.nav.dagpenger.journalføring.ferdigstill.IgnoreJournalPost.ignorerJournalpost
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ArenaClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.JournalpostApi
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.ManuellJournalføringsOppgaveClient
 import no.nav.dagpenger.journalføring.ferdigstill.adapter.vilkårtester.Vilkårtester
-import org.apache.kafka.streams.kstream.Predicate
-
-internal val erIkkeFerdigBehandletJournalpost = Predicate<String, Packet> { _, packet ->
-    packet.hasField(PacketKeys.JOURNALPOST_ID) &&
-        !packet.hasField(PacketKeys.FERDIG_BEHANDLET) &&
-        !ignorerJournalpost.contains(packet.getStringValue(PacketKeys.JOURNALPOST_ID))
-}
 
 internal class JournalføringFerdigstill(
     journalPostApi: JournalpostApi,
