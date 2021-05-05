@@ -64,6 +64,23 @@ internal class JournalføringFerdigstillTest {
     }
 
     @Test
+    fun `skal ignorere pakker fra dp-mottak`() {
+
+        val application = Application(config, mockk(), FakeUnleash())
+
+        application.filterPredicates().all {
+            it.test(
+                "",
+                Packet().apply {
+                    this.putValue("@event_name", "any")
+                    this.putValue("@id", "any")
+                    this.putValue(JOURNALPOST_ID, "122")
+                }
+            )
+        } shouldBe false
+    }
+
+    @Test
     fun `Skal ta imot pakker med journalpostId`() {
         val application = Application(config, mockk(), FakeUnleash())
 

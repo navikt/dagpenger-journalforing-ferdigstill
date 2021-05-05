@@ -42,7 +42,9 @@ internal class Application(
             !IgnoreJournalPost.ignorerJournalpost.contains(packet.getStringValue(PacketKeys.JOURNALPOST_ID))
     }
 
-    override fun filterPredicates() = listOf(skalBehandle, erIkkeFerdigBehandletJournalpost)
+    private val ignorerDpMottakEventer = Predicate<String, Packet> { _, packet -> !packet.hasField("@event_name") && !packet.hasField("@id") }
+
+    override fun filterPredicates() = listOf(ignorerDpMottakEventer, skalBehandle, erIkkeFerdigBehandletJournalpost)
 
     override fun onPacket(packet: Packet): Packet {
         withLoggingContext(
